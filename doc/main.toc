@@ -1,0 +1,60 @@
+\contentsline {section}{\numberline {1}Problem Description}{3}{section.1}%
+\contentsline {subsection}{\numberline {1.1}Input Data}{3}{subsection.1.1}%
+\contentsline {section}{\numberline {2}Illustrative Example}{3}{section.2}%
+\contentsline {section}{\numberline {3}Main Constraints}{4}{section.3}%
+\contentsline {section}{\numberline {4}Integer Linear Programming (ILP) Model}{5}{section.4}%
+\contentsline {subsection}{\numberline {4.1}Decision Variables}{5}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.2}Objective Function}{5}{subsection.4.2}%
+\contentsline {subsection}{\numberline {4.3}Constraints}{5}{subsection.4.3}%
+\contentsline {paragraph}{Linking $x$ and $y$:}{5}{section*.2}%
+\contentsline {paragraph}{Linking $x$ and $z$:}{5}{section*.3}%
+\contentsline {paragraph}{C1 -- At most one assignment per service:}{5}{section*.4}%
+\contentsline {paragraph}{C2 -- At most one service per agent per time slot:}{6}{section*.5}%
+\contentsline {paragraph}{C3 -- Agent availability and service suitability:}{6}{section*.6}%
+\contentsline {paragraph}{C4 -- At most one service per user per time slot:}{6}{section*.7}%
+\contentsline {paragraph}{C5 -- Service coverage (hard):}{6}{section*.8}%
+\contentsline {paragraph}{C6 -- Maximum working hours:}{6}{section*.9}%
+\contentsline {paragraph}{Extra hours:}{6}{section*.10}%
+\contentsline {paragraph}{Linking $y$ and $w$:}{6}{section*.11}%
+\contentsline {section}{\numberline {5}SAT / MaxSAT Model}{6}{section.5}%
+\contentsline {subsection}{\numberline {5.1}Boolean Variables}{6}{subsection.5.1}%
+\contentsline {subsection}{\numberline {5.2}Hard Clauses}{7}{subsection.5.2}%
+\contentsline {paragraph}{Reification (channelling):}{7}{section*.12}%
+\contentsline {paragraph}{At-Most-One (AMO) constraints:}{7}{section*.13}%
+\contentsline {paragraph}{Implicit constraint C3:}{7}{section*.14}%
+\contentsline {paragraph}{Service coverage (C5, hard version):}{7}{section*.15}%
+\contentsline {paragraph}{Maximum working hours (C6):}{7}{section*.16}%
+\contentsline {subsection}{\numberline {5.3}Soft Clauses}{7}{subsection.5.3}%
+\contentsline {paragraph}{O1 -- Expertise reward:}{7}{section*.17}%
+\contentsline {paragraph}{O2 -- Continuity of care:}{7}{section*.18}%
+\contentsline {paragraph}{O3 -- Extra-hour penalty:}{7}{section*.19}%
+\contentsline {subsection}{\numberline {5.4}Stratified Variant}{8}{subsection.5.4}%
+\contentsline {section}{\numberline {6}Optimisation Approaches}{8}{section.6}%
+\contentsline {subsection}{\numberline {6.1}Non-Incremental SAT}{8}{subsection.6.1}%
+\contentsline {subsubsection}{\numberline {6.1.1}Top-Down Linear Search}{8}{subsubsection.6.1.1}%
+\contentsline {subsubsection}{\numberline {6.1.2}Bottom-Up Linear Search}{8}{subsubsection.6.1.2}%
+\contentsline {subsubsection}{\numberline {6.1.3}Binary (Dichotomic) Search}{9}{subsubsection.6.1.3}%
+\contentsline {subsubsection}{\numberline {6.1.4}Cardinality Encoding}{9}{subsubsection.6.1.4}%
+\contentsline {subsubsection}{\numberline {6.1.5}Key Properties}{9}{subsubsection.6.1.5}%
+\contentsline {subsection}{\numberline {6.2}Incremental SAT}{10}{subsection.6.2}%
+\contentsline {subsubsection}{\numberline {6.2.1}Assumption-Based Bound Tightening}{10}{subsubsection.6.2.1}%
+\contentsline {paragraph}{Idea.}{10}{section*.20}%
+\contentsline {subsubsection}{\numberline {6.2.2}Clause-Addition Linear Search}{10}{subsubsection.6.2.2}%
+\contentsline {subsubsection}{\numberline {6.2.3}Application to HCORAP}{11}{subsubsection.6.2.3}%
+\contentsline {subsubsection}{\numberline {6.2.4}Key Properties}{11}{subsubsection.6.2.4}%
+\contentsline {subsection}{\numberline {6.3}MaxSAT}{11}{subsection.6.3}%
+\contentsline {subsubsection}{\numberline {6.3.1}Formulation}{11}{subsubsection.6.3.1}%
+\contentsline {subsubsection}{\numberline {6.3.2}Internal Algorithms of MaxSAT Solvers}{12}{subsubsection.6.3.2}%
+\contentsline {paragraph}{Core-Guided (OLL / RC2).}{12}{section*.21}%
+\contentsline {paragraph}{Linear SAT-UNSAT Search.}{12}{section*.22}%
+\contentsline {paragraph}{Stratified / Weight-Aware.}{12}{section*.23}%
+\contentsline {subsubsection}{\numberline {6.3.3}Stratified Optimisation in HCORAP}{12}{subsubsection.6.3.3}%
+\contentsline {subsubsection}{\numberline {6.3.4}DIMACS WCNF Format}{12}{subsubsection.6.3.4}%
+\contentsline {subsubsection}{\numberline {6.3.5}Key Properties}{12}{subsubsection.6.3.5}%
+\contentsline {subsection}{\numberline {6.4}Comparison of Approaches}{13}{subsection.6.4}%
+\contentsline {paragraph}{Discussion.}{13}{section*.25}%
+\contentsline {section}{\numberline {7}Dataset}{13}{section.7}%
+\contentsline {subsection}{\numberline {7.1}Overview}{13}{subsection.7.1}%
+\contentsline {subsection}{\numberline {7.2}Instance Generation}{14}{subsection.7.2}%
+\contentsline {subsection}{\numberline {7.3}Instance File Format}{14}{subsection.7.3}%
+\contentsline {subsection}{\numberline {7.4}Instance Statistics}{14}{subsection.7.4}%

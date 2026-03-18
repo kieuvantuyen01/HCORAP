@@ -1,0 +1,1099 @@
+\documentclass[11pt,a4paper]{article}
+
+% ---- Packages ----
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{cleveref}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{enumitem}
+\usepackage{tikz}
+\usetikzlibrary{matrix,positioning,arrows.meta,fit,backgrounds}
+\usepackage{caption}
+\usepackage{subcaption}
+
+% ---- Macros ----
+\newcommand{\setA}{\mathcal{A}}
+\newcommand{\setU}{\mathcal{U}}
+\newcommand{\setS}{\mathcal{S}}
+\newcommand{\setT}{\mathcal{T}}
+\newcommand{\setQ}{\mathcal{Q}}
+\newcommand{\SU}{\mathrm{SU}}
+\newcommand{\SEQ}{\mathrm{SEQ}}
+\newcommand{\TSA}{\mathrm{TSA}}
+\newcommand{\TSS}{\mathrm{TSS}}
+\newcommand{\HN}{\mathrm{HN}}
+\newcommand{\HE}{\mathrm{HE}}
+
+\newtheorem{definition}{Definition}
+\newtheorem{example}{Example}
+
+\title{\textbf{Home Care Optimised Resource Allocation Problem (HCORAP)}\\[6pt]
+\large Problem Description, Mathematical Models, and Dataset}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\tableofcontents
+\newpage
+
+%=============================================================================
+\section{Problem Description}\label{sec:problem}
+%=============================================================================
+
+The \textbf{Home Care Optimised Resource Allocation Problem (HCORAP)} arises in
+the context of home care service companies that assign care workers (agents) to
+perform services for users (patients/clients) over a weekly planning horizon.
+
+A home care company manages a set of \emph{agents} $\setA = \{a_1, \ldots, a_A\}$
+who visit a set of \emph{users} $\setU = \{u_1, \ldots, u_U\}$.
+Each user requires a set of \emph{services}
+$\setS = \{s_1, \ldots, s_S\}$ to be performed during the week,
+which is discretised into a set of \emph{time slots}
+$\setT = \{t_1, \ldots, t_{T}\}$ (e.g.\ $T = 60$ for 12~slots per day
+$\times$ 5~working days).
+
+The problem asks to find an assignment of agents to services at specific time slots
+that satisfies a collection of hard constraints while maximising a multi-criteria
+objective function composed of:
+\begin{enumerate}[label=(\roman*)]
+    \item \textbf{Similarity (revenue):} the accumulated expertise reward of
+          assigning agents to the services they are best suited for;
+    \item \textbf{Continuity of care:} a preference for having as few distinct
+          agents as possible attending the services of a single user that share
+          the same service type;
+    \item \textbf{Working-hour cost:} a penalty incurred whenever an agent works
+          beyond their contractual (normal) hours.
+\end{enumerate}
+
+\subsection{Input Data}
+
+An HCORAP instance is defined by the following data.
+
+\begin{itemize}
+    \item $U$: number of users; \;
+          $S$: number of services; \;
+          $A$: number of agents; \;
+          $T$: number of time slots.
+    \item $\SU_u \subseteq \setS$: the set of services belonging to user $u$.
+          These form a partition of $\setS$.
+    \item $\SEQ_q \subseteq \setS$ ($q = 1,\ldots,Q$): groups of services that
+          belong to the same user \emph{and} have the same service type.
+          Ideally, all services in a $\SEQ_q$ should be assigned to the same agent
+          (continuity of care).
+    \item $\TSA_{a,t} \in \{0,1\}$: availability matrix;
+          $\TSA_{a,t} = 1$ iff agent $a$ is available to work at time slot $t$.
+    \item $\TSS_{s,t} \in \{0,1\}$: suitability matrix;
+          $\TSS_{s,t} = 1$ iff service $s$ can be performed at time slot $t$.
+    \item $r_{a,s} \in \{0,1,2,3,4\}$: reward (expertise) score of assigning agent
+          $a$ to service $s$.  A value of $0$ means the assignment is
+          \emph{forbidden} (the agent lacks the required qualification).
+    \item $\HN_a \in \mathbb{Z}_{\ge 0}$: contractual (normal) weekly working
+          hours for agent $a$.
+    \item $\HE_a \in \mathbb{Z}_{\ge 0}$: maximum allowed extra working hours
+          for agent $a$ (beyond $\HN_a$).
+    \item $P \in \mathbb{Z}$: penalty weight for each extra working hour
+          (typically $P = -1$).
+\end{itemize}
+
+
+%=============================================================================
+\section{Illustrative Example}\label{sec:example}
+%=============================================================================
+
+\begin{example}
+Consider a small instance with $U=2$ users, $A=2$ agents,
+$S=4$ services, and $T=4$ time slots per week (for illustration purposes).
+
+\medskip\noindent
+\textbf{Service--user assignment:}
+\[
+    \SU_1 = \{s_1, s_2\}, \quad \SU_2 = \{s_3, s_4\}.
+\]
+
+\noindent
+\textbf{Continuity-of-care groups:}
+\[
+    \SEQ_1 = \{s_1, s_2\}, \quad \SEQ_2 = \{s_3\}, \quad \SEQ_3 = \{s_4\}.
+\]
+Here $s_1$ and $s_2$ are services of the same type for user~1, so they form
+one sequence.
+
+\medskip\noindent
+\textbf{Agent availability} ($\TSA$) \textbf{and service time windows} ($\TSS$):
+
+\[
+\TSA = \begin{pmatrix}
+1 & 1 & 0 & 0 \\
+0 & 1 & 1 & 1
+\end{pmatrix}, \quad
+\TSS = \begin{pmatrix}
+1 & 1 & 0 & 0 \\
+0 & 1 & 1 & 0 \\
+1 & 0 & 1 & 0 \\
+0 & 0 & 1 & 1
+\end{pmatrix}.
+\]
+Agent~$a_1$ is available in slots $t_1,t_2$; agent~$a_2$ in slots $t_2,t_3,t_4$.
+Service~$s_1$ can be done in $t_1,t_2$; service $s_2$ in $t_2,t_3$; etc.
+
+\medskip\noindent
+\textbf{Reward matrix} ($r$):
+\[
+r = \begin{pmatrix}
+3 & 2 & 0 & 1 \\
+1 & 0 & 4 & 3
+\end{pmatrix}.
+\]
+Agent~$a_1$ is forbidden from service~$s_3$ ($r_{1,3}=0$).
+Agent~$a_2$ is forbidden from service~$s_2$ ($r_{2,2}=0$).
+
+\medskip\noindent
+\textbf{Working hours:}
+$\HN_1 = 2$, $\HE_1 = 0$; $\HN_2 = 2$, $\HE_2 = 1$; $P = -1$.
+
+\medskip\noindent
+\textbf{A feasible solution:}
+\begin{center}
+\begin{tabular}{cccc}
+\toprule
+Service & Agent & Time slot & Reward \\
+\midrule
+$s_1$ & $a_1$ & $t_1$ & 3 \\
+$s_2$ & $a_1$ & $t_2$ & 2 \\
+$s_3$ & $a_2$ & $t_3$ & 4 \\
+$s_4$ & $a_2$ & $t_4$ & 3 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{Analysis:}
+\begin{itemize}
+    \item \emph{Similarity (revenue):} $3 + 2 + 4 + 3 = 12$.
+    \item \emph{Continuity of care:} $\SEQ_1 = \{s_1,s_2\}$ is served entirely by
+          $a_1$ (1~agent $\to$ penalty~$0$). Total continuity penalty $= 0$.
+    \item \emph{Working-hour cost:} agent~$a_1$ works 2~services
+          $= \HN_1 \Rightarrow$ no extra hours.
+          Agent~$a_2$ works 2~services $= \HN_2 \Rightarrow$ no extra hours.
+    \item \textbf{Total objective}: $12 - 0 - 0 = 12$ (to be maximised).
+\end{itemize}
+\end{example}
+
+
+%=============================================================================
+\section{Main Constraints}\label{sec:constraints}
+%=============================================================================
+
+The HCORAP imposes the following hard constraints:
+
+\begin{enumerate}[label=\textbf{C\arabic*.}]
+    \item \label{c:amo-service}
+    \textbf{At most one assignment per service.}
+    Each service is attended by at most one agent at at most one time slot.
+
+    \item \label{c:amo-agent-ts}
+    \textbf{At most one service per agent per time slot.}
+    An agent can perform at most one service in any given time slot.
+
+    \item \label{c:agent-availability}
+    \textbf{Agent availability.}
+    Agent $a$ may only work at time slot $t$ if $\TSA_{a,t} = 1$.
+
+    \item \label{c:amo-user-ts}
+    \textbf{At most one service per user per time slot.}
+    A user cannot receive two services simultaneously.
+
+    \item \label{c:service-coverage}
+    \textbf{Service coverage.}
+    Every service must be attended at some time slot (hard constraint in the
+    basic model; can be relaxed to a soft constraint in the stratified variant).
+
+    \item \label{c:max-hours}
+    \textbf{Maximum working hours.}
+    Agent $a$ may work at most $\HN_a + \HE_a$ services in total.
+
+    \item \label{c:qualification}
+    \textbf{Qualification.}
+    Agent $a$ can only be assigned to service $s$ if $r_{a,s} > 0$.
+\end{enumerate}
+
+\noindent
+Additionally, the following \textbf{soft (optimisation) objectives} are encoded:
+
+\begin{enumerate}[label=\textbf{O\arabic*.}]
+    \item \textbf{Maximise total expertise reward:}
+    $\displaystyle\sum_{a \in \setA}\sum_{s \in \setS} r_{a,s} \cdot y_{a,s}$.
+
+    \item \textbf{Minimise continuity-of-care violation:}
+    For each sequence $\SEQ_q$, minimise the number of distinct agents assigned
+    to its services (ideally 1).
+
+    \item \textbf{Minimise extra-hour penalty:}
+    For each agent $a$, penalise by $|P|$ for every service beyond $\HN_a$.
+\end{enumerate}
+
+
+%=============================================================================
+\section{Integer Linear Programming (ILP) Model}\label{sec:ilp}
+%=============================================================================
+
+\subsection{Decision Variables}
+
+\begin{align}
+    x_{a,s,t} &\in \{0,1\}
+    && \text{$= 1$ iff agent $a$ performs service $s$ at time slot $t$} \label{eq:x}\\
+    y_{a,s} &\in \{0,1\}
+    && \text{$= 1$ iff agent $a$ performs service $s$ (at any time slot)} \label{eq:y}\\
+    z_{s,t} &\in \{0,1\}
+    && \text{$= 1$ iff service $s$ is performed at time slot $t$} \label{eq:z}\\
+    w_{a,q} &\in \{0,1\}
+    && \text{$= 1$ iff agent $a$ performs some service in $\SEQ_q$} \label{eq:w}\\
+    e_a &\in \mathbb{Z}_{\ge 0}
+    && \text{number of extra hours worked by agent $a$} \label{eq:e}
+\end{align}
+
+\subsection{Objective Function}
+
+\begin{equation}\label{eq:obj}
+\boxed{%
+\max \;\;
+\underbrace{\sum_{a \in \setA}\sum_{s \in \setS} r_{a,s} \cdot y_{a,s}}_{\text{expertise reward}}
+\;-\;
+\underbrace{\sum_{q=1}^{Q} \biggl(\sum_{a \in \setA} w_{a,q} - 1\biggr)^{+}}_{\text{continuity penalty}}
+\;+\;
+\underbrace{P \cdot \sum_{a \in \setA} e_a}_{\text{extra-hour penalty (}P < 0\text{)}}
+}
+\end{equation}
+
+\noindent
+where $(z)^{+} = \max(z, 0)$.  In practice, the continuity penalty is linearised
+using auxiliary variables (see the MaxSAT encoding below for a sorting-network
+approach), or equivalently: for each $\SEQ_q$, minimise
+$\sum_{a \in \setA} w_{a,q}$.
+
+\subsection{Constraints}
+
+\paragraph{Linking $x$ and $y$:}
+\begin{align}
+    y_{a,s} &= \sum_{t \in \setT} x_{a,s,t}
+    && \forall a \in \setA,\; s \in \setS \label{eq:link-xy}
+\end{align}
+
+\paragraph{Linking $x$ and $z$:}
+\begin{align}
+    z_{s,t} &= \sum_{a \in \setA} x_{a,s,t}
+    && \forall s \in \setS,\; t \in \setT \label{eq:link-xz}
+\end{align}
+
+\paragraph{C1 -- At most one assignment per service:}
+\begin{align}
+    \sum_{a \in \setA}\sum_{t \in \setT} x_{a,s,t} &\le 1
+    && \forall s \in \setS \label{eq:c1}
+\end{align}
+
+\paragraph{C2 -- At most one service per agent per time slot:}
+\begin{align}
+    \sum_{s \in \setS} x_{a,s,t} &\le 1
+    && \forall a \in \setA,\; t \in \setT \label{eq:c2}
+\end{align}
+
+\paragraph{C3 -- Agent availability and service suitability:}
+\begin{align}
+    x_{a,s,t} &= 0
+    && \forall (a,s,t) \text{ s.t. } \TSA_{a,t} = 0 \text{ or }
+       \TSS_{s,t} = 0 \text{ or } r_{a,s} = 0 \label{eq:c3}
+\end{align}
+
+\paragraph{C4 -- At most one service per user per time slot:}
+\begin{align}
+    \sum_{s \in \SU_u} z_{s,t} &\le 1
+    && \forall u \in \setU,\; t \in \setT \label{eq:c4}
+\end{align}
+
+\paragraph{C5 -- Service coverage (hard):}
+\begin{align}
+    \sum_{t \in \setT} z_{s,t} &\ge 1
+    && \forall s \in \setS \label{eq:c5}
+\end{align}
+
+\paragraph{C6 -- Maximum working hours:}
+\begin{align}
+    \sum_{s \in \setS} y_{a,s} &\le \HN_a + \HE_a
+    && \forall a \in \setA \label{eq:c6-hard}
+\end{align}
+
+\paragraph{Extra hours:}
+\begin{align}
+    e_a &\ge \sum_{s \in \setS} y_{a,s} - \HN_a
+    && \forall a \in \setA \label{eq:extra}\\
+    e_a &\ge 0
+    && \forall a \in \setA  \notag
+\end{align}
+
+\paragraph{Linking $y$ and $w$:}
+\begin{align}
+    w_{a,q} &\ge y_{a,s}
+    && \forall a \in \setA,\; q = 1,\ldots,Q,\; s \in \SEQ_q \label{eq:link-yw1}\\
+    w_{a,q} &\le \sum_{s \in \SEQ_q} y_{a,s}
+    && \forall a \in \setA,\; q = 1,\ldots,Q \label{eq:link-yw2}
+\end{align}
+
+
+%=============================================================================
+\section{SAT / MaxSAT Model}\label{sec:sat}
+%=============================================================================
+
+The paper~\cite{collcaballero2025hcorap} proposes a \textbf{partial weighted
+MaxSAT} encoding.  All hard constraints are encoded as \emph{hard clauses},
+while the three optimisation objectives are encoded as \emph{soft clauses} with
+appropriate weights.
+
+\subsection{Boolean Variables}
+
+The following Boolean variables are created (only for \emph{valid} combinations,
+i.e.\ where $r_{a,s} > 0$, $\TSA_{a,t} = 1$, and $\TSS_{s,t} = 1$):
+
+\begin{itemize}
+    \item $x_{a,s,t}$: true iff agent $a$ performs service $s$ at time slot $t$.
+    \item $y_{a,s}$: true iff agent $a$ performs service $s$ at some time slot.
+    \item $z_{s,t}$ (\texttt{su} in code): true iff service $s$ is
+          performed at time slot $t$.
+    \item $w_{a,q}$ (\texttt{s} in code): true iff agent $a$ performs at
+          least one service in $\SEQ_q$.
+\end{itemize}
+
+\subsection{Hard Clauses}
+
+\paragraph{Reification (channelling):}
+\begin{align}
+    y_{a,s} &\Leftrightarrow \bigvee_{t \in \setT} x_{a,s,t}
+    && \text{(encoded via unit implication + one big clause)} \label{eq:reif-y}\\
+    z_{s,t} &\Leftrightarrow \bigvee_{a \in \setA} x_{a,s,t}
+    && \text{(similarly)} \label{eq:reif-z}\\
+    w_{a,q} &\Leftrightarrow \bigvee_{s \in \SEQ_q} y_{a,s}
+    && \text{(for $|\SEQ_q| > 1$; otherwise $w_{a,q} = y_{a,s}$)}
+    \label{eq:reif-w}
+\end{align}
+
+\paragraph{At-Most-One (AMO) constraints:}
+These are encoded using standard AMO encodings (e.g.\ ladder/commander encoding):
+\begin{align}
+    &\mathrm{AMO}\bigl(\{x_{a,s,t} : a \in \setA,\, t \in \setT\}\bigr)
+    && \forall s \in \setS \quad \text{(C1)} \label{eq:amo1}\\
+    &\mathrm{AMO}\bigl(\{x_{a,s,t} : s \in \setS\}\bigr)
+    && \forall a \in \setA,\; t \in \setT \quad \text{(C2)} \label{eq:amo2}\\
+    &\mathrm{AMO}\bigl(\{z_{s,t} : s \in \SU_u\}\bigr)
+    && \forall u \in \setU,\; t \in \setT \quad \text{(C4)} \label{eq:amo4}
+\end{align}
+
+\paragraph{Implicit constraint C3:}
+Handled during variable creation: if
+$r_{a,s} = 0$, $\TSA_{a,t} = 0$, or $\TSS_{s,t} = 0$,
+the corresponding $x_{a,s,t}$ variable is set to a constant ``false'' literal.
+
+\paragraph{Service coverage (C5, hard version):}
+\begin{equation}\label{eq:cov-hard}
+    \bigvee_{t \in \setT} z_{s,t} \qquad \forall s \in \setS
+\end{equation}
+
+\paragraph{Maximum working hours (C6):}
+Encoded using \textbf{sorting networks}.  For each agent $a$, the vector of
+$y_{a,s}$ variables is sorted; then the output at position
+$\HN_a + \HE_a$ is forced to false:
+\begin{equation}\label{eq:max-hours}
+    \mathrm{Sort}\bigl(\{y_{a,s} : s \in \setS,\, r_{a,s} > 0\}\bigr)
+    \;\Longrightarrow\;\;
+    \neg\, \mathrm{out}[\HN_a + \HE_a]
+    \qquad \forall a \in \setA
+\end{equation}
+
+\subsection{Soft Clauses}
+
+\paragraph{O1 -- Expertise reward:}
+For each valid pair $(a,s)$ with $r_{a,s} > 0$:
+\begin{equation}\label{eq:soft-reward}
+    \bigl(y_{a,s},\;\; \text{weight} = r_{a,s}\bigr) \qquad \text{soft clause}
+\end{equation}
+The MaxSAT solver maximises the total weight of satisfied soft clauses.
+
+\paragraph{O2 -- Continuity of care:}
+For each sequence $\SEQ_q$ with $|\SEQ_q| > 1$, a sorting network is applied
+to the vector $(w_{1,q}, w_{2,q}, \ldots, w_{A,q})$.
+The sorted outputs $\mathrm{out}[0], \ldots, \mathrm{out}[p-1]$
+(where $p = \min(A, |\SEQ_q|)$)
+are penalised with unit-weight soft clauses:
+\begin{equation}\label{eq:soft-cont}
+    \bigl(\neg\,\mathrm{out}[i],\;\; \text{weight} = 1\bigr)
+    \quad i = 0,\ldots,p-1, \qquad \text{for each } q
+\end{equation}
+This effectively penalises each additional agent working in the same sequence.
+
+\paragraph{O3 -- Extra-hour penalty:}
+For each agent $a$ whose potential workload exceeds $\HN_a$,
+the sorted output positions from $\HN_a$ to
+$\min(\HN_a + \HE_a, |\{s : r_{a,s} > 0\}|) - 1$
+are penalised:
+\begin{equation}\label{eq:soft-extra}
+    \bigl(\neg\,\mathrm{out}[k],\;\; \text{weight} = |P|\bigr)
+    \quad k = \HN_a,\ldots \qquad \text{for each } a
+\end{equation}
+Note that the penalty weight $|P|$ is negative in the objective (since $P < 0$),
+meaning it is a cost to be subtracted from the total reward.
+
+\subsection{Stratified Variant}
+
+In the \textbf{stratified} encoding, constraint~C5 (service coverage) becomes
+a \emph{soft} clause with a weight high enough to be strictly prioritised over
+the other objectives:
+\begin{equation}\label{eq:cov-soft}
+    \biggl(\bigvee_{t \in \setT} z_{s,t},\;\;
+    \text{weight} = W_{\text{total}} + 1\biggr)
+    \qquad \forall s \in \setS
+\end{equation}
+where $W_{\text{total}}$ is the sum of all other soft-clause weights.
+This creates a lexicographic optimisation: first maximise the number of covered
+services, then maximise the original objective.
+
+
+%=============================================================================
+\section{Optimisation Approaches}\label{sec:optimisation}
+%=============================================================================
+
+The HCORAP is a \textbf{Constrained Optimisation Problem (COP)}: find an
+assignment satisfying all hard constraints (Section~\ref{sec:constraints}) that
+\emph{maximises} the weighted objective
+(Equation~\ref{eq:obj}).  Since standard SAT solvers handle only
+satisfiability, optimisation must be achieved by a meta-algorithm that
+orchestrates one or more SAT calls.  In what follows we present three
+paradigms---\emph{Non-Incremental SAT}, \emph{Incremental SAT}, and
+\emph{MaxSAT}---and compare their trade-offs in the context of HCORAP.
+
+We write $\varphi$ for the conjunction of all hard clauses
+(Section~\ref{sec:sat}), $W$ for the total soft-clause weight budget,
+and $\mathrm{obj}(\sigma)$ for the objective value of a satisfying
+assignment $\sigma$.
+A \emph{bounded} SAT query $\mathrm{SAT}(\varphi, \mathrm{obj} \ge K)$
+asks whether there exists a model of $\varphi$ whose objective is at
+least $K$.  This is realised by augmenting $\varphi$ with a
+\textbf{cardinality / pseudo-Boolean constraint} that enforces the bound.
+
+%-----------------------------------------------------------------------------
+\subsection{Non-Incremental SAT}\label{sec:opt-nonincr}
+%-----------------------------------------------------------------------------
+
+In the non-incremental approach, a \textbf{fresh SAT solver instance} is
+created for every query.  The formula $\varphi$ and the cardinality encoding
+for the current bound are regenerated from scratch each time.
+
+\subsubsection{Top-Down Linear Search}
+
+Start from any feasible solution and iteratively tighten the lower bound until
+the problem becomes unsatisfiable.
+
+\begin{algorithm}[H]
+\caption{Non-Incremental Top-Down Linear Search (maximisation)}
+\label{alg:topdown}
+\begin{algorithmic}[1]
+\State $\sigma^* \leftarrow \textsc{SAT}(\varphi)$
+    \Comment{find any feasible solution}
+\State $K \leftarrow \mathrm{obj}(\sigma^*)$
+\While{$\textsc{SAT}(\varphi \,\wedge\, \mathrm{obj} \ge K\!+\!1)$}
+    \Comment{fresh solver each call}
+    \State $\sigma^* \leftarrow$ model;
+           \;$K \leftarrow \mathrm{obj}(\sigma^*)$
+\EndWhile
+\State \Return $\sigma^*$     \Comment{optimal}
+\end{algorithmic}
+\end{algorithm}
+
+\textbf{Number of SAT calls:} $\mathrm{obj}^* - \mathrm{obj}_0 + 2$,
+where $\mathrm{obj}_0$ is the first solution's value.
+In the worst case this can be $O(W)$, making it impractical for large $W$.
+
+\subsubsection{Bottom-Up Linear Search}
+
+Start from $K = W$ (maximum possible objective) and decrease until satisfiable.
+
+\begin{algorithm}[H]
+\caption{Non-Incremental Bottom-Up Linear Search (maximisation)}
+\label{alg:bottomup}
+\begin{algorithmic}[1]
+\State $K \leftarrow W$
+\While{$\neg\,\textsc{SAT}(\varphi \,\wedge\, \mathrm{obj} \ge K)$}
+    \Comment{fresh solver}
+    \State $K \leftarrow K - 1$
+\EndWhile
+\State \Return model       \Comment{optimal with $\mathrm{obj} = K$}
+\end{algorithmic}
+\end{algorithm}
+
+\textbf{Number of SAT calls:} $W - \mathrm{obj}^* + 1$.
+Efficient when $\mathrm{obj}^*$ is close to $W$; poor otherwise.
+
+\subsubsection{Binary (Dichotomic) Search}
+
+The most efficient non-incremental strategy.  Maintain an interval $[lb, ub]$
+and probe the midpoint.
+
+\begin{algorithm}[H]
+\caption{Non-Incremental Binary Search (maximisation)}
+\label{alg:binsearch}
+\begin{algorithmic}[1]
+\State $lb \leftarrow 0$;\;\; $ub \leftarrow W$;\;\; $\sigma^* \leftarrow \text{None}$
+\While{$lb \le ub$}
+    \State $\mathit{mid} \leftarrow \lceil(lb + ub)/2\rceil$
+    \If{$\textsc{SAT}(\varphi \,\wedge\, \mathrm{obj} \ge \mathit{mid})$}
+        \Comment{fresh solver}
+        \State $\sigma^* \leftarrow$ model;\;\;
+               $lb \leftarrow \mathrm{obj}(\sigma^*)$
+        \Comment{tighten using actual obj.\ value}
+    \Else
+        \State $ub \leftarrow \mathit{mid} - 1$
+    \EndIf
+\EndWhile
+\State \Return $\sigma^*$     \Comment{optimal}
+\end{algorithmic}
+\end{algorithm}
+
+\textbf{Number of SAT calls:}
+$O\!\bigl(\log_2(W)\bigr)$.
+For a typical HCORAP instance with $W \approx 600$, this gives
+$\lceil \log_2 600 \rceil = 10$ calls.
+
+\subsubsection{Cardinality Encoding}
+
+The bound $\mathrm{obj} \ge K$ is enforced by encoding the (weighted) sum of
+soft-clause satisfaction as a cardinality or pseudo-Boolean constraint.
+Common encodings include~\cite{sinz2005cardinality,bailleux2003totalizer}:
+
+\begin{itemize}
+    \item \textbf{Sequential counter}~\cite{sinz2005cardinality}:
+          $O(n \cdot K)$ auxiliary variables and clauses.  Compact with good
+          unit-propagation properties.
+    \item \textbf{Totalizer}~\cite{bailleux2003totalizer}:
+          $O(n \log n)$ variables, $O(n \log^2 n)$ clauses.
+          Better for large $n$.
+    \item \textbf{Sorting networks}~\cite{asin2011cardinality}: based on
+          odd--even merge, balances encoding size and propagation strength.
+          \emph{This is the encoding used in the HCORAP implementation.}
+\end{itemize}
+
+In the non-incremental setting, the cardinality encoding is
+\textbf{rebuilt from scratch} for each SAT call, which is the main
+source of overhead.
+
+\subsubsection{Key Properties}
+
+\begin{center}
+\begin{tabular}{lc}
+\toprule
+\textbf{Property} & \textbf{Non-Incremental SAT} \\
+\midrule
+Learned clauses reused across iterations & No \\
+Cardinality encoding rebuilt each call   & Yes \\
+Best search strategy                     & Binary search \\
+Number of SAT calls (binary)             & $O(\log W)$ \\
+Implementation complexity                & Low \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+
+%-----------------------------------------------------------------------------
+\subsection{Incremental SAT}\label{sec:opt-incr}
+%-----------------------------------------------------------------------------
+
+In the incremental approach, a \textbf{single solver instance} is kept alive
+across all iterations.  The solver retains its \emph{learned-clause database},
+which can dramatically speed up subsequent queries since conflict analysis from
+earlier iterations remains valid.
+
+The key technical challenge is modifying the objective bound between calls
+without invalidating the solver state.  Two mechanisms are available:
+
+\subsubsection{Assumption-Based Bound Tightening}
+
+Modern SAT solvers support the \textbf{IPASIR} interface~\cite{ipasir}, which
+allows passing \emph{assumption literals} to each \textsc{Solve} call.
+Assumptions are temporary unit-clause assertions that are active only for the
+current call; they do not permanently alter the clause database.
+
+\paragraph{Idea.}
+Encode the sorting network / cardinality constraint \textbf{once} at
+initialisation.  Let $o_0, o_1, \ldots, o_n$ be the sorted output variables,
+where $o_k = \mathit{true}$ means ``at least $k{+}1$ soft clauses are
+satisfied''.  To enforce $\mathrm{obj} \ge K$, simply pass assumption
+$o_{K-1} = \mathit{true}$ (or equivalently, for ``$\mathrm{obj} \le K$'',
+assume $\neg\, o_K$).
+
+\begin{algorithm}[H]
+\caption{Incremental Binary Search with Assumptions (maximisation)}
+\label{alg:incr-binary}
+\begin{algorithmic}[1]
+\State $\mathit{solver} \leftarrow \textsc{NewSolver}(\varphi)$
+\State Build sorting network once;
+       let $o_0, \ldots, o_n$ be output variables
+\State $lb \leftarrow 0$;\;\; $ub \leftarrow W$;\;\; $\sigma^* \leftarrow \text{None}$
+\While{$lb \le ub$}
+    \State $\mathit{mid} \leftarrow \lceil(lb + ub)/2\rceil$
+    \State $\mathit{assumptions} \leftarrow \{o_{\mathit{mid}-1}\}$
+        \Comment{enforce obj $\ge$ mid}
+    \If{$\mathit{solver}.\textsc{Solve}(\mathit{assumptions})$}
+        \State $\sigma^* \leftarrow$ model;\;\;
+               $lb \leftarrow \mathrm{obj}(\sigma^*)$
+    \Else
+        \State $ub \leftarrow \mathit{mid} - 1$
+    \EndIf
+\EndWhile
+\State \Return $\sigma^*$
+\end{algorithmic}
+\end{algorithm}
+
+\textbf{Advantages:}
+\begin{itemize}
+    \item The cardinality encoding is built \textbf{once}, not rebuilt each call.
+    \item All learned clauses from previous iterations remain in the solver.
+    \item Assumptions add zero permanent clauses---the solver's state stays clean.
+    \item Typically \textbf{2--10$\times$ faster} than non-incremental binary
+          search on the same instance.
+\end{itemize}
+
+\subsubsection{Clause-Addition Linear Search}
+
+An alternative incremental approach: after finding a solution with
+$\mathrm{obj} = K$, add a \emph{permanent} clause
+$(\mathrm{obj} \ge K\!+\!1)$ to the solver and re-solve.
+
+\begin{algorithm}[H]
+\caption{Incremental Linear Search with Clause Addition (maximisation)}
+\label{alg:incr-linear}
+\begin{algorithmic}[1]
+\State $\mathit{solver} \leftarrow \textsc{NewSolver}(\varphi)$
+\While{$\mathit{solver}.\textsc{Solve}()$}
+    \State $\sigma^* \leftarrow$ model;\;\;
+           $K \leftarrow \mathrm{obj}(\sigma^*)$
+    \State $\mathit{solver}.\textsc{AddClauses}\bigl(\mathrm{Encode}(\mathrm{obj} \ge K\!+\!1)\bigr)$
+\EndWhile
+\State \Return $\sigma^*$     \Comment{last SAT model is optimal}
+\end{algorithmic}
+\end{algorithm}
+
+\textbf{Caveat:} Added clauses are \emph{permanent} and cannot be retracted.
+Old (subsumed) cardinality constraints accumulate in the clause database,
+increasing memory usage.  The assumption-based approach
+(Algorithm~\ref{alg:incr-binary}) avoids this issue entirely.
+
+\subsubsection{Application to HCORAP}
+
+The HCORAP codebase implements incremental solving through the
+\texttt{DicoOptimizer} class, which supports both modes:
+\begin{itemize}
+    \item When \texttt{useAssumptions = false}: a fresh encoding is created per
+          call (non-incremental binary search, Section~\ref{sec:opt-nonincr}).
+    \item When \texttt{useAssumptions = true}: the solver is initialised once
+          via \texttt{initAssumptionOptimization}, and subsequent calls use
+          \texttt{checkSATAssuming} (incremental binary search,
+          Algorithm~\ref{alg:incr-binary}).
+\end{itemize}
+The sorting-network outputs serve as the assumption handles: assuming a sorted
+output to be true or false directly controls the objective bound.
+
+\subsubsection{Key Properties}
+
+\begin{center}
+\begin{tabular}{lcc}
+\toprule
+\textbf{Property} & \textbf{Assumption-based} & \textbf{Clause-addition} \\
+\midrule
+Learned clauses reused     & Yes  & Yes \\
+Encoding built once        & Yes  & No (rebuilt each tightening)\\
+Subsumed clause accumulation & None & Yes (growing database) \\
+Best search strategy       & Binary search & Linear search \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+
+%-----------------------------------------------------------------------------
+\subsection{MaxSAT}\label{sec:opt-maxsat}
+%-----------------------------------------------------------------------------
+
+The most natural approach for HCORAP: encode the problem directly as a
+\textbf{partial weighted MaxSAT} instance and delegate the entire optimisation
+to a specialised MaxSAT solver.
+
+\subsubsection{Formulation}
+
+A \emph{partial weighted MaxSAT} (PWMS) instance consists of:
+\begin{itemize}
+    \item \textbf{Hard clauses} $\varphi_H$: must be satisfied (weight $= \infty$).
+    \item \textbf{Soft clauses} $\{(c_i, w_i)\}_{i=1}^{m}$: each has a finite
+          weight $w_i > 0$.  The solver maximises
+          $\sum_{i : c_i \text{ satisfied}} w_i$.
+\end{itemize}
+
+For HCORAP (Section~\ref{sec:sat}), the mapping is direct:
+\begin{itemize}
+    \item $\varphi_H$ = all hard clauses (reification, AMO, coverage,
+          max-hours).
+    \item Soft clauses = expertise reward (O1) + continuity penalty (O2) +
+          extra-hour penalty (O3), with respective weights.
+\end{itemize}
+
+The MaxSAT solver finds an assignment $\sigma^*$ that satisfies all hard
+clauses and maximises the total weight of satisfied soft clauses in a
+\textbf{single invocation}---no manual binary/linear search is needed.
+
+\subsubsection{Internal Algorithms of MaxSAT Solvers}
+
+State-of-the-art MaxSAT solvers use one of the following internal strategies:
+
+\paragraph{Core-Guided (OLL / RC2).}
+The solver iteratively calls a SAT oracle.  When an UNSAT result is obtained,
+the solver extracts an \emph{unsatisfiable core}---a minimal subset of soft
+clauses that cannot all be satisfied simultaneously.  \emph{Relaxation
+variables} are added to the core clauses, and a new cardinality constraint
+bounds how many of them can be relaxed.  This process repeats until a SAT
+result is found~\cite{rc2maxsat,morgado2013iterative}.
+
+The core-guided approach is particularly effective when the optimum cost (total
+weight of violated soft clauses) is small relative to the total weight, as few
+cores need to be extracted.
+
+\paragraph{Linear SAT-UNSAT Search.}
+Internally equivalent to the top-down linear search
+(Algorithm~\ref{alg:topdown}), but executed within the solver with full
+learned-clause reuse.
+
+\paragraph{Stratified / Weight-Aware.}
+For weighted instances, some solvers partition soft clauses by weight and
+solve them in decreasing weight order (stratification), which naturally
+handles the lexicographic structure of the HCORAP stratified variant
+(Equation~\ref{eq:cov-soft}).
+
+\subsubsection{Stratified Optimisation in HCORAP}
+
+The HCORAP stratified encoding
+(Section~\ref{sec:sat}) assigns coverage soft clauses a weight
+$W_{\text{total}} + 1$ (where $W_{\text{total}}$ is the sum of all other
+soft-clause weights).  This guarantees that the MaxSAT solver first maximises
+service coverage, and only then optimises the secondary objective (expertise
+reward $-$ continuity penalty $-$ extra-hour cost).  This is equivalent to a
+\textbf{two-level lexicographic} MaxSAT problem, which weight-aware solvers
+handle natively.
+
+\subsubsection{DIMACS WCNF Format}
+
+The HCORAP tool \texttt{hcorap2sat} outputs instances in the
+\textbf{weighted DIMACS CNF (WCNF)} format~\cite{maxsat-eval}, which is the
+standard input format for MaxSAT solvers:
+
+\begin{verbatim}
+p wcnf <#vars> <#clauses> <top_weight>
+<top_weight> <lit_1> <lit_2> ... 0       (hard clause)
+<weight>     <lit_1> <lit_2> ... 0       (soft clause)
+\end{verbatim}
+
+Any off-the-shelf MaxSAT solver (e.g.\ WMaxCDCL, RC2, CASHWMaxSAT,
+EvalMaxSAT, Open-WBO) can then be used to solve the instance.
+
+\subsubsection{Key Properties}
+
+\begin{center}
+\begin{tabular}{lc}
+\toprule
+\textbf{Property} & \textbf{MaxSAT} \\
+\midrule
+Explicit bound iteration by user  & No (solver-internal) \\
+Objective encoding                & Soft clauses with weights \\
+Learned clauses reused            & Yes (internally) \\
+Optimality guarantee              & Yes (solver proves optimal) \\
+Handles weighted objectives       & Yes (natively) \\
+Handles stratified / lexicographic & Yes (via weight hierarchy) \\
+Implementation complexity         & Low (single solver call) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+
+%-----------------------------------------------------------------------------
+\subsection{Comparison of Approaches}\label{sec:opt-comparison}
+%-----------------------------------------------------------------------------
+
+\begin{table}[ht]
+\centering
+\caption{Comparison of optimisation approaches for HCORAP.}
+\label{tab:opt-comparison}
+\small
+\begin{tabular}{@{}lccc@{}}
+\toprule
+\textbf{Criterion}
+    & \textbf{Non-Incremental SAT}
+    & \textbf{Incremental SAT}
+    & \textbf{MaxSAT} \\
+\midrule
+Number of SAT calls
+    & $O(\log W)$ (binary)
+    & $O(\log W)$ (binary)
+    & 1 (internal iteration) \\[3pt]
+Learned-clause reuse
+    & \textsf{No}
+    & \textsf{Yes}
+    & \textsf{Yes} \\[3pt]
+Encoding rebuilt?
+    & Each call
+    & Once
+    & Once \\[3pt]
+Multi-component weighted obj.
+    & Manual (encode sum)
+    & Manual (encode sum)
+    & Native (soft weights) \\[3pt]
+Stratified / lexicographic
+    & Manual (two-phase)
+    & Manual (two-phase)
+    & Native (weight hierarchy) \\[3pt]
+Solver infrastructure
+    & Any SAT solver
+    & IPASIR-compatible
+    & MaxSAT solver \\[3pt]
+Implementation effort
+    & Low
+    & Medium
+    & Low \\[3pt]
+Optimality guarantee
+    & Yes (exhaustive search)
+    & Yes (exhaustive search)
+    & Yes (solver-certified) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Discussion.}
+For HCORAP specifically, the \textbf{MaxSAT approach} is the most natural fit
+because:
+\begin{enumerate}[label=(\alph*)]
+    \item The problem already has a multi-component weighted objective that maps
+          directly to weighted soft clauses.
+    \item The stratified variant (lexicographic coverage $\succ$ revenue) is
+          handled natively by weight-aware MaxSAT solvers.
+    \item No manual search loop is needed; the solver handles all internal
+          iteration, core extraction, and optimality certification.
+    \item The HCORAP tool can output standard WCNF files, allowing any
+          state-of-the-art MaxSAT solver to be used as a black box.
+\end{enumerate}
+
+\noindent
+The \textbf{incremental SAT approach} (assumption-based binary search) is a
+strong alternative when a MaxSAT solver is not available or when finer control
+over the search process is desired (e.g.\ for anytime behaviour or custom
+heuristics).
+
+\noindent
+The \textbf{non-incremental SAT approach} provides the simplest baseline
+implementation---useful for prototyping and for instances small enough that the
+overhead of rebuilding the encoding is negligible.
+
+
+%=============================================================================
+\section{Dataset}\label{sec:dataset}
+%=============================================================================
+
+\subsection{Overview}
+
+The benchmark dataset used in~\cite{collcaballero2025hcorap} consists of
+\textbf{400 randomly generated instances} modelling realistic home care
+scenarios in the Barcelona metropolitan area.
+
+Each instance is characterised by three parameters:
+\begin{itemize}
+    \item $U \in \{30, 40\}$: number of users,
+    \item $A \in \{10, 15, 20, 25\}$: number of agents,
+    \item $V \in \{4, 5\}$: number of services per user (so $S = U \times V$).
+\end{itemize}
+This gives $2 \times 4 \times 2 = 16$ parameter configurations.
+For each configuration, \textbf{50 instances} are generated, yielding
+$16 \times 50 = 800$ total in two groups (U30 and U40), with \textbf{400
+instances per user count}.
+
+\subsection{Instance Generation}
+
+The instances are generated by the Python script
+\texttt{create\_instances.py}~\cite{hcorap-github}, which simulates realistic
+home care data:
+
+\begin{itemize}
+    \item \textbf{Agents} are characterised by age (25--60), qualifications
+          (drawn from \{basic, nurse, CPR, physio, doctor\}), gender, languages,
+          race, and geographic location (GPS coordinates from Barcelona).
+          Working schedules ($\TSA$) are generated as contiguous blocks of
+          4--12~hours per day, repeated over 5~working days.
+
+    \item \textbf{Users} are elderly individuals (age 70--90) with demographic
+          attributes (gender, language, race, location).
+
+    \item \textbf{Services} are assigned to users ($V$ services per user) with
+          types drawn from \{basic (more frequent), nurse, CPR, physio, doctor\}.
+          Each service has a time window of 2--5~consecutive time slots on one
+          day of the week.
+
+    \item \textbf{Reward matrix} ($r$): a similarity score between each
+          agent--service pair is computed based on qualification match, shared
+          demographics (gender, race, language), and geographic distance.
+          The raw scores are then discretised into quartiles, yielding values in
+          $\{1, 2, 3, 4\}$ for valid assignments and $0$ for forbidden ones
+          (when the agent lacks the required qualification).
+
+    \item \textbf{Continuity-of-care groups} ($\SEQ$): services for the same user
+          with the same type are grouped into sequences.
+
+    \item \textbf{Working hours:} $\HN_a = \min(\text{total available slots}, 35)$
+          and $\HE_a = \max(\text{total available slots} - 35, 0)$.
+          The penalty $P = -1$.
+
+    \item \textbf{Time slots:} $T = 12 \times 5 = 60$ (12~one-hour slots per day,
+          5~days per week).
+\end{itemize}
+
+\subsection{Instance File Format}
+
+Instances are stored in a plain-text format with the following sections:
+
+\begin{center}
+\small
+\begin{tabular}{ll}
+\toprule
+\textbf{Section} & \textbf{Content} \\
+\midrule
+\texttt{\#U}       & Number of users $U$ \\
+\texttt{\#S}       & Number of services $S$ \\
+\texttt{\#A}       & Number of agents $A$ \\
+\texttt{\#TS}      & Number of time slots $T$ \\
+\texttt{\#SU}      & Service groups per user (one line per user) \\
+\texttt{\#SEQ}     & Continuity-of-care sequences (one line per group) \\
+\texttt{\#TSA(i)}  & Agent availability matrix ($A \times T$) \\
+\texttt{\#TSS(i)}  & Service time-slot suitability matrix ($S \times T$) \\
+\texttt{\#r(i,j)}  & Reward matrix ($A \times S$) \\
+\texttt{\#P}       & Extra-hour penalty \\
+\texttt{\#HN(i)}   & Normal working hours per agent \\
+\texttt{\#HE(i)}   & Extra working hours per agent \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Instance Statistics}
+
+\begin{table}[ht]
+\centering
+\caption{Summary of instance configurations.}
+\label{tab:instances}
+\begin{tabular}{cccccc}
+\toprule
+$U$ & $A$ & $V$ & $S = U \times V$ & $T$ & \# Instances \\
+\midrule
+30 & 10 & 4 & 120 & 60 & 50 \\
+30 & 10 & 5 & 150 & 60 & 50 \\
+30 & 15 & 4 & 120 & 60 & 50 \\
+30 & 15 & 5 & 150 & 60 & 50 \\
+30 & 20 & 4 & 120 & 60 & 50 \\
+30 & 20 & 5 & 150 & 60 & 50 \\
+30 & 25 & 4 & 120 & 60 & 50 \\
+30 & 25 & 5 & 150 & 60 & 50 \\
+\midrule
+40 & 10 & 4 & 160 & 60 & 50 \\
+40 & 10 & 5 & 200 & 60 & 50 \\
+40 & 15 & 4 & 160 & 60 & 50 \\
+40 & 15 & 5 & 200 & 60 & 50 \\
+40 & 20 & 4 & 160 & 60 & 50 \\
+40 & 20 & 5 & 200 & 60 & 50 \\
+40 & 25 & 4 & 160 & 60 & 50 \\
+40 & 25 & 5 & 200 & 60 & 50 \\
+\midrule
+\multicolumn{5}{l}{\textbf{Total}} & \textbf{800} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+%=============================================================================
+\section*{Acknowledgements}
+%=============================================================================
+
+The HCORAP benchmark dataset and MaxSAT encoding are provided by Jordi Coll
+Caballero et al.\ and are publicly available on GitHub~\cite{hcorap-github}.
+
+
+%=============================================================================
+% Bibliography
+%=============================================================================
+
+\begin{thebibliography}{99}
+
+\bibitem{collcaballero2025hcorap}
+Jordi Coll, Jes\'us Gir\'aldez-Cru, Jordi Levy, Zara Calder\'on, Daniel
+Gara\~nena, Simone Mancini, and Pedro Meseguer.
+\newblock Optimizing Resource Allocation in Home Care Services using MaxSAT.
+\newblock In \emph{Proceedings of the International Conference on the
+Integration of Constraint Programming, Artificial Intelligence, and Operations
+Research (CPAIOR)}, 2025.
+
+\bibitem{hcorap-github}
+Jordi Coll Caballero.
+\newblock HCORAP -- Home Care Optimised Resource Allocation Problem.
+\newblock \url{https://github.com/jordicollcaballero/HCORAP}, 2024.
+
+\bibitem{maxsat-eval}
+MaxSAT Evaluations.
+\newblock \url{https://maxsat-evaluations.github.io/2022/rules.html}, 2022.
+
+\bibitem{sinz2005cardinality}
+Carsten Sinz.
+\newblock Towards an Optimal CNF Encoding of Boolean Cardinality Constraints.
+\newblock In \emph{Proceedings of the 11th International Conference on
+Principles and Practice of Constraint Programming (CP)},
+pp.~827--831, Springer, 2005.
+
+\bibitem{bailleux2003totalizer}
+Olivier Bailleux and Yacine Boufkhad.
+\newblock Efficient CNF Encoding of Boolean Cardinality Constraints.
+\newblock In \emph{Proceedings of the 9th International Conference on
+Principles and Practice of Constraint Programming (CP)},
+pp.~108--122, Springer, 2003.
+
+\bibitem{asin2011cardinality}
+Roberto As\'in, Robert Nieuwenhuis, Albert Oliveras, and Enric
+Rodr\'iguez-Carbonell.
+\newblock Cardinality Networks: A Theoretical and Empirical Study.
+\newblock \emph{Constraints}, 16(2):195--221, 2011.
+
+\bibitem{ipasir}
+Tom\'a\v{s} Balyo, Armin Biere, Markus Iser, and Carsten Sinz.
+\newblock SAT Race 2015.
+\newblock \emph{Artificial Intelligence}, 241:45--65, 2016.
+\newblock (Defines the IPASIR incremental SAT solver interface.)
+
+\bibitem{rc2maxsat}
+Alexey Ignatiev, Antonio Morgado, and Joao Marques-Silva.
+\newblock RC2: An Efficient MaxSAT Solver.
+\newblock \emph{Journal on Satisfiability, Boolean Modeling and Computation},
+11(1):53--64, 2019.
+
+\bibitem{morgado2013iterative}
+Antonio Morgado, Carmine Dodaro, and Joao Marques-Silva.
+\newblock Core-Guided MaxSAT with Soft Cardinality Constraints.
+\newblock In \emph{Proceedings of the 20th International Conference on
+Principles and Practice of Constraint Programming (CP)},
+pp.~564--573, Springer, 2014.
+
+\end{thebibliography}
+
+\end{document}
