@@ -1,3 +1,7 @@
+# Cách chạy
+python3 src/incremental_sat.py <instance.txt> --mode incr    # Incremental SAT
+python3 src/incremental_sat.py <instance.txt> --mode maxsat  # MaxSAT RC2
+
 # General description
 This project contains the source code and the instances used in the paper **Optimizing Resource Allocation in Home Care Services
 using MaxSAT**.
