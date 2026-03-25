@@ -1,0 +1,679 @@
+\documentclass[10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage[version=4]{mhchem}
+\usepackage{stmaryrd}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, linkcolor=blue, filecolor=magenta, urlcolor=cyan,}
+\urlstyle{same}
+\usepackage{caption}
+\usepackage{multirow}
+\usepackage{graphicx}
+\usepackage[export]{adjustbox}
+\graphicspath{ {./images/} }
+
+\title{Optimizing resource allocation in home care services using MaxSAT }
+
+\author{Irene Unceta ${ }^{\mathrm{a}}$, Bernat Salbanya ${ }^{\mathrm{a}, *}$, Jordi Coll ${ }^{\mathrm{b}}$, Mateu Villaret ${ }^{\mathrm{b}}$, Jordi Nin ${ }^{\mathrm{a}}$\\
+${ }^{\mathrm{a}}$ Department of Operations, Innovation and Data Science, Universitat Ramon Llull, ESADE, Avinguda de la Torre Blanca, 59, 08173 Sant Cugat del Vallès, Catalonia, Spain\\
+${ }^{\mathrm{b}}$ Departament d'Informàtica, Matemàtica Aplicada i Estadćstica, Universitat de Girona, C. Universitat de Girona, 6, 17003 Girona, Catalonia, Spain}
+\date{}
+
+
+%New command to display footnote whose markers will always be hidden
+\let\svthefootnote\thefootnote
+\newcommand\blfootnotetext[1]{%
+  \let\thefootnote\relax\footnote{#1}%
+  \addtocounter{footnote}{-1}%
+  \let\thefootnote\svthefootnote%
+}
+
+%Overriding the \footnotetext command to hide the marker if its value is `0`
+\let\svfootnotetext\footnotetext
+\renewcommand\footnotetext[2][?]{%
+  \if\relax#1\relax%
+    \ifnum\value{footnote}=0\blfootnotetext{#2}\else\svfootnotetext{#2}\fi%
+  \else%
+    \if?#1\ifnum\value{footnote}=0\blfootnotetext{#2}\else\svfootnotetext{#2}\fi%
+    \else\svfootnotetext[#1]{#2}\fi%
+  \fi
+}
+
+\begin{document}
+\maketitle
+\captionsetup{singlelinecheck=false}
+
+
+\section*{ARTICLE INFO}
+Action editor: Zoe Falomir
+
+\section*{Keywords:}
+Healthcare\\
+Resource allocation\\
+Urban services\\
+MaxSAT\\
+Artificial intelligence
+
+\begin{abstract}
+In large urban areas, enhancing the personal care and quality of life for elderly individuals poses a critical societal challenge. As the population ages and the amount of people requiring assistance grows, so does the demand for home care services. This will inevitably put tremendous pressure on a system that has historically struggled to provide high-quality assistance with limited resources, all while managing urgent, unforeseen additional demands. This scenario can be framed as a resource allocation problem, wherein caregivers must be efficiently matched with services based on availability, qualifications, and schedules. Given its scale and complexity, traditional computational approaches have struggled to address this problem effectively, leaving it largely unresolved. Currently, many European cities emphasize geographical and emotional proximity, offering a model for home care services based on reduced social urban sectors. This new paradigm provides opportunities for tackling the resource allocation problem while promoting desirable pairings between caregivers and elderly people. This paper presents a MaxSAT-based solution in this context. Our approach efficiently allocates services across various configurations, maximizing caregiver-user pairings' similarity and consistency while minimizing costs. Moreover, we show that our method solves the resource allocation problem in a reasonable amount of time. Consequently, we can either provide an optimal allocation or highlight the limits of the available resources relative to the service demand.
+\end{abstract}
+
+\section*{1. Introduction}
+The low fertility levels and the increase in life expectancy have consistently transformed the shape of the EU's age pyramid. In 2020, those aged 65 years or older accounted for one-fifth of the EU population, a number expected to rise to $31.3 \%$ by 2100 (Statistical Office of the European Communities. EUROSTAT, 2021). A factor consistently associated with aging is the increase in the number of people suffering from chronic conditions or in a situation of dependency. Life expectancy at birth has increased over the past decade. However, disability-free life expectancy has not. This indicates that while people are living longer, they are not necessarily living healthier lives, leading to an increased need for care and support as they age (The MOPACT Coordination Team, 2013). The total age-dependency ratio in Europe is projected to rise from $55.5 \%$ in 2020 to $82.6 \%$ by 2100 . As a result, most European countries are already witnessing an increase in dependent people, who will require varying levels of assistance depending on their condition and financial stability. Hence, a key societal challenge in the upcoming years will be ensuring personal care, attention, and quality of life for older people (Verdugo, Arias, Gómez, \& Schalock, 2010).
+
+This increase in demand for public care comes together with a declared preference for older people to remain at home (European Commission, 2006). Reliance on elderly housing or parks will, therefore, not suffice to satisfy people's health and social needs while prioritizing that they can stay at their homes. Instead, public resources are dedicated to promoting properly organized and managed home care services by assessing dependency levels, allocating extended budgets, and prioritizing services based on individuals' needs and preferences (Strandell, 2020). Many European cities, including Barcelona (Rodriguez-Pereira, de Armas, Garbujo, \& Ramalhinho, 2020), are promoting the so-called "distributed or virtual nursing home" (Fei, 2011). Inspired by the Nordic model (Holm, Mathisen, Sæterstrand, \& Brinchmann, 2017; Kemp \& Hvid, 2012), this model integrates home care within the standard services provided by the neighborhood by structuring the service around distributed "social urban sectors" managed by reduced teams of caregivers (Krinichansky, 2019).
+
+This decentralized approach provides many benefits for both elderly individuals and caregivers (Bossert, Kretzberg, \& Laartz, 2018; Duque,
+
+\footnotetext{\begin{itemize}
+  \item Correspondence to: Department of Operations, Innovation and Data Science, ESADE Business School, Universitat Ramon Llull, Avinguda de la Torre Blanca, 59, 08173 Sant Cugat del Vallès, Catalonia, Spain.
+\end{itemize}
+
+E-mail addresses: \href{mailto:irene.unceta@esade.edu}{irene.unceta@esade.edu} (I. Unceta), \href{mailto:bernat.salbanya@esade.edu}{bernat.salbanya@esade.edu} (B. Salbanya), \href{mailto:jordicoll@udg.edu}{jordicoll@udg.edu} (J. Coll), \href{mailto:mateu.villaret@udg.edu}{mateu.villaret@udg.edu} (M. Villaret), \href{mailto:jordi.nin@esade.edu}{jordi.nin@esade.edu} (J. Nin).
+}Castro, Sörensen, \& Goos, 2015). However, issues such as efficiently allocating specialized workers, including psychologists or physical therapists, collaborating with multiple teams (Da Roit \& Le Bihan, 2010; Ottmann, Allen, \& Feldman, 2009; Pavolini \& Ranci, 2008), responding to emergency requests, maximizing the fit between caregivers and older people, or managing the inherent dynamism of the service remain unresolved. Moreover, a primary challenge in improving home care services lies in providing an optimal resource allocation for the complex interplay between the growing elderly population, their diverse needs, and the working conditions of caregivers. Caregivers face long working hours, have small salaries due to budget constraints (FeSP-UGT, 2018), and have difficulties establishing trustful relationships (Lucien, Zwakhalen, Morenon, \& Hahn, 2024). The quality of home care services is directly related to the job conditions of those who work in this sector. Hence, any proposal directed at improving a city's home care services should ensure their well-being.
+
+This paper presents a novel solution to the home care resource allocation problem that accommodates the unique needs and preferences of elderly individuals while concurrently enhancing the working conditions of professionals within the home care sector. In particular, we present an approach based on encoding the problem at hand to MaxSAT, an effective black-box solving method for distinct combinatorial and optimization problems. The MaxSAT formalism enables the expression of mandatory constraints as hard clauses while modeling an optimization function through a set of desirable but non-mandatory constraints, known as soft clauses. The encoding process involves generating a MaxSAT formula that encapsulates the original problem, which is then submitted to a MaxSAT solver. If the solver identifies a solution that satisfies all hard clauses, this solution can be directly translated into a corresponding solution for the original problem. If not, it confirms that the original problem is unsatisfiable, meaning that at least one hard constraint must be violated. Some examples of successful application of MaxSAT appear in time-tabling (Bofill et al., 2022; Bofill, Coll, Giráldez-Cru, Suy, \& Villaret, 2022), scheduling (Demirović, Musliu, \& Winter, 2019), team formation (Manyà, Negrete, Roig, \& Soler, 2020), feature selection (Li \& Manyà, 2021), circuit design and verification (Li, Xu, Coll, Manyà, Habet, \& He, 2022) or kidney exchange (McCreesh, Prosser, Simpson, \& Trimble, 2017).
+
+Resource allocation problems have also been addressed with MaxSAT methods in a generic form (Zhang, 2002). These problems are computationally difficult combinatorial problems (NP-hard), and MaxSAT has proven to be a competitive approach for solving them. The studies most closely related to our resource allocation problem include Bofill, Coll, Garcia et al. (2022), Bofill, Coll, Giráldez-Cru et al. (2022), Zhang (2002). However, none fully address the specific challenges of our problem. For example, timetabling problems do not allow for the flexibility of choosing which agent provides a service to a user. Similarly, the general resource allocation problem overlooks incompatibilities between services (or tasks) that arise from being assigned to the same user or overlapping time slots. Additionally, the quality metrics differ, as prior work focuses primarily on the number of unscheduled tasks, whereas our approach evaluates other factors.
+
+In this work, we discuss a MaxSAT encoding for the resource allocation problem in the city of Barcelona. We validate our approach in a simulated environment designed in collaboration with the local home care services company Suara Serveis, SCCL. Our results demonstrate that by leveraging distributed social urban sectors, we can reduce problem dimensionality and provide a closed solution at a local level that meets user demands and safeguards the well-being of caregivers.
+
+The remainder of this paper is organized as follows. First, Section 2 introduces the resource allocation problem in home care services by discussing the case of Spain and provides an overview of the existing theoretical framework for solving it. Section 3 discusses our problem statement. Section 4 describes our proposed method and its implementation. Experimental results for our numerical experiments are reported in Section 5, where we describe the applicability of our proposed technique in a well-established scenario. Finally, the paper ends with a summary of our conclusions and points out directions for further research.
+
+\section*{2. Background}
+Home health and social home care services in Spain are separately organized and function independently. Home health services are included as part of the Primary Health Care services and are organized by the Department of Health. In contrast, social home care, including personal and domestic care, is under the Department of Welfare (European Observatory on Health Systems and Policies, 2013). The most important national regulation in Social Care is set through the Dependency Law, which recognizes moderately and highly dependent individuals who are in a particularly vulnerable situation and require support to carry out the basic day-to-day tasks and financial services to ensure they are fully able to exercise their rights as citizens (European Commission, 2016). General policy issues regarding this law are discussed at the national government level, while the responsibility to implement this policy is transferred to the regional and local authorities.
+
+Municipalities assess and determine the level of dependency of people protected by the Dependency Law, allocating budgets and organizing personal and domestic care. Priority is given to providing services that cover the needs of individuals with difficulties managing basic day-to-day tasks independently. In practice, services are provided by a network of authorized public and private providers (Jones Lang LaSalle (JLL), 2020; Price Waterhouse Coopers, 2010). Determining how resources are allocated at the different levels is a complex task of meeting the care demands of service users, with the local conditions and the availability and circumstances of caregivers, altogether ensuring a cost-effective system (Fraser, Lisa, Laing, Lai, \& Punjani, 2018). Therefore, providing quality home care requires a careful balance to grant a personalized service tailored to the specific needs of each individual while ensuring adequate job conditions for caregivers (Healey, Hignett, \& Gyi, 2024).
+
+Given the impact of optimal allocation on the quality of the service, a substantial amount of literature has focused on understanding the decision-making process in the described context. Most papers have studied this problem from a macro perspective. They have examined, for example, how central authorities distribute work among local providing units (Davies et al., 2015), how funds are allocated to these units, and how allocation patterns influence the outcome (Anderson, Hsieh, \& Su, 1998). On a more micro level, there has been considerable debate as to how personal budgets are determined in terms of individuals' eligibility for social care (Challis, Xie, Hughes, \& Clarkson, 2016), or what the spending behavior of local authorities is on individual cases in different European countries (Asthana, 2012; de Andres-Pizarro, 2004; Rogero-Garcia, 2009). However, no solution has completely managed to match supply and demand optimally. This is partly due to the size of the resulting problem and the large number of constraints. The allocation problem has traditionally been formulated from the city or country perspective. A matter that has received less attention is understanding the mechanisms for allocating resources in smaller, controlled environments, such as social urban sectors (Fraser, Estabrooks, Allena, \& VickiStranga, 2009).
+
+\subsection*{2.1. Resource allocation in distributed home care services}
+In recent years, several European cities (Rodriguez-Pereira et al., 2020), have started to promote a new model for delivering home care services based on the notion of a "distributed or virtual nursing home" (Fei, 2011). Here, the home of a dependent elderly receives all the services of a room in a nursing center, while the neighborhood provides all the standard services that a residential care home would otherwise offer. Tasks are distributed among so-called "social urban sectors" (Krinichansky, 2019), each managed by a team of caregivers who establish a close relationship with the people they attend.
+
+In this context, home care case managers (CMs) in each urban sector are responsible for allocating available resources and scheduling tasks weekly. Here, 'allocation' specifically refers to the process of\\
+matching human resources - caregivers - with the needs of the elderly people. This form of resource allocation differs from traditional budget allocation, focusing instead on the assignment of personnel rather than financial resources. CMs in social urban sectors work under a fixed budget, manage a regular team of caregivers, and provide service to a stable population of older adults. CMs' decisions shape the system's structure and directly affect the quality of the service provided to these individuals and the work pressure on caregivers.
+
+This model has many advantages for elderly individuals, allowing them to remain in the comfort of their homes, sustain social connections, and enjoy a more serene lifestyle (Duque et al., 2015). It also has several advantages for caregivers, who benefit from a more stable work environment and the opportunity to self-organize daily tasks within small, agile teams focused on a controlled group of elderly residents (Bossert et al., 2018). However, this system still displays allocation problems for specialized workers, such as psychologists or physical therapists, who collaborate with several teams simultaneously. This can inadvertently increase stress for these professionals, who must commute to different places to perform their tasks. Furthermore, if not designed with sufficient flexibility, the system may introduce inefficiencies by narrowly focusing on the reality of individual urban sectors, potentially overlooking broader considerations. This could result in variations in service quality and working conditions for caregivers across diverse areas in the same city. Hence, the need to address the issue of optimal resource allocation persists.
+
+The allocation problem in this context can be reduced to a usercaregiver matching problem, where both collectives' needs must be considered to reach an optimal solution. In other words, we can treat this problem as deciding which caregivers visit which user at what time to provide which service, under a given set of constraints, to optimize some defined criteria (Di Mascolo, laure Espinouse, \& Hajri, 2017). This formulation effectively discards issues related to commuting and transportation. The allocation problem thus defined can be studied at different time scales: we can distinguish between short-term (daily), midterm (weekly), and long-term (monthly) allocation problems. In this work, we are interested in the weekly allocation of resources because it is the time frame used by CMs to organize the caregiver's working schedule. This problem has been reviewed in the literature under different lenses (Fikar \& Hirsch, 2017; Trautsamwieser \& Hirsch, 2010), including graph theory (Martinez, Espinouse, \& Di Mascolo, 2024). Most previous work has tackled the problem from an operations research approach by studying the situation as a vehicle routing problem with time windows (Cheng \& Rich, 1998). This approach overlooks several real-world aspects, including patient preferences and synchronization constraints. Consequently, aligning home care resources with specific needs remains a substantial challenge (Da Roit \& Le Bihan, 2010; Ottmann et al., 2009; Pavolini \& Ranci, 2008).
+
+In what follows, we study the resource allocation problem in a concrete example: the city of Barcelona. To describe the nuances of this scenario, we have consulted Suara Serveis, SCCL, a private home care company that offers service in different organizational areas throughout the city. Suara plays a crucial role in the delivery of the 'Servei d'Atenció Domiciliària' (Home Care Service) as part of the city's 'Vilaveïna' program. Suara's extensive experience and large operational scale within the region made it an essential partner in this research, providing valuable insights and practical data that informed our resource allocation models.
+
+\section*{3. Problem statement}
+Barcelona aims to establish itself as a model for person-centered care, as outlined in the Barcelona 2021-2025 Health Plan (Baltaxe et al., 2019; Rodriguez-Pereira et al., 2020). This plan redefines the provision of home care services, presenting a detailed description of the proposed care model (Sanitary Consortium of Barcelona, 2021a). The 2021-2025 Health Plan is, in turn, implemented through the
+
+\begin{table}[h]
+\begin{center}
+\captionsetup{labelformat=empty}
+\caption{Table 1\\
+Users Features.}
+\begin{tabular}{|l|l|l|l|}
+\hline
+Feature & Example value & Feature & Example value \\
+\hline
+ID & 4 & Gender & Female \\
+\hline
+Age & 86 & Religion & Catholic \\
+\hline
+Languages & Spanish & Race & Latin-American \\
+\hline
+Location & $41^{\circ} 25^{\prime} 27^{\prime \prime} \mathrm{N} 2^{\circ} 08^{\prime} 14^{\prime \prime} \mathrm{E}$ &  &  \\
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+\begin{table}[h]
+\begin{center}
+\captionsetup{labelformat=empty}
+\caption{Table 2\\
+Service Features.}
+\begin{tabular}{ll}
+\hline
+Feature & Example value \\
+\hline
+ID & 37 \\
+User & 4 \\
+Type & Physio \\
+Time Slot & $8: 00-11: 00$ \\
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+"Programa d'Atenció Domiciliària" (PADES) (Sanitary Consortium of Barcelona, 2021b) program for home health care and personal assistance. PADES allocates resources across diverse organizational areas or social sectors within the urban landscape and establishes the governance framework among the system's various local agents and participating companies. Based on insights gathered through close collaboration with one of such companies, we here present a formulation of the resource allocation problem for the city of Barcelona.
+
+We conceptualize caregivers as a network of agents collaborating to address a global problem that surpasses individual capabilities (Cruz-Cunha, Miranda, \& Goncalves, 2013). The optimization of agent allocations is inherently interdependent, necessitating collaborative efforts among them. We model this network in terms of the following elements:
+
+Users. In home care programs, users are represented by the set of features shown in Table 1. These features include variables such as age, gender, languages spoken, religion, or race that characterize each individual and which can later be used to estimate the similarity between users and caregivers.
+
+Inclusion of the race attribute is guided by expert recommendations to enhance cultural and linguistic compatibility between caregivers and users, which is crucial for effective and sensitive care delivery. This consideration aims to respect the diverse cultural backgrounds of the users and improve their comfort and care quality. As discussed below, this attribute is used exclusively to ensure that the matching process respects and supports the cultural and linguistic needs of the users.
+
+Services. A service corresponds to a user's need at a given time. For example, someone might require assistance with cooking between 6 pm and 8 pm . Analogously to users, services are also represented by a set of characterizing features. In particular, a service is described by the elements in Table 2. Note that a given user may require different types of services during the week. Hence, the relationship between users and services is not one-to-one.
+
+Agents. Finally, agents are characterized by the features included in Table 3. Agents have a work schedule, represented by their Availability, during which they can be assigned several services one at a time. These services may require specific qualifications, including Basic, Nurse, CPR, Physio or Doctor. An optimal resource allocation solution should keep track of worked hours to minimize overtime.
+
+The three elements above define the constituents of the home care system and the resource allocation problem. To fully characterize this problem, however, we must understand its constraints better. Findings from discussions with teams of caregivers at the chosen company indicate that the perceived "favorability" of the system depends primarily on three factors: Similarity, Stability, and Cost.
+
+Similarity. Considering the preferences of agents and users is crucial when developing efficient home care resource allocation systems. Similarity refers to the resemblance in profiles between caregivers and
+
+\begin{table}[h]
+\begin{center}
+\captionsetup{labelformat=empty}
+\caption{Table 3\\
+Agent Features.}
+\begin{tabular}{|l|l|l|l|}
+\hline
+Feature & Example value & Feature & Example value \\
+\hline
+ID & 2 & Qualifications & Physio, CPR \\
+\hline
+Age & 51 & Religion & Atheist \\
+\hline
+Location & $41^{\circ} 27^{\prime} 41^{\prime \prime} \mathrm{N} 2^{\circ} 09^{\prime} 24^{\prime \prime} \mathrm{E}$ & Languages & Spanish, Catalan \\
+\hline
+Gender & Male & Availability & 13:00-20:00 \\
+\hline
+Race & Caucasian &  &  \\
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+seniors, encompassing gender, shared languages, and age proximity. A match between a caregiver and an older adult with comparable attributes is considered more advantageous than one with divergent characteristics.
+
+Stability. The continuity of care, which consists of always assigning the same caregiver to a given user or limiting the number of caregivers assigned to a user, significantly contributes to service quality. Stability is therefore a crucial factor. When an elderly individual consistently receives care from the same caregiver, it allows them to develop a personal relationship. Hence, situations where the same caregiverelderly pairings are frequent, are viewed more favorably than those where older people are regularly assigned to new caregivers.
+
+Cost. Finally, in any business activity, Cost plays an important role. The primary cost in this scenario is attributed to caregivers' payroll. The payment structure adheres to an eight-hour workday, ensuring caregivers receive compensation for a full eight hours, even if they work fewer hours. Conversely, overtime is acknowledged and rewarded if caregivers exceed the standard working hours. Aligning caregivers' weekly schedules to mitigate costs associated with compensating for additional hours proves to be a challenging task.
+
+Based on these findings, we formulate the resource allocation problem as follows:
+
+Definition 1. Given a set of users, services, and agents, the Home Care Optimal Resource Allocation Problem (HCORAP) consists in providing an assignment of agents to services such that all services are attended, stability is prioritized through consistent caregiver-user pairings, similarity is promoted by accommodating the preferences of caregivers and users, and costs are minimized by mitigating caregiver extra working hours.
+
+In what follows, we present a scalable solution to the HCORAP based on a MaxSAT encoding approach. We address this problem weekly, aligning with the standard timeframe when CMs allocate qualified caregivers to the required services. We show that by focusing on the weekly perspective, we can reduce the size and complexity of the problem, making it more manageable for exact solvers to handle within a reasonable amount of time.
+
+\section*{4. MaxSAT encoding}
+Given a set of Boolean propositional variables (i.e. they can take value true or false): a literal is a variable $x$ or its negation $\neg x$; a clause is a disjunction of literals, of the form $l_{1} \vee, \ldots, \vee l_{n}$; a Boolean formula in Conjunctive Normal Form (Boolean formula from now on) is a conjunction of clauses (also denoted as a set of clauses). Given an assignment of truth values to variables: a literal $x$ is satisfied if and only if variable $x$ takes value true, while a literal $\neg x$ is satisfied if an only if variable $x$ takes value false; a clause is satisfied if at least one of its literals is satisfied; a Boolean formula is satisfied if all its clauses are satisfied. The Boolean Satisfiability problem (SAT) is the problem of finding whether there exists an assignment that satisfies a given Boolean formula.
+
+MaxSAT, short for Maximum Satisfiability, is the optimization version of SAT. There exist many variants of MaxSAT. The most basic one consists of finding an assignment that satisfies the maximum number of\\
+clauses in a given Boolean formula. In this paper, though, we consider the Weighted Partial MaxSAT problem (Kügel, 2010), to which we will refer just as MaxSAT for simplicity. In the weighted partial setting, a formula consists of a set of hard clauses, and a multi-set of weighted soft clauses, where the weights are positive integers. The problem consists of finding a truth assignment to all variables such that all hard clauses are satisfied, and the sum of weights of unsatisfied soft clauses is minimized. Further information about other MaxSAT variants, solving techniques, and applications can be found in Li and Manyà (2021).
+
+The resource allocation problem often involves combinatorial optimization, where factors such as user needs, caregiver qualifications, and service requirements must be considered simultaneously. MaxSAT is well-suited for handling such combinatorial optimization problems efficiently. In this case, we aim to find an optimal resource allocation based on similarity, stability, and cost, as described above. MaxSAT allows encoding these criteria as constraints and goals in the optimization problem, enabling the search for solutions that maximize the satisfaction of these criteria in a given objective function.
+
+When formulating the MaxSAT problem for the case of Barcelona, we divide the municipal home care service system into smaller territorial areas called "Àrees Bàsiques de Salut" (ABS). This implies that each individual problem refers to a manageable number of users, services, and agents. MaxSAT solvers can handle such moderate instances of combinatorial optimization problems within a reasonable time. Hence, this paper shows how MaxSAT can solve the HCORAP for one particular ABS. This method can later be expanded to other units and, thus, solve the optimization on a city level without requiring significant computational efforts. Moreover, as the requirements change, the MaxSAT encoding can be easily modified or extended to accommodate new constraints or objectives without requiring significant changes to the solution approach.
+
+We start by identifying the parameters of the problem. Next, we introduce the main variables of the encoding and the auxiliary variables with their corresponding definition constraints, followed by the constraints of the HCORAP. Finally, we define the objective function and provide the weighted soft constraints that define it. We highlight that the size of our encoding is polynomial in the size of the HCORAP instance, since most constraints introduce a constant number of variables and linear-size clauses, with the only exceptions of atMostOne and cardinality constraints, whose size is also polynomial as stated when they are introduced.
+
+\subsection*{4.1. Parameters}
+Table 4 presents an overview of our resource allocation problem's critical parameters. These parameters dictate the assignment of agents to services and encapsulate fundamental aspects such as the number of users ( $U$ ), the total amount of services ( $S$ ), and the number of agents tasked with delivering these services ( $A$ ). In addition, temporal constraints are represented by the total time slots in a week ( $T S$ ) and the corresponding matrices indicating agent ( $T S A$ ) and service ( $T S S$ ) availability across these time slots. The table further elaborates on parameters essential for comprehensively modeling the resource allocation problem, ensuring stability ( $S E Q$ ), suitability of agent-service assignments ( $r$ ), or penalization due to extra working hours ( $P$ ). Finally, we consider parameters dedicated to the total working hours ( $H N$ ) and the allowed number of extra hours ( $H E$ ) per agent.
+
+\subsection*{4.2. Variables and definition constraints}
+All variables in a MaxSAT formulation are Boolean, i.e., they can have a value of 0 or 1 (false or true). Therefore, they represent decisions to be made in our optimization problem. The solution to our problem can be interpreted from an assignment to the main variables of our formulation:
+
+\begin{table}[h]
+\begin{center}
+\captionsetup{labelformat=empty}
+\caption{Table 4\\
+Parameters of the problem.}
+\begin{tabular}{|l|l|}
+\hline
+Parameter & Definition \\
+\hline
+$U$ & Number of users. \\
+\hline
+S & Total amount of services. \\
+\hline
+$S U$ & List of services of users. We denote by $S U(i)$ the set of services of user $i \in 1, \ldots, U$. \\
+\hline
+A & Number of agents. \\
+\hline
+TS & Total time slots in a week. \\
+\hline
+TSA & $A \times T S$ matrix of Booleans ( $\{0,1\}$ ), where $T S A(a, h)=1$ iff agent $a$ can work at time slot $h$. \\
+\hline
+TSS & $S \times T S$ matrix of Booleans, where $T S S(s, h)=1$ iff service $s$ can be done at time slot $h$. \\
+\hline
+$S E Q$ & List of sets of services that ideally should be performed by the same agent (for instance, all the meals of a particular user should ideally be done by the same agent). This list of sets will allow us to deal with the consistency of the solution. \\
+\hline
+$r$ & $A \times S$ matrix of values in $\{0,1,2,3,4\}$, where $r(a, s)$ is the reward of assigning agent $a$ to service $s$. Reward 0 means that the agent cannot do that service. This reward measure accounts for the similarity of the solution. \\
+\hline
+$P$ & Integer value stating the penalization of each extra hour. This penalization measure accounts for the cost of the solution. \\
+\hline
+$H N$ & List of working hours per agent. We denote by $H N(a)$ the number of working hours of the agent $a \in 1, \ldots, A$. \\
+\hline
+HE & List of allowed extra working hours per agent. We denote by $H E(a)$ the number of allowed extra working hours of the agent $a \in 1, \ldots, A$. \\
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+\begin{itemize}
+  \item Main variables $x_{a, s, h}$ represent whether an agent $a$ is assigned to a service $s$ at time-slot $h$ :
+\end{itemize}
+
+
+\begin{equation*}
+x_{a, s, h} \quad \forall a \in\{1 . . A\}, \forall s \in\{1 . . S\}, \forall h \in\{1 . . T S\} \tag{1}
+\end{equation*}
+
+
+We introduce auxiliary variables to simplify constraints and improve the efficiency of our optimization model. These variables facilitate the representation of complex logical conditions using Boolean expressions. Below, we define and describe the auxiliary variables utilized in our model, together with the constraints that enforce the consistency of their values with those of other variables in the model:
+
+\begin{itemize}
+  \item Assignment variables ( $y_{a, s}$ ) state whether an agent $a$ is assigned to service $s$, without any information about the time-slot:
+\end{itemize}
+
+
+\begin{equation*}
+y_{a, s} \leftrightarrow \bigvee_{h \in\{1 . . T S\}} x_{a, s, h} \quad \forall a \in\{1 . . A\}, \forall s \in\{1 . . S\} \tag{2}
+\end{equation*}
+
+
+\begin{itemize}
+  \item Service Count variables ( $w_{a, i}$ ) state whether agent $a$ is assigned at least $i$ services.
+\end{itemize}
+
+
+\begin{equation*}
+w_{a, i} \leftrightarrow \sum_{s \in\{1 . . S\}} y_{a, s} \geq i \quad \forall a \in\{1 . . A\}, \forall i \in\{1 . . H N(a)+H E(a)+1\} \tag{3}
+\end{equation*}
+
+
+\begin{itemize}
+  \item Service Time-Slot variables ( $s u_{s, h}$ ) state whether a service $s$ is done at time slot $h$ :
+\end{itemize}
+
+
+\begin{equation*}
+s u_{s, h} \leftrightarrow \bigvee_{a \in\{1 . . A\}} x_{a, s, h} \quad \forall s \in\{1 . . S\}, \forall h \in\{1 . . T S\} \tag{4}
+\end{equation*}
+
+
+\begin{itemize}
+  \item Sequence Assignment variables ( $s s_{a, q}$ ) state whether agent $a$ is assigned to some service of a specific sequence of services $q$ :
+\end{itemize}
+
+
+\begin{equation*}
+s s_{a, q} \leftrightarrow \bigvee_{s \in S E Q(q)} y_{a, s} \quad \forall a \in\{1 . . A\}, \forall q \in\{1 . .|S E Q|\} \tag{5}
+\end{equation*}
+
+
+\begin{itemize}
+  \item Distinct Agent Count variables ( $c_{q, i}$ ) state whether the services of sequence $q$ are done by at least $i$ distinct agents:
+\end{itemize}
+
+
+\begin{equation*}
+c_{q, i} \leftrightarrow \sum_{a \in\{1 . . A\}} s s_{a, q} \geq i \quad \forall q \in\{1 . .|S E Q|\}, \forall i \in\{1 . .|S E Q(q)|\} \tag{6}
+\end{equation*}
+
+
+In formulating Constraints (3) and (5), we assume that all the summands refer to variables we have defined: there are more services than\\
+total working hours per agent $a(S>H N(a)+H E(a)$, (3)), and there are equal or more agents that services per sequence $q(A \geq|S E Q(q)|$, (5)). Cases not satisfying these assumptions imply that variables $w_{a, i}$ and $c_{q, i}$ are trivially false.
+
+All the previous Constraints but (3) and (5) are trivially convertible to a set of clauses (disjunctions), which is the language that MaxSAT solvers admit. On the other hand, Constraints (3) and (5) reify a variable with a cardinality constraint, which we translate to clauses using sorting network encoding (Asín, Nieuwenhuis, Oliveras, \& RodríguezCarbonell, 2011). Broadly speaking, this encoding takes a set of $n$ variables $\left\{x_{1}, \ldots, x_{n}\right\}$ as input and introduces a corresponding set of $n$ new variables $\left\{y_{1}, \ldots, y_{n}\right\}$. Hard clauses are then added to ensure that $y_{i}$ is true if and only if the number of true variables in $\left\{x_{1}, \ldots, x_{n}\right\}$ is at least $i$. This encoding process results in the introduction of $O\left(n \log ^{2}(n)\right)$ variables and clauses.
+
+\subsection*{4.3. Hard constraints}
+To ensure the correct allocation of resources in our optimization model, we impose a set of hard constraints that govern the assignment of agents to services within specified time slots. These constraints are essential for maintaining the integrity of the allocation process and ensuring compliance with operational requirements. Here, we outline the critical hard constraints utilized in our model:
+
+\begin{itemize}
+  \item Service Assignment constraints ensure all services must be performed exactly by one agent and at one-time slot. The conjunction of two constraints expresses this:
+  \item All services must be performed by at most one agent and at most at one-time slot:
+\end{itemize}
+
+
+\begin{equation*}
+\text { atMostOne }\left(\left\{x_{a, s, h} \mid \forall a \in\{1 . . A\}, \forall h \in\{1 . . T S\}\right\}\right) \quad \forall s \in\{1 . . S\} \tag{7}
+\end{equation*}
+
+
+\begin{itemize}
+  \item All services must be performed at least at one-time slot:
+\end{itemize}
+
+
+\begin{equation*}
+\bigvee_{h \in\{1 . . T S\}} s u_{s, h} \quad \forall s \in\{1 . . S\} \tag{8}
+\end{equation*}
+
+
+\begin{itemize}
+  \item Agent and Service Simultaneity constraint guarantees agents cannot do multiple services simultaneously. In other words, at most one service is done by an agent and time-slot:
+\end{itemize}
+
+
+\begin{equation*}
+\text { atMostOne }\left(\left\{x_{a, s, h} \mid s \in\{1 . . S\}\right\}\right) \quad \forall a \in\{1 . . A\}, \forall h \in\{1 . . T S\} \tag{9}
+\end{equation*}
+
+
+\begin{itemize}
+  \item User Service Simultaneity constraint restricts a user from being assisted in multiple services simultaneously. In other words, at most one service per user and time slot:
+\end{itemize}
+
+
+\begin{equation*}
+\text { atMostOne }\left(\left\{s u_{s, h} \mid s \in\{1 . . S U(i)\}\right\}\right) \quad \forall i \in\{1 . . U\}, \forall h \in\{1 . . T S\} \tag{10}
+\end{equation*}
+
+
+\begin{itemize}
+  \item Agent Availability constraint establishes that agents only perform services at their allowed time slots:
+\end{itemize}
+
+
+\begin{equation*}
+\neg x_{a, s, h} \quad \forall a \in\{1 . . A\}, \forall s \in\{1 . . S\}, \forall h \in\{1 . . T S\} \text { s.t. } T S A(a, h)=0 \tag{11}
+\end{equation*}
+
+
+\begin{itemize}
+  \item Service Time Slot Availability constraint states that services can only be done at allowed time slots:
+\end{itemize}
+
+
+\begin{equation*}
+\neg x_{a, s, h} \quad \forall a \in\{1 . . A\}, \forall s \in\{1 . . S\}, \forall h \in\{1 . . T S\} \text { s.t. } T S S(s, h)=0 \tag{12}
+\end{equation*}
+
+
+\begin{itemize}
+  \item Agent Qualification constraint implies that agents cannot do services for which they are not qualified:
+\end{itemize}
+
+
+\begin{equation*}
+\neg x_{a, s, h} \quad \forall a \in\{1 . . A\}, \forall s \in\{1 . . S\}, \forall h \in\{1 . . T S\} \text { s.t. } r(a, s)=0 \tag{13}
+\end{equation*}
+
+
+\begin{itemize}
+  \item Agent Working Hour constraint indicates that agents cannot work more than their maximum working hours, including extra hours:
+\end{itemize}
+
+
+\begin{equation*}
+\neg w_{a, m} \quad \forall a \in\{1 . . A\}, \text { where } m=H N(a)+H E(a)+1 \tag{14}
+\end{equation*}
+
+
+The atMostOne Constraints (7), (9) and (10), meaning that at most one of the input variables can be true, are translated to a set of binary clauses of the form ( $\neg x \vee \neg y$ ) for all pairs of different input variables $x, y$. This method introduces $O\left(n^{2}\right)$ clauses, being $n$ the size (number of variables) on the atMostOne constraint. There also exist ways of translating atMostOne constraints with a linear number of clauses but at the expense of introducing fresh variables. Since we have small enough atMostOne constraints in our instances, the quadratic encoding is preferable for its simplicity.
+
+\subsection*{4.4. Soft constraints}
+Soft constraints are crucial in formulating the objective function within our optimization framework. The objective function aims to strike a balance between maximizing the similarity and stability of resource allocation assignments while minimizing the associated costs. The objective function that our formulation maximizes, as expressed in Eq. (15), consists of three main components:\\
+similarity + stability - cost\\
+where:\\
+similarity:\\
+stability:
+
+
+\begin{equation*}
+\sum_{a \in\{1 . . A\}, s \in\{1 . . s\}} r(a, s) \cdot y_{a, s} \tag{16}
+\end{equation*}
+
+
+cost:
+
+
+\begin{equation*}
+\sum_{q \in\{1 . .|S E Q|\}, i \in\{1 . .|S E Q(q)|\}}(1-c(q, i)) \tag{17}
+\end{equation*}
+
+
+In addition to hard constraints, which must be all satisfied, MaxSAT also allows the definition of weighted soft constraints as $\langle c, w\rangle$, where the weight (positive integer) $w$ is the reward of satisfying clause $c$. We use these soft clauses to express optimization problems. MaxSAT aims to maximize the weight of the satisfied soft constraints while satisfying all hard ones.
+
+\begin{itemize}
+  \item Similarity constraint, represented by Eq. (16), quantifies the extent to which the allocated resources align with the preferences and qualifications of agents for each service. To incorporate this aspect into the optimization process, we utilize weighted soft constraints in Constraint (19), denoted as $\left\langle y_{a, s}, r(a, s)\right\rangle$, where the weight $r(a, s)$ reflects the reward associated with satisfying the constraint that agent $a$ is assigned to service $s$.
+\end{itemize}
+
+
+\begin{equation*}
+\left\langle y_{a, s}, r(a, s)\right\rangle \quad \forall a \in\{1 . . A\}, \forall s \in\{1 . . S\} \tag{19}
+\end{equation*}
+
+
+\begin{itemize}
+  \item Stability constraint is also accounted by the objective function as outlined in Eq. (17). This term adds one to the optimization function each time an agent is not participating in a sequence of services. To enforce stability, we introduce Constraint (20) of the form $\left\langle\neg c_{q, i}, 1\right\rangle$.
+\end{itemize}
+
+
+\begin{equation*}
+\left\langle\neg c_{q, i}, 1\right\rangle \quad \forall q \in\{1 . .|S E Q|\}, \forall i \in\{1 . .|S E Q(q)|\} \tag{20}
+\end{equation*}
+
+
+\begin{itemize}
+  \item Cost constraint captures the monetary expenses incurred due to resource allocation decisions, particularly concerning extra working hours, as depicted in Eq. (18). This term subtracts the penalization cost each time an agent works an additional hour. However, MaxSAT does not allow soft clauses with negative\\
+weights. To handle this aspect, we first transform the cost term to the equivalent term in Eq. (21).
+\end{itemize}
+
+
+\begin{equation*}
+\sum_{\substack{a \in\{1 . . A\}, i \in\{H N(a)+1 . . H E(a)\}}} P-\sum_{\substack{a \in\{1 . . A\}, i \in\{H N(a)+1 . . H E(a)\}}} P \cdot\left(1-w_{a, i}\right) \tag{21}
+\end{equation*}
+
+
+The left-hand side term of Eq. (21) can be precomputed since it does not include any MaxSAT variable and represents the cost when all agents work all their allowed extra hours. The cost of an extra hour is canceled by the right-hand side term each time an agent is not working an extra hour. This Constraint (22) is expressed as $\left\langle\neg w_{a, i}, P\right\rangle$, where $P$ becomes the reward associated with each extra hour not worked by an agent within their allowed range.
+
+
+\begin{equation*}
+\left\langle\neg w_{a, i}, P\right\rangle \quad \forall a \in\{1 . . A\}, \forall i \in\{H N(a)+1 . . H E(a)\} \tag{22}
+\end{equation*}
+
+
+\section*{5. Experiments}
+This section presents our experiments to validate our methodology and analyze its performance. ${ }^{1}$
+
+\subsection*{5.1. Instance generation}
+As previously discussed, the setting described here was designed with a home care services company in the Barcelona metropolitan area. Discussions with this company to understand the real-life situation led to the design of the following instance generation process, which ensures the generation of realistic instances for the HCORAP, considering various factors such as user needs, agent qualifications, service availability, and geographical constraints.
+
+\begin{enumerate}
+  \item Configuration Parameters: The instance generation process takes three arguments from the command line: the number of users ( $U$ ), the number of agents ( $A$ ), and a parameter ( $V$ ), such that $S=U \times V$, where, $S$ represents the total number of services.
+  \item Random generation: Given a configuration ( $A, U, V$ ), the following data is generated at random:\\
+(a) Agent Generation: Information for agents is generated, including their age, qualifications, location, region, gender, languages spoken, and race. The availability of agents over time slots is also determined randomly.\\
+(b) User Generation: Information for users is generated, including age, location, gender, languages spoken, and race.\\
+(c) Service Generation: Services are created with attributes such as the user assigned to, the type of service, and the time slots during which they are available. We forbid having services that can only be done in one time slot to avoid generating trivially unsatisfiable instances.
+  \item Similarity Score Computation: A similarity score is computed for each combination of agent, user, and service based on various factors such as qualifications, age difference, gender, language proficiency, race, and distance between agent and user locations.
+  \item Quantile Calculation: The similarity scores are converted into quantiles ( $r$ ) to categorize them into four levels (1 to 4). Recall that, in case an agent $a$ is not qualified to provide a service $s$, $r(a, s)=0$.
+\end{enumerate}
+
+\footnotetext{${ }^{1}$ The implementation and the set of instances used in this experiments are available at \href{https://github.com/jordicollcaballero/HCORAP}{https://github.com/jordicollcaballero/HCORAP}.
+}\begin{table}[h]
+\begin{center}
+\captionsetup{labelformat=empty}
+\caption{Table 5\\
+For each configuration ( $A, U, V$ ): number of optimally solved instances (or unsatisfiability certified); average solving time in seconds; number of unsatisfiable instances.}
+\begin{tabular}{|l|l|l|l|l|l|l|l|l|l|l|l|l|}
+\hline
+\multirow[t]{2}{*}{$S=U \times V$} & \multicolumn{3}{|l|}{$\mathrm{A}=10$} & \multicolumn{3}{|l|}{$\mathrm{A}=15$} & \multicolumn{3}{|l|}{A = 20} & \multicolumn{3}{|l|}{$\mathrm{A}=25$} \\
+\hline
+ & \#c & time & \#un & \#c & time & \#un & \#c & time & \#un & \#c & time & \#un \\
+\hline
+$120=30 \times 4$ & 50 & 11.51 & 24 & 50 & 31.86 & 5 & 50 & 51.91 & 0 & 50 & 61.11 & 0 \\
+\hline
+$150=30 \times 5$ & 49 & 25.23 & 29 & 50 & 77.47 & 8 & 50 & 83.58 & 1 & 50 & 93.96 & 1 \\
+\hline
+$160=40 \times 4$ & 46 & 40.45 & 29 & 50 & 109.40 & 11 & 50 & 103.69 & 1 & 50 & 114.66 & 0 \\
+\hline
+$200=40 \times 5$ & 44 & 77.17 & 33 & 48 & 134.97 & 13 & 48 & 158.34 & 3 & 50 & 157.71 & 1 \\
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+\begin{enumerate}
+  \setcounter{enumi}{4}
+  \item Output Generation: The instance information is generated in a specific format, including the number of users ( $U$ ), services $(S)$, agents ( $A$ ), time slots ( $T S$ ), lists of services per user ( $S U$ ), sequences of services per user ( $S E Q$ ), availability of agents per time slot ( $T S A$ ), availability of services per time slot ( $T S S$ ), similarity scores ( $r$ ), penalization parameter ( $P$ ), maximum working hours per agent ( $H N$ ), and allowed extra working hours per agent ( $H E$ ). This is the input data of the MaxSAT encoding, as defined in Section 4.1.
+\end{enumerate}
+
+\subsection*{5.2. Experimental setup}
+We systematically varied the number of agents ( $A$ ), the number of users ( $U$ ), and the number of services per user ( $V$ ), to evaluate the performance of our resource allocation algorithm. Each configuration represents a unique combination of $A$ and $S=U \times V$, with $A$ taking values of $10,15,20$, and $25, U$ taking values of 30 and 40 , and $V$ taking values of 4 and 5 . For each setting, we generated 50 instances at random. Here we report average metrics over each configuration.
+
+All experiments were run on a cluster of compute nodes equipped with Intel Xeon E-2234 CPU @ 3.60 GHz processors, where each execution was given a time limit of 1 h and 16 GB of memory. We ran preliminary experiments using different versions of the top solvers participating in the weighted exact track of MaxSAT Evaluation 2023 (Berg, Jarvisalo, Martins, \& Niskanen, 2023), namely WMaxCDCL (Li, Xu, Coll, Manyà, Habet, \& He, 2021; Li et al., 2022) and EvalMaxSAT (Avellaneda, 2023). EvalMaxSAT is a SAT-based and corebased MaxSAT solver, i.e. it implements an algorithm that achieves optimization by querying a SAT solver as an oracle multiple times to identify unsatisfiable subsets of soft clauses, which are relaxed after each iteration. On the other hand, WMaxCDCL achieves optimization by a novel approach that combines a Branch-and-Bound procedure to early prune the search tree with clause learning. The solver with the best performance in our setting turned out to be EvalMaxSAT, thus we use this solver in our experiments.
+
+\subsection*{5.3. Efficiency evaluation}
+By varying the three parameters $A, U$, and $V$, we can assess the time required by the system to give an answer under various conditions and understand how changes in the number of agents, users, and service-to-user ratios impact the efficiency of our system and the feasibility of the problem.
+
+The obtained results are displayed in Table 5. For each configuration, this table reports the number of instances where the allocation problem was optimally solved or unsatisfiability was certified (\#c), the average solving time in seconds over the certified instances (time), and the number of instances that were found to be unsatisfiable (\#un). As depicted, varying the number of agents (A) from 10 to 25 across different configurations leads to changes in the number of optimally solved instances, solving times, and unsatisfiable instances. Notably, as the number of agents increases, there is a trend of increased solving time with a decrease in the number of unsatisfiable instances.
+
+The number of optimally solved instances or certified unsatisfiability indicates the allocation system's effectiveness under different configurations. It reflects the system's ability to allocate resources to\\
+meet all service needs within the specified constraints. Moreover, the MaxSAT solver finds some solution for all feasible instances, even for those whose optimal was not certified within the given time limit.
+
+The average solving time in seconds represents the computational efficiency of the allocation system. It indicates how quickly the system can generate optimal solutions or determine unsatisfiability for each configuration. Generally, shorter solving times are desirable, implying quicker decision-making and allocation processes which ease the task of CMs.
+
+The number of instances found to be unsatisfiable highlights the challenges encountered by the allocation system in meeting all service needs within the constraints imposed by the configuration. Higher numbers of unsatisfiable instances indicate limitations in resource availability or conflicts between service requirements and agent capabilities. Specific trends can be observed across different configurations of the allocation system. For example, increasing the number of agents ( $A$ ) generally leads to more optimally solved instances. Similarly, variations in the ratio of services to users ( $V$ ) may impact the system's performance. Configurations with higher ratios may lead to more unsatisfiable instances due to increased service demand relative to available resources.
+
+Fig. 1 illustrates the relationship between the average solving time and the number of services ( $S$ ) across different numbers of agents ( $A$ ). The average solving time increases as the number of services increases. Notably, the solving time for configurations with more agents ( $A=20$ and $A=25$ ) tends to exhibit higher values than configurations with fewer agents ( $A=10$ ).
+
+\subsection*{5.4. Results evaluation}
+Table 6 presents the quality of the obtained resource assignments. Each cell in the table contains the average values over the satisfiable instances of the corresponding ( $A, U, V$ ) configuration of three key metrics: similarity (sim.), stability (sta.), and cost. For the sake of interpretability, results are also displayed in Fig. 2.
+
+Regarding similarity, we observe that as the number of services per user increases, the average similarity value also tends to increase across all agent configurations. This suggests that the optimization algorithm successfully allocates agents to services to maximize similarity, regardless of the number of agents involved.
+
+As for the similarity metric, we observe a trend of increasing consistency values as the number of services per user grows. This indicates that the optimization algorithm effectively maintains consistency in agent assignments, even with varying numbers of agents.
+
+Regarding stability, we note that the average stability values remain relatively stable across varying numbers of agents for each service configuration. This stability indicates that the algorithm effectively maintains stability in service assignments, regardless of the complexity of the allocation problem.
+
+Finally, the average cost values across all configurations are consistently low. Additionally, there is a slight upward trend in cost values with increasing numbers of services, reflecting the potential increase in resource utilization as the workload expands.
+
+\begin{figure}[h]
+\begin{center}
+  \includegraphics[alt={},max width=\textwidth]{4b545e88-1ef4-46ac-9f7d-763658ce3636-08_558_1138_198_469}
+\captionsetup{labelformat=empty}
+\caption{Fig. 1. Solving time across different numbers of services and agents.}
+\end{center}
+\end{figure}
+
+\begin{figure}[h]
+\begin{center}
+  \includegraphics[alt={},max width=\textwidth]{4b545e88-1ef4-46ac-9f7d-763658ce3636-08_369_1362_863_350}
+\captionsetup{labelformat=empty}
+\caption{Fig. 2. Optimality of similarity (a), stability (b), and cost (c) values across different numbers of services and agents.}
+\end{center}
+\end{figure}
+
+\begin{table}[h]
+\begin{center}
+\captionsetup{labelformat=empty}
+\caption{Table 6\\
+For each configuration ( $U, A, V$ ): average similarity value; average stability value; average cost value.}
+\begin{tabular}{|l|l|l|l|l|l|l|l|l|l|l|l|l|}
+\hline
+\multirow[t]{2}{*}{$S=U \times V$} & \multicolumn{3}{|l|}{$\mathrm{A}=10$} & \multicolumn{3}{|l|}{$\mathrm{A}=15$} & \multicolumn{3}{|l|}{$\mathrm{A}=20$} & \multicolumn{3}{|l|}{$\mathrm{A}=25$} \\
+\hline
+ & sim. & con. & cost & sim. & con. & cost & sim. & con. & cost & sim. & con. & cost \\
+\hline
+$120=30 \times 4$ & 407.12 & 37.88 & 0.00 & 428.51 & 38.56 & 0.00 & 449.48 & 39.82 & 0.00 & 457.86 & 39.10 & 0.00 \\
+\hline
+$150=30 \times 5$ & 509.95 & 54.10 & 0.10 & 540.19 & 56.19 & 0.00 & 561.94 & 56.04 & 0.00 & 574.45 & 57.86 & 0.06 \\
+\hline
+$160=40 \times 4$ & 555.12 & 51.18 & 0.18 & 574.82 & 51.15 & 0.31 & 602.33 & 52.84 & 0.00 & 612.46 & 52.92 & 0.00 \\
+\hline
+$200=40 \times 5$ & 688.55 & 74.00 & 0.45 & 718.74 & 74.03 & 0.03 & 750.49 & 74.47 & 0.04 & 765.04 & 76.06 & 0.00 \\
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+\section*{6. Discussion}
+As the European population ages, public administrations are faced with new challenges. Europeans now live longer and under the worst conditions. While a minority of individuals can provide for themselves, a large percentage of the population will need to rely on the public system to provide quality assistance during the final years of their lives. Home care services are meant to play an essential role in the future welfare society by prolonging the time older people remain at home and, therefore, reducing the costs of institutionalization. Given the increasing demand, many European cities are already promoting new models to organize and manage home care services in large metropolitan areas. In the case of Barcelona, the current system pivots around so-called social urban sectors that prioritize geographical and emotional proximity for caregivers and older people.
+
+In this model, a reduced team of caregivers assists individuals in a particular geographical area with their everyday tasks. A case manager in each area is charged with matching needs with resources to ensure an optimal allocation of caregivers to services each day of the week. While this process has been improved with time and experience, it still suffers from several inefficiencies that directly impact the service quality. Aiding decision-making in this context requires a profound understanding of the needs, constraints, and dynamics of this rapidly changing environment.
+
+Needs here are related to the demands of the dependent individuals, which may include assistance with personal and instrumental activities\\
+of daily living such as housekeeping, meal preparation, laundry, or medication reminders. Constraints refer to the working conditions of caregivers and the desirability of individual caregiver/service pairings. Caregivers have a fixed schedule. When assigned to specific services, allocation is done in terms of the similarity between the person providing and receiving the service, the stability of the pairing in time, and the duration and timing of the service. Desirable pairings are those where the caregiver and older people share common attributes that are consistent in time.
+
+The results presented in this study provide valuable insights into the performance of our proposed algorithmic allocation system for service allocation problems, leveraging a MaxSAT-based approach. Our experiments, conducted across various configurations of the number of agents and the number of services, reveal several significant findings.
+
+Firstly, analyzing the objective function components - similarity, stability, and cost - provides further insights into the algorithm's behavior. As the number of services increases, the average similarity and stability values tend to increase, indicating a better match between agents and services and improved consistency in service allocations. This trend suggests that the MaxSAT-based algorithm optimizes service allocations to maximize similarity and stability objectives, which are crucial for ensuring high-quality service delivery.
+
+Secondly, the average cost values remain relatively stable across different configurations of agents and services, with only slight fluctuations observed. This indicates that the algorithm effectively balances the trade-off between maximizing similarity and stability while\\
+minimizing costs associated with service allocations. The MaxSAT formulation allows for the incorporation of soft constraints, enabling the algorithm to navigate the complex trade-offs inherent in service allocation problems and generate solutions that balance competing objectives.
+
+Thirdly, concerning the computational efficiency of the algorithm, we observe a clear trend of increasing solving time with higher services. This trend is consistent across all configurations tested, indicating that the algorithm's running time scales with the size of the problem instance. While this increase in solving time is expected due to the larger search space, it underscores the need for efficient algorithms to handle real-world service allocation scenarios involving many agents and services. The utilization of MaxSAT offers advantages in terms of scalability and flexibility in handling complex optimization problems, making it a suitable choice for addressing the challenges posed by large-scale service allocation problems.
+
+Finally, the results of our experiments demonstrate the MaxSATbased algorithm's effectiveness in addressing service allocation problems. The algorithm offers promising practical applications in healthcare, logistics, and smart cities by achieving optimal or near-optimal solutions while considering the trade-offs between similarity, stability, and cost. Future research directions may involve refining the algorithm to handle larger problem instances efficiently, exploring different formulations of the objective function to capture additional aspects of service quality, and conducting real-world evaluations to validate its performance in diverse application scenarios.
+
+\section*{7. Conclusions}
+In this paper, we have proposed and validated a MaxSAT-based setting to tackle the issue of resource allocation in home care services. We have formalized the allocation problem as optimizing an objective function with hard and soft constraints. From the experiments, we conclude that MaxSAT is a viable alternative to classical methods for optimizing allocations, even in complex environments with cost penalties and interdependent similarity and stability rewards. Given the vital role that home care services will play in the upcoming years, and particularly the importance of optimal resource allocation systems in large urban areas, the proposed research can significantly enhance the quality of life for older people.
+
+As future work, it is imperative to address the challenge of idle and overtime work commonly observed in the home care sector. While the Agent Working Hour constraint in our model is designed to prevent caregivers from exceeding their maximum allowable working hours, we recognize that exceptional situations may arise that necessitate flexibility. Building upon our validated MaxSAT-based approach for resource allocation, future research could integrate algorithms that account for each caregiver's total working hours at the end of each month, considering both emergencies or unforeseen spikes in demand that require immediate attention. By incorporating mechanisms to compute and compensate for excess or shortage of hours, our framework can evolve into a comprehensive solution addressing both optimization and fairness concerns within the home care service domain. Such enhancements will not only optimize resource allocation but also ensure equitable distribution of workload among caregivers, ultimately leading to improved efficiency and satisfaction in service delivery.
+
+\section*{CRediT authorship contribution statement}
+Irene Unceta: Writing - review \& editing, Writing - original draft, Validation, Supervision, Methodology, Investigation, Formal analysis, Conceptualization. Bernat Salbanya: Writing - review \& editing, Writing - original draft, Visualization, Validation, Supervision, Methodology, Investigation, Formal analysis, Data curation. Jordi Coll: Writing review \& editing, Validation, Software, Methodology, Formal analysis, Data curation, Conceptualization. Mateu Villaret: Writing - review \&\\
+editing, Validation, Software, Methodology, Formal analysis, Data curation, Conceptualization. Jordi Nin: Writing - review \& editing, Writing - original draft, Validation, Project administration, Methodology, Funding acquisition, Formal analysis, Data curation, Conceptualization.
+
+\section*{Declaration of competing interest}
+The authors declare the following financial interests/personal relationships which may be considered as potential competing interests: Jordi Nin, Irene Unceta, Bernat Salbanya reports financial support was provided by Spain Ministry of Science and Innovation. Mateu Villaret, Jordi Coll reports financial support was provided by Spain Ministry of Science and Innovation. Mateu Villaret, Jordi Coll reports financial support was provided by European Regional Development Fund. If there are other authors, they declare that they have no known competing financial interests or personal relationships that could have appeared to influence the work reported in this paper.
+
+\section*{Data availability}
+No data was used for the research described in the article.
+
+\section*{Acknowledgments}
+This project has been possible thanks to the information provided by Suara Serveis, SCCL. Esade authors acknowledge the support of the Spanish Ministry of Science and Innovation through the project REMISS (PLEC2021-007850). UDG authors are partially supported by: Grant PID2021-122274OB-I00 funded by MCIN/AEI/10.13039/5011000 11033 and by ERDF A way of making Europe.
+
+\section*{References}
+Anderson, R. A., Hsieh, P.-C., \& Su, H.-F. (1998). Resource allocation and resident outcomes in nursing homes: Comparisons between the best and the worst. Research in Nursing \& Health, 21(4), 297-313.\\
+Asín, R., Nieuwenhuis, R., Oliveras, A., \& Rodríguez-Carbonell, E. (2011). Cardinality networks: a theoretical and empirical study. Constraints. An International Journal, 16(2), 195-221. \href{http://dx.doi.org/10.1007/S10601-010-9105-0}{http://dx.doi.org/10.1007/S10601-010-9105-0}.\\
+Asthana, S. (2012). Variations in access to social care for vulnerable older people in England: is there a rural dimension? Tech. rep., University of Plymouth.\\
+Avellaneda, F. (2023). A short description of the solver EvalMaxSAT. \href{https://github}{https://github}. com/FlorentAvellaneda/EvalMaxSAT.\\
+Baltaxe, E., et al. (2019). Evaluation of integrated care services in Catalonia: Populationbased and service-based real-life deployment protocols. BMC Health Services Research, 19(370).\\
+Berg, J., Jarvisalo, M., Martins, R., \& Niskanen, A. (2023). MaxSAT evaluation 2023 : Solver and benchmark descriptions. \href{http://hdl.handle.net/10138/564026}{http://hdl.handle.net/10138/564026}.\\
+Bofill, M., Coll, J., Garcia, M., Giráldez-Cru, J., Pesant, G., Suy, J., et al. (2022). Constraint solving approaches to the business-to-business meeting scheduling problem. Journal of Artificial Intelligence Research, 74, 263-301. \href{http://dx.doi.org/10.1613/}{http://dx.doi.org/10.1613/} JAIR.1.12670.\\
+Bofill, M., Coll, J., Giráldez-Cru, J., Suy, J., \& Villaret, M. (2022). The impact of implied constraints on MaxSAT B2B instances. International Journal of Computational Intelligence Systems, 15(1), 63. \href{http://dx.doi.org/10.1007/S44196-022-00121-5}{http://dx.doi.org/10.1007/S44196-022-00121-5}.\\
+Bossert, O., Kretzberg, A., \& Laartz, J. (2018). Unleashing the power of small, independent teams. McKinsey Quarterly, 18(3), 67-75.\\
+Challis, D., Xie, C., Hughes, J., \& Clarkson, P. (2016). Resource allocation at the micro level in adult social care: A scoping review: Tech. rep., The National Institute for Health Research.\\
+Cheng, E., \& Rich, J. (1998). A home health care routing and scheduling problem: Tech. rep., Rice University.\\
+Cruz-Cunha, M. M., Miranda, I. M., \& Goncalves, P. (2013). ICTs for human-centered healthcare and social care services. IGI Global, \href{http://dx.doi.org/10.4018/978-1-4666-3986-7}{http://dx.doi.org/10.4018/978-1-4666-3986-7}.\\
+Da Roit, B., \& Le Bihan, B. (2010). Similar and yet so different: Cash-for-care in six European countries' long-term care policies. The Milbank Quarterly, 88(3), 286-309. \href{http://dx.doi.org/10.1111/j.1468-0009.2010.00601.x}{http://dx.doi.org/10.1111/j.1468-0009.2010.00601.x}.\\
+Davies, S., Clarkson, P., Hughes, J., Stewart, K., Xie, C., Saunders, R., et al. (2015). Resource allocation priorities in social care for adults with a learning disability: An analysis and comparison of different stakeholder perspectives. Tizard Learning Disability Review, 20(4), 199-206. \href{http://dx.doi.org/10.1108/TLDR-02-2015-0009}{http://dx.doi.org/10.1108/TLDR-02-2015-0009}.\\
+de Andres-Pizarro, J. (2004). Inequalities in protection services for elderly dependent individuals. Gaceta Sanitaria, 18, 126-131.\\
+Demirović, E., Musliu, N., \& Winter, F. (2019). Modeling and solving staff scheduling with partial weighted maxSAT. Annals of Operations Research, 275, 79-99.\\
+Di Mascolo, M., laure Espinouse, M., \& Hajri, Z. E. (2017). Planning in home health care structures: A literature review. IFAC PapersOnLine, 50(1), 4654-4659.\\
+Duque, P. M., Castro, M., Sörensen, K., \& Goos, P. (2015). Home care service planning. The case of Landelijke Thuiszorg. European Journal of Operational Research, 243(1), 292-301.\\
+European Commission (2006). i2010: Independent living for the ageing society.\\
+European Commission (2016). Spain: Health care \& long-term care systems. An excerpt from the joint report on health care and long-term care systems \& fiscal sustainability. chrome-extension://efaidnbmnnnibpcajpcglclefindmkaj/viewer. html?pdfurl=https.\\
+European Observatory on Health Systems and Policies (2013). Home care across Europe. Case studies. chrome-extension://efaidnbmnnnibpcajpcglclefindmkaj/viewer.html? pdfurl=https.\\
+Fei, B. Q. C. (2011). Virtual nursing-home, to solve the pension problem in rural communities to explore the beneficial. Social Security Studies, 3.\\
+FeSP-UGT (2018). Estudio sobre las condiciones laborales de las trabajadoras de asistencia a domicilio. \href{https://generoprl.org/wp-content/uploads/2018/10/ESTUDIO}{https://generoprl.org/wp-content/uploads/2018/10/ESTUDIO}. pdf.\\
+Fikar, C., \& Hirsch, P. (2017). Home health care routing and scheduling: A review. Computers \& Operations Research, 77, 86-95.\\
+Fraser, K. D., Estabrooks, C., Allena, M., \& VickiStranga (2009). Factors that influence case managers' resource allocation decisions in pediatric home care: An ethnographic study. International Journal of Nursing Studies, 46(3), 337-349.\\
+Fraser, K., Lisa, G. B., Laing, D., Lai, J., \& Punjani, N. S. (2018). Case manager resource allocation decision-making for adult home care clients: With comparisons to a high needs pediatric home care clients. Home Health Care Management \& Practice, 30(4), 164-174. \href{http://dx.doi.org/10.1177/1084822318779371}{http://dx.doi.org/10.1177/1084822318779371}.\\
+Healey, J., Hignett, S., \& Gyi, D. (2024). A day in the life of a home care worker in England: A human factors systems perspective. Applied Ergonomics, Article 104151. \href{http://dx.doi.org/10.1016/j.apergo.2023.104151}{http://dx.doi.org/10.1016/j.apergo.2023.104151}.\\
+Holm, S. G., Mathisen, T. A., Sæterstrand, T. M., \& Brinchmann, B. S. (2017). Allocation of home care services by municipalities in Norway: a document analysis. BMC Health Services Research, 17(673).\\
+Jones Lang LaSalle (JLL) (2020). Care homes. Major opportunities in a growing seniors market. chrome-extension://efaidnbmnnnibpcajpcglclefindmkaj/viewer.html? pdfurl=https.\\
+Kemp, A., \& Hvid, H. (2012). Elderly care in transition - Management, meaning, and identity at work: a Scandinavian perspective: Tech. rep., Copenhagen Business School.\\
+Krinichansky, K. V. (2019). Smart solutions for smart cities (pp. 151-175). Emerald Publishing Limited, \href{http://dx.doi.org/10.1108/978-1-78973-881-020191010}{http://dx.doi.org/10.1108/978-1-78973-881-020191010}.\\
+Kügel, A. (2010). Improved exact solver for the weighted MAX-SAT problem. Pos@ sat, 8, 15-27.\\
+Li, C. M., \& Manyà, F. (2021). MaxSAT, hard and soft constraints. In A. Biere, M. Heule, H. van Maaren, \& T. Walsh (Eds.), Frontiers in artificial intelligence and applications: vol. 336, Handbook of satisfiability - second edition (pp. 903-927). IOS Press, \href{http://dx.doi.org/10.3233/FAIA201007}{http://dx.doi.org/10.3233/FAIA201007}.\\
+Li, C. M., Xu, Z., Coll, J., Manyà, F., Habet, D., \& He, K. (2021). Combining clause learning and branch and bound for MaxSAT. In LIPIcs: vol. 210, 27th international conference on principles and practice of constraint programming, CP 2021 (pp. 38:1-38:18). \href{http://dx.doi.org/10.4230/LIPICS.CP.2021.38}{http://dx.doi.org/10.4230/LIPICS.CP.2021.38}.
+
+Li, C. M., Xu, Z., Coll, J., Manyà, F., Habet, D., \& He, K. (2022). Boosting branch-andbound MaxSAT solvers with clause learning. AI Communications, 35(2), 131-151. \href{http://dx.doi.org/10.3233/AIC-210178}{http://dx.doi.org/10.3233/AIC-210178}.\\
+Lucien, B., Zwakhalen, S., Morenon, O., \& Hahn, S. (2024). Violence towards formal and informal caregivers and its consequences in the home care setting: A systematic mixed studies review. Aggression and Violent Behavior, 75, Article 101918. http: \href{//dx.doi.org/10.1016/j.avb.2024.101918}{//dx.doi.org/10.1016/j.avb.2024.101918}.\\
+Manyà, F., Negrete, S., Roig, C., \& Soler, J. R. (2020). Solving the team composition problem in a classroom. Fundamenta Informaticae, 174(1), 83-101.\\
+Martinez, C., Espinouse, M.-L., \& Di Mascolo, M. (2024). An exact two-phase approach to re-optimize tours in home care planning. Computers \& Operations Research, 161, Article 106408. \href{http://dx.doi.org/10.1016/j.cor.2023.106408}{http://dx.doi.org/10.1016/j.cor.2023.106408}.\\
+McCreesh, C., Prosser, P., Simpson, K., \& Trimble, J. (2017). On maximum weight clique algorithms, and how they are evaluated. In International conference on principles and practice of constraint programming (pp. 206-225). Springer.\\
+Ottmann, G., Allen, J., \& Feldman, P. (2009). Self directed community aged care for people with complex needs: a literature review: Tech. rep., Deakin University.\\
+Pavolini, E., \& Ranci, C. (2008). Restructuring the welfare state: Reforms in longterm care in Western European countries. Journal of European Social Policy, 18(2), 246-259. \href{http://dx.doi.org/10.1177/0958928708091058}{http://dx.doi.org/10.1177/0958928708091058}.\\
+Price Waterhouse Coopers (2010). Situation of long-term care services in Spain. chromeextension://efaidnbmnnnibpcajpcglclefindmkaj/viewer.html?pdfurl=http.\\
+Rodriguez-Pereira, J., de Armas, J., Garbujo, L., \& Ramalhinho, H. (2020). Health care needs and services for elder and disabled population: Findings from a Barcelona study. Journal of Environmental Research and Public Health, 17(8071).\\
+Rogero-Garcia, J. (2009). Distribution of formal and informal home care for people older than 64 years in Spain 2003. Revista Espanola de Salud Publica, 83, 393-405.\\
+Sanitary Consortium of Barcelona (2021a). Pla de Salut. \href{https://scientiasalut.gencat.cat/}{https://scientiasalut.gencat.cat/} bitstream/handle/11351/7948/pla\_salut\_catalunya\_2021\_2025\_2021.pdf?sequence= 1\&isAllowed=y.\\
+Sanitary Consortium of Barcelona (2021b). Pla de Salut de la Regió Sanitària Barcelona 2021-2025. \href{https://www.csb.cat/wp-content/uploads/2022/09/}{https://www.csb.cat/wp-content/uploads/2022/09/} pla\_salut\_regio\_sanitaria\_barcelona\_ciutat\_2021\_2025\_2022.pdf.\\
+Statistical Office of the European Communities. EUROSTAT (2021). Population \& demography. \href{https://ec.europa.eu/eurostat/web/population-demography/}{https://ec.europa.eu/eurostat/web/population-demography/} overview.\\
+Strandell, R. (2020). Care workers under pressure - A comparison of the work situation in Swedish home care 2005 and 2015. Health \& Social Care in the Community, 28(1), 137-147. \href{http://dx.doi.org/10.1111/hsc.12848}{http://dx.doi.org/10.1111/hsc.12848}.\\
+The MOPACT Coordination Team (2013). Declining trends of healthy life years expectancy (HLYE) in Europe. \href{https://docplayer.net/5031483-Mobilising-the-potential-of-active-ageing-in-europe-trends-in-healthy-life-expectancy-and-health-indicators-among-older-people-in-27-eu-countries.html}{https://docplayer.net/5031483-Mobilising-the-potential-of-active-ageing-in-europe-trends-in-healthy-life-expectancy-and-health-indicators-among-older-people-in-27-eu-countries.html}.\\
+Trautsamwieser, A., \& Hirsch, P. (2010). Optimization of daily scheduling for home health care services. Journal of Applications in Operations Research, 3(3), 124-136.\\
+Verdugo, M. A., Arias, B., Gómez, L. E., \& Schalock, R. L. (2010). Development of an objective instrument to assess quality of life in social services: Reliability and validity in Spain. International Journal of Clinical and Health Psychology, 10(1), 105-123.\\
+Zhang, W. (2002). Modeling and solving a resource allocation problem with soft constraint techniques: Tech. rep., All Computer Science and Engineering Research..
+
+\begin{itemize}
+  \item 
+\end{itemize}
+
+
+\end{document}

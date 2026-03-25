@@ -364,13 +364,50 @@ The following Boolean variables are created (only for \emph{valid} combinations,
 i.e.\ where $r_{a,s} > 0$, $\TSA_{a,t} = 1$, and $\TSS_{s,t} = 1$):
 
 \begin{itemize}
-    \item $x_{a,s,t}$: true iff agent $a$ performs service $s$ at time slot $t$.
-    \item $y_{a,s}$: true iff agent $a$ performs service $s$ at some time slot.
-    \item $z_{s,t}$ (\texttt{su} in code): true iff service $s$ is
-          performed at time slot $t$.
-    \item $w_{a,q}$ (\texttt{s} in code): true iff agent $a$ performs at
-          least one service in $\SEQ_q$.
+    \item \textbf{Main variables} $x_{a,s,t}$: true iff agent $a$ performs
+          service $s$ at time slot $t$.
 \end{itemize}
+
+The following \textbf{auxiliary variables} are introduced together with their
+definition constraints.
+
+\begin{itemize}
+    \item \textbf{Assignment variables} $y_{a,s}$: true iff agent $a$ performs
+          service $s$ at some time slot.
+    \item \textbf{Service Time-Slot variables} $z_{s,t}$
+          (\texttt{su} in code): true iff service $s$ is performed at time
+          slot $t$.
+    \item \textbf{Sequence Assignment variables} $w_{a,q}$
+          (\texttt{ss}$_{a,q}$ in the paper, \texttt{s} in code): true iff
+          agent $a$ performs at least one service in $\SEQ_q$.
+    \item \textbf{Service Count variables} $\hat{w}_{a,i}$
+          ($w_{a,i}$ in the paper): true iff agent $a$ is assigned at least $i$
+          services.  Defined via a \emph{sorting network} over $\{y_{a,s}\}_s$:
+\end{itemize}
+\begin{equation}\label{eq:w-count}
+    \hat{w}_{a,i} \;\Leftrightarrow\;
+    \sum_{s \in \setS} y_{a,s} \ge i
+    \qquad \forall a \in \setA,\;
+    i \in \{1,\ldots, \HN_a + \HE_a + 1\}
+\end{equation}
+\begin{itemize}
+    \item \textbf{Distinct Agent Count variables} $c_{q,i}$: true iff the
+          services of sequence~$q$ are performed by at least~$i$ distinct agents.
+          Defined via a \emph{sorting network} over $\{w_{a,q}\}_a$:
+\end{itemize}
+\begin{equation}\label{eq:c-count}
+    c_{q,i} \;\Leftrightarrow\;
+    \sum_{a \in \setA} w_{a,q} \ge i
+    \qquad \forall q \in \{1,\ldots,|\SEQ|\},\;
+    i \in \{1,\ldots,|\SEQ_q|\}
+\end{equation}
+
+\noindent
+Equations~\eqref{eq:w-count} and \eqref{eq:c-count} use
+\textbf{sorting network encoding}~\cite{asin2011cardinality}: given $n$ input
+variables $\{x_1,\ldots,x_n\}$, the encoding introduces $n$ output variables
+$\{o_1,\ldots,o_n\}$ and $O(n\log^2 n)$ hard clauses ensuring that $o_i$ is
+true iff at least $i$ inputs are true.
 
 \subsection{Hard Clauses}
 
@@ -417,38 +454,73 @@ $\HN_a + \HE_a$ is forced to false:
     \qquad \forall a \in \setA
 \end{equation}
 
-\subsection{Soft Clauses}
+\subsection{Soft Clauses (Objective Function)}
 
-\paragraph{O1 -- Expertise reward:}
+The objective function to maximise consists of three components:
+\begin{equation}\label{eq:sat-obj}
+    \text{objective} = \underbrace{\text{similarity}}_{\text{(O1)}}
+    \;+\; \underbrace{\text{stability}}_{\text{(O2)}}
+    \;-\; \underbrace{\text{cost}}_{\text{(O3)}}
+\end{equation}
+where:
+\begin{align}
+    \text{similarity} \;&=\;
+        \sum_{a \in \setA}\sum_{s \in \setS} r_{a,s} \cdot y_{a,s}
+        \label{eq:similarity}\\
+    \text{stability} \;&=\;
+        \sum_{q=1}^{|\SEQ|} \;\sum_{i=1}^{|\SEQ_q|}
+        \bigl(1 - c_{q,i}\bigr)
+        \label{eq:stability}\\
+    \text{cost} \;&=\;
+        \sum_{a \in \setA}\;\sum_{i=\HN_a+1}^{\HN_a+\HE_a}
+        |P| \cdot \hat{w}_{a,i}
+        \label{eq:cost}
+\end{align}
+
+\noindent
+Each component is encoded using \emph{weighted soft clauses}
+$\langle c, w \rangle$, where $w > 0$ is the reward for satisfying clause~$c$.
+MaxSAT maximises the total weight of satisfied soft clauses while satisfying
+all hard clauses.
+
+\paragraph{O1 -- Similarity (Eq.~\ref{eq:similarity}):}
 For each valid pair $(a,s)$ with $r_{a,s} > 0$:
 \begin{equation}\label{eq:soft-reward}
-    \bigl(y_{a,s},\;\; \text{weight} = r_{a,s}\bigr) \qquad \text{soft clause}
+    \bigl\langle y_{a,s},\;\; r_{a,s}\bigr\rangle \qquad
+    \forall a \in \setA,\; \forall s \in \setS
 \end{equation}
-The MaxSAT solver maximises the total weight of satisfied soft clauses.
 
-\paragraph{O2 -- Continuity of care:}
-For each sequence $\SEQ_q$ with $|\SEQ_q| > 1$, a sorting network is applied
-to the vector $(w_{1,q}, w_{2,q}, \ldots, w_{A,q})$.
-The sorted outputs $\mathrm{out}[0], \ldots, \mathrm{out}[p-1]$
-(where $p = \min(A, |\SEQ_q|)$)
-are penalised with unit-weight soft clauses:
+\paragraph{O2 -- Stability (Eq.~\ref{eq:stability}):}
+The stability term rewards each ``unused agent slot'' in a sequence.
+Using the sorting network output variables $c_{q,i}$
+(Eq.~\ref{eq:c-count}):
 \begin{equation}\label{eq:soft-cont}
-    \bigl(\neg\,\mathrm{out}[i],\;\; \text{weight} = 1\bigr)
-    \quad i = 0,\ldots,p-1, \qquad \text{for each } q
+    \bigl\langle \neg\, c_{q,i},\;\; 1 \bigr\rangle \qquad
+    \forall q \in \{1,\ldots,|\SEQ|\},\;
+    \forall i \in \{1,\ldots,|\SEQ_q|\}
 \end{equation}
-This effectively penalises each additional agent working in the same sequence.
+Satisfying $\neg c_{q,i}$ (i.e.\ fewer than $i$ agents in sequence~$q$) earns
+a reward of~1.  This effectively penalises each additional distinct agent.
 
-\paragraph{O3 -- Extra-hour penalty:}
-For each agent $a$ whose potential workload exceeds $\HN_a$,
-the sorted output positions from $\HN_a$ to
-$\min(\HN_a + \HE_a, |\{s : r_{a,s} > 0\}|) - 1$
-are penalised:
-\begin{equation}\label{eq:soft-extra}
-    \bigl(\neg\,\mathrm{out}[k],\;\; \text{weight} = |P|\bigr)
-    \quad k = \HN_a,\ldots \qquad \text{for each } a
+\paragraph{O3 -- Cost (Eq.~\ref{eq:cost}):}
+MaxSAT requires all soft-clause weights to be \emph{positive}.
+Since cost subtracts from the objective, we apply the standard transformation:
+\begin{equation}\label{eq:cost-transform}
+    -\text{cost}
+    = -\!\sum_{a,\,i} |P| \cdot \hat{w}_{a,i}
+    = \underbrace{\sum_{a,\,i} |P|}_{\text{constant}}
+      \;-\; \sum_{a,\,i} |P| \cdot (1 - \hat{w}_{a,i})
+      \;-\; \underbrace{\sum_{a,\,i} |P|}_{\text{cancel}}
 \end{equation}
-Note that the penalty weight $|P|$ is negative in the objective (since $P < 0$),
-meaning it is a cost to be subtracted from the total reward.
+The constant terms can be precomputed and added as an offset.
+The variable part yields soft clauses with positive weights:
+\begin{equation}\label{eq:soft-extra}
+    \bigl\langle \neg\, \hat{w}_{a,i},\;\; |P| \bigr\rangle \qquad
+    \forall a \in \setA,\;
+    \forall i \in \{\HN_a + 1,\ldots, \HN_a + \HE_a\}
+\end{equation}
+Satisfying $\neg \hat{w}_{a,i}$ (agent $a$ works fewer than $i$ services)
+earns a reward of $|P|$, thus reducing the cost.
 
 \subsection{Stratified Variant}
 
@@ -1039,12 +1111,9 @@ Caballero et al.\ and are publicly available on GitHub~\cite{hcorap-github}.
 \begin{thebibliography}{99}
 
 \bibitem{collcaballero2025hcorap}
-Jordi Coll, Jes\'us Gir\'aldez-Cru, Jordi Levy, Zara Calder\'on, Daniel
-Gara\~nena, Simone Mancini, and Pedro Meseguer.
+Irene Unceta, Bernat Salbanya, Jordi Coll, Mateu Villaret, and Jordi Nin.
 \newblock Optimizing Resource Allocation in Home Care Services using MaxSAT.
-\newblock In \emph{Proceedings of the International Conference on the
-Integration of Constraint Programming, Artificial Intelligence, and Operations
-Research (CPAIOR)}, 2025.
+\newblock \emph{Artificial Intelligence}, 339:104258, 2025.
 
 \bibitem{hcorap-github}
 Jordi Coll Caballero.
