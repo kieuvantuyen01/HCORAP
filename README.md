@@ -169,6 +169,21 @@ CSV dùng UTF-8 BOM và mở trực tiếp bằng Excel. Dùng result directory
 mới khi đổi schema/campaign. Shell chỉ điều phối; phần được đo vẫn là C++
 end-to-end.
 
+Screening chỉ chạy weighted baseline (không chạy lexicographic hoặc epsilon):
+
+```sh
+METHODS=weighted RUN_EPSILON=0 TIMEOUT=60 \
+experiments/run_cpp_experiments.sh \
+  /absolute/path/to/open-wbo \
+  experiments/results/weighted_screening \
+  INSTANCE.txt
+```
+
+`METHODS` nhận danh sách gồm `weighted`, `lex-continuity` và
+`lex-overtime`; `RUN_EPSILON=0` tắt toàn bộ các mức `DELTAS`. Mặc định runner
+vẫn chạy ba method cùng năm mức epsilon như trước. Đặt `METHODS=''` và
+`RUN_EPSILON=1` để chạy epsilon-only.
+
 ## Kiểm thử
 
 Kiểm thử C++ end-to-end với cùng Open-WBO binary:

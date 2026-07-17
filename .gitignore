@@ -41,6 +41,8 @@ __pycache__/
 *.py[cod]
 *.egg-info/
 .pytest_cache/
+.venv/
+.python-deps/
 
 # Experiment/build outputs (keep source configs and result placeholder)
 experiments/results/*

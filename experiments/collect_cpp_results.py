@@ -55,6 +55,9 @@ GROUP_COLUMNS = (
     "delta",
 )
 
+UNSAT_STATUSES = {"UNSAT", "UNSATISFIABLE"}
+SUCCESS_STATUSES = {"OPTIMUM", *UNSAT_STATUSES}
+
 SUMMARY_COLUMNS = GROUP_COLUMNS + (
     "runs",
     "optimum_runs",
@@ -218,7 +221,7 @@ def summarize(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
             timeout = _number(row.get("timeout_seconds")) or run_elapsed
             par2_values.append(
                 run_elapsed
-                if row["status"] in {"OPTIMUM", "UNSAT"}
+                if row["status"] in SUCCESS_STATUSES
                 else 2.0 * timeout
             )
         summary = dict(zip(GROUP_COLUMNS, key))
@@ -226,10 +229,10 @@ def summarize(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
             {
                 "runs": len(group),
                 "optimum_runs": statuses.count("OPTIMUM"),
-                "unsat_runs": statuses.count("UNSAT"),
+                "unsat_runs": sum(status in UNSAT_STATUSES for status in statuses),
                 "timeout_runs": statuses.count("TIMEOUT"),
                 "error_runs": sum(
-                    status not in {"OPTIMUM", "UNSAT", "TIMEOUT"}
+                    status not in SUCCESS_STATUSES | {"TIMEOUT"}
                     for status in statuses
                 ),
                 "verified_runs": sum(row.get("verified") is True for row in group),

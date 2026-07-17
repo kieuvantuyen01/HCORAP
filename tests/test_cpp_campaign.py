@@ -68,3 +68,63 @@ def test_cpp_campaign_writes_matrix_and_excel_ready_logs(tmp_path: Path) -> None
         "lex-overtime",
         "epsilon",
     }
+
+
+def test_cpp_campaign_can_run_weighted_screening_only(tmp_path: Path) -> None:
+    result_dir = tmp_path / "weighted-screening"
+    environment = os.environ.copy()
+    environment.update(
+        {
+            "HCORAP_MULTI_BIN": str(BINARY),
+            "METHODS": "weighted",
+            "RUN_EPSILON": "0",
+            "TIMEOUT": "30",
+            "SOLVER_ID": "rc2-test",
+        }
+    )
+    subprocess.run(
+        [str(RUNNER), str(SOLVER), str(result_dir), str(INSTANCE)],
+        cwd=ROOT,
+        env=environment,
+        check=True,
+        text=True,
+        capture_output=True,
+        timeout=30,
+    )
+
+    raw = _csv_rows(result_dir / "runs.csv")
+    assert len(raw) == 1
+    assert raw[0]["method"] == "weighted"
+    assert raw[0]["status"] == "OPTIMUM"
+    assert raw[0]["verified"] == "True"
+
+
+def test_cpp_campaign_can_run_epsilon_only(tmp_path: Path) -> None:
+    result_dir = tmp_path / "epsilon-only"
+    environment = os.environ.copy()
+    environment.update(
+        {
+            "HCORAP_MULTI_BIN": str(BINARY),
+            "METHODS": "",
+            "RUN_EPSILON": "1",
+            "DELTAS": "0",
+            "TIMEOUT": "30",
+            "SOLVER_ID": "rc2-test",
+        }
+    )
+    subprocess.run(
+        [str(RUNNER), str(SOLVER), str(result_dir), str(INSTANCE)],
+        cwd=ROOT,
+        env=environment,
+        check=True,
+        text=True,
+        capture_output=True,
+        timeout=30,
+    )
+
+    raw = _csv_rows(result_dir / "runs.csv")
+    assert len(raw) == 1
+    assert raw[0]["method"] == "epsilon"
+    assert raw[0]["delta"] == "0"
+    assert raw[0]["status"] == "OPTIMUM"
+    assert raw[0]["verified"] == "True"

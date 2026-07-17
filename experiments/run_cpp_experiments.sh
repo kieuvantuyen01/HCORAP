@@ -18,6 +18,10 @@ TIMEOUT=${TIMEOUT:-300}
 WC=${WC:-1}
 WO=${WO:-1}
 DELTAS=${DELTAS:-"0 0.01 0.025 0.05 0.10"}
+# Use '-' instead of ':-' so an explicitly empty METHODS value enables an
+# epsilon-only campaign while an unset value keeps the historical defaults.
+METHODS=${METHODS-"weighted lex-continuity lex-overtime"}
+RUN_EPSILON=${RUN_EPSILON:-1}
 CARDINALITY_ENCODINGS=${CARDINALITY_ENCODINGS:-"sorting-network"}
 IMPLIED_CONFIGS=${IMPLIED_CONFIGS:-"none"}
 SYMMETRY_CONFIGS=${SYMMETRY_CONFIGS:-"none"}
@@ -54,8 +58,8 @@ if [ ! -f "$ENVIRONMENT" ]; then
         printf 'solver_sha256='; shasum -a 256 "$SOLVER" | awk '{print $1}'
         printf 'hcorap_binary=%s\n' "$BINARY"
         printf 'hcorap_sha256='; shasum -a 256 "$BINARY" | awk '{print $1}'
-        printf 'timeout=%s\nwc=%s\nwo=%s\ndeltas=%s\ncardinality_encodings=%s\nimplied_configs=%s\nsymmetry_configs=%s\nsoft_coverage=%s\n' \
-            "$TIMEOUT" "$WC" "$WO" "$DELTAS" \
+        printf 'timeout=%s\nwc=%s\nwo=%s\nmethods=%s\nrun_epsilon=%s\ndeltas=%s\ncardinality_encodings=%s\nimplied_configs=%s\nsymmetry_configs=%s\nsoft_coverage=%s\n' \
+            "$TIMEOUT" "$WC" "$WO" "$METHODS" "$RUN_EPSILON" "$DELTAS" \
             "$CARDINALITY_ENCODINGS" "$IMPLIED_CONFIGS" \
             "$SYMMETRY_CONFIGS" "$SOFT_COVERAGE"
         printf 'compiler='; ${CXX:-g++} --version | sed -n '1p'
@@ -86,6 +90,14 @@ coverage_option=
 if [ "$SOFT_COVERAGE" = "1" ]; then
     coverage_option=--soft-coverage
 fi
+
+case "$RUN_EPSILON" in
+    0|1) ;;
+    *)
+        echo "RUN_EPSILON must be 0 or 1: $RUN_EPSILON" >&2
+        exit 2
+        ;;
+esac
 
 run_index=$(awk 'END { print (NR > 0 ? NR - 1 : 0) }' "$MANIFEST")
 for instance in "$@"; do
@@ -123,7 +135,14 @@ for instance in "$@"; do
                         ;;
                 esac
 
-                for method in weighted lex-continuity lex-overtime; do
+                for method in $METHODS; do
+                    case "$method" in
+                        weighted|lex-continuity|lex-overtime) ;;
+                        *)
+                            echo "Unsupported method: $method" >&2
+                            exit 2
+                            ;;
+                    esac
                     run_index=$((run_index + 1))
                     run_id=$(printf '%05d_%s_%s_%s_%s_%s' \
                         "$run_index" "$base" "$cardinality_encoding" \
@@ -143,25 +162,27 @@ for instance in "$@"; do
                         "$exit_code" >> "$MANIFEST"
                 done
 
-                for delta in $DELTAS; do
-                    run_index=$((run_index + 1))
-                    run_id=$(printf '%05d_%s_%s_%s_%s_epsilon_%s' \
-                        "$run_index" "$base" "$cardinality_encoding" \
-                        "$implied_config" "$symmetry_config" "$delta")
-                    result="$RESULT_DIR/$run_id.json"
-                    "$BINARY" "$instance" --solver "$SOLVER" --timeout "$TIMEOUT" \
-                        --method epsilon --delta "$delta" --wc "$WC" --wo "$WO" \
-                        --cardinality-encoding "$cardinality_encoding" \
-                        --implied-constraints "$implied_config" \
-                        --symmetry-breaking "$symmetry_config" \
-                        $coverage_option --output "$result"
-                    exit_code=$?
-                    printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
-                        "$run_id" "$sha256" "$instance" \
-                        "$cardinality_encoding" "$implied_config" \
-                        "$symmetry_config" "epsilon" "$delta" "$result" \
-                        "$exit_code" >> "$MANIFEST"
-                done
+                if [ "$RUN_EPSILON" = "1" ]; then
+                    for delta in $DELTAS; do
+                        run_index=$((run_index + 1))
+                        run_id=$(printf '%05d_%s_%s_%s_%s_epsilon_%s' \
+                            "$run_index" "$base" "$cardinality_encoding" \
+                            "$implied_config" "$symmetry_config" "$delta")
+                        result="$RESULT_DIR/$run_id.json"
+                        "$BINARY" "$instance" --solver "$SOLVER" --timeout "$TIMEOUT" \
+                            --method epsilon --delta "$delta" --wc "$WC" --wo "$WO" \
+                            --cardinality-encoding "$cardinality_encoding" \
+                            --implied-constraints "$implied_config" \
+                            --symmetry-breaking "$symmetry_config" \
+                            $coverage_option --output "$result"
+                        exit_code=$?
+                        printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
+                            "$run_id" "$sha256" "$instance" \
+                            "$cardinality_encoding" "$implied_config" \
+                            "$symmetry_config" "epsilon" "$delta" "$result" \
+                            "$exit_code" >> "$MANIFEST"
+                    done
+                fi
             done
         done
     done
