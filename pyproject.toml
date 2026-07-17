@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hcorap-research"
+version = "0.1.0"
+description = "Reproducible multi-objective MaxSAT methods for HCORAP"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+  "python-sat>=1.8.dev20",
+]
+
+[project.optional-dependencies]
+cpsat = ["ortools>=9.10"]
+test = ["pytest>=8"]
+
+[project.scripts]
+hcorap = "hcorap.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src/proposed"]
+
+[tool.pytest.ini_options]
+addopts = "-ra"
+testpaths = ["tests"]
+pythonpath = ["src/proposed"]

@@ -83,6 +83,8 @@ DIRECTORIES := 	smtapi/src \
 			smtapi/src/solvers \
 		encodings \
 			encodings/HCORAP \
+		proposed/cpp \
+			proposed/cpp/encodings \
 		parser \
 		controllers
 
@@ -185,6 +187,12 @@ SOURCES += $(addprefix encodings/HCORAP/,\
 	HCORAPNServicesEncoding.cpp\
 )
 
+SOURCES += $(addprefix proposed/cpp/encodings/,\
+	CardinalityNetwork.cpp \
+	ImpliedConstraints.cpp \
+	SymmetryBreaking.cpp \
+	HCORAPMultiObjectiveEncoding.cpp\
+)
 
 
 SOURCES += $(addprefix parser/, \
@@ -269,12 +277,12 @@ OBJS := $(OBJS:%.cc=$(BUILDROOT)/%.o)
 SOURCES := $(addprefix src/, $(SOURCES))
 
 
-.PHONY: all hcorap2sat 
+.PHONY: all hcorap2sat hcorap_multi
 
 .SECONDARY: $(OBJS)
 
 
-all: hcorap2sat
+all: hcorap2sat hcorap_multi
 
 clean:
 	@rm -rf build
@@ -282,6 +290,8 @@ clean:
 
 
 hcorap2sat: $(BUILDROOT) $(BINROOT) $(addprefix $(BUILDROOT)/, $(DIRECTORIES)) $(BUILDROOT)/hcorap2sat.o $(BINROOT)/hcorap2sat
+
+hcorap_multi: $(BUILDROOT) $(BINROOT) $(addprefix $(BUILDROOT)/, $(DIRECTORIES)) $(BUILDROOT)/hcorap_multi.o $(BINROOT)/hcorap_multi
 
 # Compile the binary by calling the compiler with cflags, lflags, and any libs (if defined) and the list of objects.
 $(BINROOT)/%: $(OBJS) $(BUILDROOT)/%.o

@@ -35,3 +35,19 @@
 build*
 bin*
 .idea*
+
+# Python research implementation
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# Experiment/build outputs (keep source configs and result placeholder)
+experiments/results/*
+!experiments/results/.gitkeep
+/output/
+/outputs/
+
+# Generated files for the research-plan document
+/Ke_hoach_nghien_cuu_HCORAP.*
+!/Ke_hoach_nghien_cuu_HCORAP.tex

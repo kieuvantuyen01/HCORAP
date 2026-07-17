@@ -1,0 +1,50 @@
+{
+  "instances": [
+    "../../instances/paperInstances/TXT_10-25_4-5_U30/instance_30_15_4_47.txt"
+  ],
+  "output": "../results/pilot.jsonl",
+  "methods": [
+    {
+      "method": "weighted",
+      "continuity_weight": 1,
+      "overtime_weight": 1,
+      "require_full_coverage": true,
+      "maxsat_algorithm": "rc2-stratified",
+      "sat_solver": "g4",
+      "timeout_seconds": 60
+    },
+    {
+      "method": "lexicographic",
+      "policy": "continuity-priority",
+      "require_full_coverage": true,
+      "maxsat_algorithm": "rc2-stratified",
+      "sat_solver": "g4",
+      "timeout_seconds": 60
+    },
+    {
+      "method": "lexicographic",
+      "policy": "overtime-priority",
+      "require_full_coverage": true,
+      "maxsat_algorithm": "rc2-stratified",
+      "sat_solver": "g4",
+      "timeout_seconds": 60
+    },
+    {
+      "method": "epsilon-constraint",
+      "delta": "0.05",
+      "require_full_coverage": true,
+      "maxsat_algorithm": "rc2-stratified",
+      "sat_solver": "g4",
+      "timeout_seconds": 60
+    },
+    {
+      "method": "cpsat-weighted",
+      "continuity_weight": 1,
+      "overtime_weight": 1,
+      "require_full_coverage": true,
+      "workers": 1,
+      "random_seed": 0,
+      "timeout_seconds": 60
+    }
+  ]
+}

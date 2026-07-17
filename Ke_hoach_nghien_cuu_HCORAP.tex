@@ -1,0 +1,1183 @@
+\documentclass[12pt,a4paper]{article}
+
+% Biên dịch bằng XeLaTeX:
+%   latexmk -xelatex Ke_hoach_nghien_cuu_HCORAP.tex
+
+\usepackage{fontspec}
+\setmainfont{Times New Roman}
+\setsansfont{Arial}
+\setmonofont{Courier New}
+
+\usepackage[a4paper,margin=2.5cm]{geometry}
+\usepackage{amsmath,amssymb,mathtools}
+\usepackage{booktabs,longtable,tabularx,array,multirow}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{microtype}
+\usepackage{fancyhdr}
+\usepackage{float}
+\usepackage{hyperref}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!55!black,
+  citecolor=blue!55!black,
+  urlcolor=blue!65!black,
+  pdftitle={Đánh giá đa mục tiêu có kiểm soát cho HCORAP bằng MaxSAT},
+  pdfauthor={Người thực hiện}
+}
+
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{Kế hoạch nghiên cứu HCORAP}
+\rhead{Weighted/Lex/$\varepsilon$-constraint MaxSAT}
+\cfoot{\thepage}
+\setlength{\headheight}{16pt}
+
+\setlist[itemize]{leftmargin=1.6em,itemsep=0.3em,topsep=0.4em}
+\setlist[enumerate]{leftmargin=1.8em,itemsep=0.35em,topsep=0.4em}
+\renewcommand{\arraystretch}{1.2}
+
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+\newcommand{\SIM}{\mathrm{SIM}}
+\newcommand{\STAB}{\mathrm{STAB}}
+\newcommand{\CONT}{\mathrm{CONT}}
+\newcommand{\OT}{\mathrm{OT}}
+\newcommand{\COV}{\mathrm{COV}}
+\newcommand{\SEQ}{\mathrm{SEQ}}
+\newcommand{\HN}{\mathrm{HN}}
+\newcommand{\HE}{\mathrm{HE}}
+
+\title{%
+  \textbf{KẾ HOẠCH NGHIÊN CỨU VÀ TRIỂN KHAI}\\[0.6em]
+  \Large Đánh giá đa mục tiêu có kiểm soát cho bài toán phân bổ nguồn lực
+  trong dịch vụ chăm sóc tại nhà (HCORAP)
+}
+\author{Người thực hiện: \textit{[Điền họ và tên]}\\
+        Đơn vị: \textit{[Điền đơn vị công tác/học tập]}}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+\thispagestyle{empty}
+
+\begin{abstract}
+Tài liệu này trình bày kế hoạch nghiên cứu nhằm đánh giá và cải tiến mô hình
+Home Care Optimal Resource Allocation Problem (HCORAP) được giải bằng
+Weighted Partial MaxSAT. Nghiên cứu không mặc định một phương pháp tốt hơn
+phương pháp khác. Thay vào đó, baseline weighted đã hiệu chỉnh, hai chính sách
+ưu tiên theo thứ tự từ điển và phương pháp
+$\varepsilon$-constraint được so sánh trên benchmark đã kiểm toán và hiệu chỉnh.
+Thiết kế này tách riêng ảnh hưởng của lỗi benchmark, cách đặt trọng số và phương
+pháp tối ưu. Nghiên cứu giữ nguyên phạm vi assignment--scheduling theo tuần,
+không mở rộng sang routing hoặc uncertainty trong giai đoạn chính. Kết quả dự
+kiến gồm baseline có thể tái lập, benchmark HCORAP phiên bản 2, các bộ giải
+weighted/lexicographic/$\varepsilon$-constraint MaxSAT, ít nhất một baseline
+ngoài MaxSAT, bộ kiểm chứng nghiệm độc lập và đánh giá thực nghiệm có kiểm soát.
+Ba trục cải tiến encoding gồm cardinality encoding, implied constraints và
+symmetry breaking được cấu hình độc lập để đo ảnh hưởng đến kích thước công
+thức và thời gian chứng minh tối ưu mà không trộn với ảnh hưởng của policy tối ưu.
+\end{abstract}
+
+\vfill
+\noindent\textbf{Từ khóa:} HCORAP; MaxSAT; lexicographic optimization;
+$\varepsilon$-constraint; multi-objective optimization; home care scheduling.
+
+\clearpage
+\tableofcontents
+\clearpage
+
+\section{Bối cảnh và động cơ nghiên cứu}
+
+Nghiên cứu gốc mô hình hóa việc phân công caregiver cho các dịch vụ chăm sóc
+tại nhà bằng Weighted Partial MaxSAT. Một nghiệm phải thỏa tất cả hard
+constraints về coverage, availability, qualification, simultaneity và giới hạn
+giờ làm; đồng thời tối đa hóa ba thành phần:
+\begin{equation}
+  \text{similarity}+\text{stability}-\text{cost}.
+  \label{eq:original-objective}
+\end{equation}
+
+Mã C++ chính thức được xem là baseline của tác giả. Để phép đo hiệu năng không
+bị nhiễu bởi khác biệt ngôn ngữ, weighted baseline tương đương, hai chính sách
+lexicographic và phương pháp $\varepsilon$-constraint đều được triển khai bằng
+C++ và gọi cùng một binary MaxSAT. Các tệp Python tự cài đặt chỉ đóng vai trò
+oracle, generator, verifier thứ hai và test harness; runtime Python không được
+đưa vào bảng so sánh hiệu năng chính.
+
+Việc kiểm toán bài báo, generator và 800 instance chính thức cho thấy các vấn
+đề đáng chú ý sau:
+\begin{itemize}
+  \item tham số $V$ xác định tổng $S=U\times V$, nhưng generator không bảo đảm
+        mỗi user có đúng $V$ services;
+  \item thuộc tính ngôn ngữ của user được sinh từ tập nhãn race, làm cho thành
+        phần language compatibility không hoạt động đúng;
+  \item một số instance có service không tồn tại bất kỳ cặp agent--time-slot
+        khả thi nào, dẫn đến trivial UNSAT;
+  \item các cấu hình có số agent khác nhau được sinh độc lập, vì vậy chưa tạo
+        thành thí nghiệm paired/nested để suy luận tác động của $A$;
+  \item similarity và stability được báo cáo bằng tổng thô, nên tăng theo kích
+        thước instance và không phù hợp để so sánh giữa các giá trị $S$;
+  \item cost gần bằng 0 trên phần lớn cấu hình, nên benchmark chưa tạo đủ
+        trade-off giữa similarity, continuity và overtime;
+  \item nghiên cứu chưa đánh giá độ nhạy theo trọng số và chưa so sánh với một
+        cách tối ưu đa mục tiêu không cần cộng các tiêu chí bằng weighted sum.
+  \item sorting network được dùng cố định cho cardinality constraints, nên chưa
+        biết Totalizer hoặc các strengthening bảo toàn optimum có cải thiện
+        propagation và time-to-proof hay không;
+  \item detector exact trên 800 instance tìm thấy time-slot symmetry có candidate
+        thực sự trong 553 instance ($69.1\%$), service symmetry trong 340 instance
+        ($42.5\%$), nhưng không tìm thấy agent symmetry hoàn toàn.
+\end{itemize}
+
+Những quan sát trên dẫn tới nhu cầu xây dựng lại quy trình đánh giá trước khi
+mở rộng mô hình sang các yếu tố phức tạp hơn như routing, uncertainty hoặc
+rescheduling.
+
+\section{Hướng nghiên cứu được lựa chọn}
+
+Hướng nghiên cứu chính được xác định như sau:
+
+\begin{quote}
+\textbf{Đánh giá có kiểm soát calibrated Weighted MaxSAT, sequential
+Lexicographic MaxSAT và similarity-budget $\varepsilon$-constraint MaxSAT cho
+HCORAP trên benchmark đã hiệu chỉnh, nhằm xác định khi nào mỗi cách biểu diễn
+ưu tiên tạo ra phương án phân công phù hợp.}
+\end{quote}
+
+Đây là hướng khả thi vì:
+\begin{enumerate}
+  \item giữ nguyên cấu trúc biến và phần lớn hard constraints của mô hình gốc;
+  \item tận dụng được C++ gốc để tái lập baseline và mở rộng trực tiếp cùng
+        C++ model cho các phương pháp mới;
+  \item không phụ thuộc ngay vào dữ liệu GPS hoặc dữ liệu vận hành thời gian thực;
+  \item cho phép đánh giá cải tiến bằng các KPI định lượng rõ ràng;
+  \item vẫn giữ MaxSAT là đối tượng nghiên cứu trung tâm, đồng thời có baseline
+        ngoài MaxSAT để tránh kết luận chỉ dựa trên một hệ giải.
+\end{enumerate}
+
+\subsection{Định vị đóng góp và tuyên bố tính mới}
+
+Tối ưu theo thứ tự từ điển không phải ý tưởng mới trong scheduling hoặc home
+care. Weighted Partial MaxSAT cũng đã được áp dụng cho staff scheduling
+\cite{demirovic2019,mosquera2019,bodvarsdottir2025}. Multi-objective MaxSAT hiện
+đã có các thuật toán và solver chuyên biệt \cite{jabs2025}. Vì vậy, nghiên cứu
+\emph{không} tuyên bố ``lần đầu dùng lexicographic optimization cho scheduling''
+hoặc ``lần đầu dùng tối ưu đa mục tiêu cho home care''.
+
+Đóng góp được định vị ở tổ hợp có thể kiểm chứng sau:
+\begin{enumerate}
+  \item kiểm toán và tái lập formulation HCORAP/MaxSAT gốc;
+  \item xây dựng benchmark paired/nested đã sửa lỗi và có mức tải được hiệu
+        chỉnh trên calibration seeds độc lập;
+  \item so sánh calibrated weighted sum với các chính sách ưu tiên tuyệt đối và
+        $\varepsilon$-constraint trên cùng Boolean model;
+  \item đánh giá riêng Totalizer, implied constraints và symmetry breaking bằng
+        ma trận ablation có baseline \texttt{none} rõ ràng;
+  \item xác định phần cải thiện đến từ benchmark, metric hay optimizer bằng
+        ablation và ít nhất một baseline CP-SAT hoặc MILP;
+  \item công bố verifier, cấu hình, raw results và các kết quả âm nếu calibrated
+        weighted sum đã đủ tốt.
+\end{enumerate}
+
+Việc tiếp tục dùng MaxSAT cho phép giữ nguyên phần lớn encoding gốc và thực hiện
+so sánh có kiểm soát. Nó không phải bằng chứng MaxSAT tốt hơn CP-SAT/MILP; câu
+hỏi này phải được trả lời bằng thực nghiệm. Nếu calibrated weighted baseline
+cho chất lượng và độ ổn định tương đương các phương pháp còn lại, kết luận đúng
+là hạn chế chủ yếu nằm ở benchmark, không phải ở weighted sum.
+
+\subsection{Phạm vi}
+
+Nghiên cứu giữ nguyên các giả định sau:
+\begin{itemize}
+  \item lập lịch theo tuần;
+  \item mỗi service chiếm một time slot;
+  \item mỗi service được thực hiện bởi tối đa một agent tại một time slot;
+  \item qualification, agent availability và service availability là dữ liệu
+        xác định;
+  \item continuity được định nghĩa trên các sequence $\SEQ(q)$;
+  \item số service được giao cho agent không vượt $\HN(a)+\HE(a)$.
+\end{itemize}
+
+Trong giai đoạn này, nghiên cứu \emph{không} bổ sung routing, travel time,
+uncertainty, dynamic rescheduling, multi-sector coordination hoặc fairness
+objective mới. Đây là các hướng tiếp theo sau khi baseline và objective hiện
+tại đã được đánh giá đáng tin cậy.
+
+\section{Câu hỏi và giả thuyết nghiên cứu}
+
+\subsection{Câu hỏi nghiên cứu}
+
+\begin{description}[leftmargin=3.4em,labelwidth=2.8em]
+  \item[RQ1.] Nghiệm của weighted MaxSAT hiện tại nhạy như thế nào đối với
+              trọng số continuity và overtime?
+  \item[RQ2.] Với mức suy giảm similarity bị giới hạn trong $1$--$5\%$, có thể
+              cải thiện continuity và overtime ở mức nào?
+  \item[RQ3.] Sequential lexicographic và $\varepsilon$-constraint MaxSAT có
+              cung cấp bảo đảm ưu tiên hoặc nghiệm không bị trội với chi phí
+              tính toán nào so với calibrated Weighted MaxSAT và baseline
+              ngoài MaxSAT?
+  \item[RQ4.] Các kết luận của bài báo về similarity, stability và cost có còn
+              giữ nguyên khi dùng benchmark paired/nested và metric chuẩn hóa
+              hay không?
+  \item[RQ5.] Totalizer, implied constraints và symmetry breaking ảnh hưởng như
+              thế nào đến số biến, số clause, thời gian encode, time-to-proof và
+              PAR-2 khi objective, solver và policy được giữ cố định?
+\end{description}
+
+\subsection{Giả thuyết}
+
+\begin{description}[leftmargin=3.4em,labelwidth=2.8em]
+  \item[H1.] Trên critical-load instances, thay đổi trọng số
+             continuity/overtime làm thay đổi đáng kể cấu trúc nghiệm, dù tổng
+             weighted objective có thể thay đổi ít; trên low-load instances,
+             ảnh hưởng có thể không đáng kể.
+  \item[H2.] Tồn tại các nghiệm giảm continuity penalty với tổn thất similarity
+             nhỏ, đặc biệt trên các instance có nhiều lựa chọn agent.
+  \item[H3.] Trade-off overtime chỉ thể hiện rõ trên các instance critical-load;
+             benchmark có capacity dư sẽ không đủ để kiểm nghiệm cost objective.
+  \item[H4.] Similarity trên mỗi service phụ thuộc chủ yếu vào số agent khả dụng,
+             thay vì tăng đơn thuần theo tổng số services.
+  \item[H5.] Không có một strengthening tốt nhất cho mọi instance; lợi ích của
+             slot/service symmetry và implied constraints phụ thuộc candidate
+             density, load và cấu trúc \texttt{SU/SEQ}, nên phải được chọn bằng paired
+             pilot thay vì bật mặc định.
+\end{description}
+
+\section{Định nghĩa lại các tiêu chí đánh giá}
+
+\subsection{Similarity}
+
+Giữ nguyên tổng similarity:
+\begin{equation}
+  \SIM=\sum_{a=1}^{A}\sum_{s=1}^{S}r(a,s)y_{a,s}.
+  \label{eq:sim}
+\end{equation}
+
+Để so sánh giữa các kích thước instance, sử dụng chỉ số chuẩn hóa:
+\begin{equation}
+  \SIM_N=\frac{\SIM}{r_{\max}S},
+  \qquad r_{\max}=4.
+  \label{eq:sim-normalized}
+\end{equation}
+
+Do $r_{\max}S$ có thể không đạt được khi qualification và time windows hạn
+chế, báo cáo thêm chỉ số theo upper bound khả đạt:
+\begin{equation}
+  U_{\SIM}=\sum_{s=1}^{S}\max_{a\in\mathcal A_s}r(a,s),
+  \qquad
+  \SIM_A=\frac{\SIM}{U_{\SIM}},
+  \label{eq:sim-attainable}
+\end{equation}
+trong đó $\mathcal A_s$ là tập agent có ít nhất một time slot khả thi cho
+service $s$. Chỉ số này chỉ dùng khi $U_{\SIM}>0$. Trên các instance dùng similarity budget, báo cáo thêm
+$\SIM/\SIM^*$ để đo trực tiếp mức mất mát so với similarity tối ưu.
+
+\subsection{Continuity}
+
+Đặt $D_q$ là số agent khác nhau tham gia sequence $q$:
+\begin{equation}
+  D_q=\sum_{a=1}^{A}ss_{a,q}.
+  \label{eq:distinct-agents}
+\end{equation}
+
+Thay vì báo cáo stability reward có chứa hằng số, định nghĩa continuity penalty:
+\begin{equation}
+  \CONT=\sum_{q:\,|\SEQ(q)|>1}(D_q-1).
+  \label{eq:continuity-penalty}
+\end{equation}
+
+\paragraph{Mệnh đề 1 (tương đương với stability gốc).}
+Giả sử coverage là hard constraint và mọi sequence không rỗng. Đặt
+$n_q=|\SEQ(q)|$ và
+\begin{equation}
+  \STAB=\sum_q\sum_{i=1}^{n_q}(1-c_{q,i}),
+  \qquad
+  C_{\mathrm{inst}}=\sum_q(n_q-1).
+\end{equation}
+Khi đó:
+\begin{equation}
+  \STAB=C_{\mathrm{inst}}-\CONT.
+  \label{eq:stab-cont-equivalence}
+\end{equation}
+
+\emph{Chứng minh.} Theo định nghĩa của encoding gốc,
+$c_{q,i}=1$ khi và chỉ khi $D_q\geq i$. Vì vậy, trong $n_q$ biến đếm có đúng
+$D_q$ biến nhận giá trị 1 và
+$\sum_{i=1}^{n_q}(1-c_{q,i})=n_q-D_q$. Mặt khác, sequence đơn có
+$D_q=1$ nên đóng góp 0; do đó
+$\CONT=\sum_q(D_q-1)$. Suy ra
+$\STAB=\sum_q(n_q-D_q)=\sum_q(n_q-1)-\CONT$. \hfill$\square$
+
+Hằng số đúng là $\sum_q(n_q-1)$, không phải $\sum_q n_q$. Tính tương đương
+này chỉ được sử dụng khi mọi service đều được phục vụ.
+
+Chỉ số continuity chuẩn hóa là:
+\begin{equation}
+  \CONT_N=
+  \begin{cases}
+    1-\dfrac{\sum_{q:\,|\SEQ(q)|>1}(D_q-1)}
+                 {\sum_{q:\,|\SEQ(q)|>1}(|\SEQ(q)|-1)},
+       & \text{nếu mẫu số}>0,\\[1.1em]
+    1, & \text{nếu mẫu số}=0.
+  \end{cases}
+  \label{eq:continuity-normalized}
+\end{equation}
+
+Giá trị $\CONT_N=1$ thể hiện continuity tốt nhất: mỗi sequence chỉ sử dụng một
+caregiver.
+
+Khi coverage được nới thành soft objective trong stress test overload, có thể
+có $D_q=0$ và Eq.~\eqref{eq:continuity-penalty} không còn thích hợp. Đặt
+\begin{equation}
+  K_q=\sum_{s\in\SEQ(q)}\mathrm{performed}(s),
+  \qquad
+  \CONT^{\mathrm{serv}}=\sum_q\max(0,D_q-1).
+\end{equation}
+Chỉ số continuity có điều kiện trên các service đã phục vụ là:
+\begin{equation}
+  \CONT_N^{\mathrm{serv}}=
+  \begin{cases}
+    1-\dfrac{\sum_q\max(0,D_q-1)}
+                   {\sum_q\max(0,K_q-1)},
+      & \text{nếu mẫu số}>0,\\[1.1em]
+    1, & \text{nếu mẫu số}=0.
+  \end{cases}
+  \label{eq:continuity-served}
+\end{equation}
+Metric này chỉ được so sánh giữa các nghiệm có cùng $\COV$; đồng thời phải báo
+cáo số sequence không được phục vụ và số sequence chỉ được phục vụ một phần.
+Overload là stress test thứ cấp, không phải tập chính để kết luận về continuity.
+
+\subsection{Overtime}
+
+Số service vượt giờ chuẩn của agent $a$ là:
+\begin{equation}
+  e_a=\max\left(0,\sum_{s=1}^{S}y_{a,s}-\HN(a)\right).
+  \label{eq:agent-overtime}
+\end{equation}
+
+Tổng overtime:
+\begin{equation}
+  \OT=\sum_{a=1}^{A}e_a,
+  \qquad
+  \OT_N=\frac{\OT}{S}.
+  \label{eq:overtime}
+\end{equation}
+
+Ngoài $\OT_N$, cần báo cáo số agent có overtime, overtime cực đại trên một
+agent và phân phối workload giữa các agent.
+
+\subsection{Coverage}
+
+Với benchmark low/critical, coverage tiếp tục là hard constraint và không cần
+đưa $\COV$ vào objective. Chỉ trong stress test overload mới nới coverage thành
+soft objective và định nghĩa:
+\begin{equation}
+  \COV=\sum_{s=1}^{S}\mathrm{performed}(s),
+  \qquad
+  \COV_N=\frac{\COV}{S}.
+  \label{eq:coverage}
+\end{equation}
+
+Coverage phải là mục tiêu ưu tiên cao nhất khi cho phép bỏ một số services.
+Mọi so sánh về $\SIM$, $\CONT$ và $\OT$ trong stress test phải condition trên
+cùng mức $\COV$.
+
+\section{Các phương pháp cần triển khai}
+
+\subsection{B0: Weighted MaxSAT gốc}
+
+Đặt $p=|P|$ là chi phí dương của một giờ vượt giờ. Baseline được viết dưới
+dạng penalty tương đương (bỏ hằng số theo
+Eq.~\eqref{eq:stab-cont-equivalence}):
+\begin{equation}
+  \max\; \SIM-w_c\CONT-w_o p\OT.
+  \label{eq:weighted-baseline}
+\end{equation}
+
+Trong WCNF, similarity clauses $\langle y_{a,s},r(a,s)\rangle$ giữ nguyên;
+stability clauses dùng $\langle\neg c_{q,i},w_c\rangle$; overtime clauses dùng
+$\langle\neg w_{a,i},w_o p\rangle$. Không scalarize ở ngoài solver. Tệp cấu
+hình phải lưu cả $(w_c,w_o,p)$ và các integer weights thực tế đã ghi vào WCNF.
+
+Grid screening ban đầu là:
+\begin{equation}
+  w_c\in\{1,2,4,8\},
+  \qquad
+  w_o\in\{1,2,4,8\}.
+\end{equation}
+
+Đây là log-grid thăm dò, không phải khẳng định 16 cặp đã bao phủ đầy đủ không
+gian trọng số. Sau screening, chỉ tinh chỉnh các khoảng mà assignment hoặc
+metric thay đổi. Cấu hình gốc $(w_c,w_o)=(1,1)$ phải chạy trên toàn bộ official
+benchmark; grid đầy đủ chỉ chạy trên subset phân tầng để giữ computational
+budget khả thi. Mục đích của B0 là xây dựng calibrated weighted baseline mạnh,
+không giả định $(1,1)$ là lựa chọn đúng duy nhất.
+
+Calibrated weighted sum và lexicographic optimization giải quyết hai loại yêu
+cầu khác nhau. Weighted sum cho phép bù trừ giữa các tiêu chí. Lexicographic
+optimization bảo đảm không một tổng cải thiện ở tầng thấp nào đánh đổi một đơn
+vị ở tầng cao. Weighted sum có thể mô phỏng thứ tự lexicographic bằng các
+domination weights lớn hơn toàn bộ miền giá trị của các tầng dưới, nhưng các
+trọng số đó phụ thuộc kích thước instance và khi ấy không còn biểu diễn trade-off
+bù trừ thông thường. Vì vậy B1/B2 là các chính sách so sánh, không được mặc định
+là ``tốt hơn'' B0.
+
+\subsection{B1: Lexicographic MaxSAT}
+
+Lexicographic optimization được thực hiện theo nhiều tầng, không dùng một
+``big weight'' duy nhất. Để tránh gán nhãn giá trị khi chưa có stakeholder
+study, hai kịch bản được gọi trung tính là:
+
+\begin{align}
+  \text{Continuity-priority:}\quad
+    &-\CONT \succ \SIM \succ -\OT,
+    \label{eq:continuity-priority}\\
+  \text{Overtime-priority:}\quad
+    &-\OT \succ -\CONT \succ \SIM.
+    \label{eq:overtime-priority}
+\end{align}
+
+Ký hiệu $\succ$ nghĩa là mục tiêu bên trái có ưu tiên tuyệt đối cao hơn. Quy
+trình tổng quát trên full-coverage instances:
+\begin{enumerate}
+  \item tối ưu mục tiêu ở tầng hiện tại;
+  \item ghi nhận giá trị tối ưu;
+  \item bổ sung bound bảo toàn giá trị tối ưu đó;
+  \item chuyển sang mục tiêu tiếp theo.
+\end{enumerate}
+
+Ví dụ cho chính sách overtime-priority:
+\begin{align*}
+  &\min \OT  &&\Rightarrow \OT^*,\\
+  &\min \CONT&&\text{s.t. }\OT\leq\OT^* \Rightarrow \CONT^*,\\
+  &\max \SIM &&\text{s.t. }\OT\leq\OT^*,\ \CONT\leq\CONT^*.
+\end{align*}
+
+Vì $\OT^*$ và $\CONT^*$ đã tối ưu, các bất đẳng thức trên tương đương logic
+với equality nhưng thường cần encoding đơn giản hơn. Stress test overload thêm
+tầng $\max\COV$ đầu tiên và bound $\COV\geq\COV^*$ cho mọi tầng sau. Kiểm thử
+phải bao gồm nhiều nghiệm đồng tối ưu để xác nhận tầng sau chọn đúng tie mà
+không làm xấu tầng trước.
+
+\subsection{B2: Similarity-budget
+\texorpdfstring{$\varepsilon$}{epsilon}-constraint MaxSAT}
+
+Đầu tiên tính similarity tối đa:
+\begin{equation}
+  \SIM^*=\max \SIM.
+\end{equation}
+Phân tích chính dùng full-coverage instances. Nếu B2 được dùng trong overload
+stress test, phải tối đa hóa và cố định $\COV^*$ trước, rồi mới tính $\SIM^*$
+trên miền nghiệm có $\COV\geq\COV^*$.
+
+Với mỗi mức suy giảm cho phép
+\begin{equation}
+  \delta\in\{0,0.01,0.025,0.05,0.10\},
+\end{equation}
+thêm ràng buộc:
+\begin{equation}
+  \SIM\geq L_\delta
+  =\left\lceil(1-\delta)\SIM^*\right\rceil,
+  \label{eq:similarity-budget}
+\end{equation}
+rồi lần lượt tối thiểu hóa $\CONT$, tối thiểu hóa $\OT$ và cuối cùng tối đa hóa
+lại $\SIM$ trong các ties. Dùng ceiling bảo đảm tổn thất similarity không vượt
+budget đã công bố; dùng floor có thể vi phạm budget gần một đơn vị reward.
+
+Đây là $\varepsilon$-constraint tri-objective với lexicographic completion,
+không phải thuật toán liệt kê toàn bộ Pareto front. Sau ba tầng completion,
+không thể tồn tại nghiệm khác có $\SIM$ không nhỏ hơn, $\CONT$ không lớn hơn và
+$\OT$ không lớn hơn với ít nhất một bất đẳng thức nghiêm; nếu có, nghiệm đó sẽ
+mâu thuẫn với một trong ba optimum đã cố định. Do đó mỗi điểm hoàn tất là một
+điểm không bị trội, nhưng năm mức $\delta$ chỉ tạo một tập đại diện rời rạc.
+Các điểm trùng nhau được gộp; nếu còn budget tính toán, chèn thêm mức $\delta$
+vào khoảng có gap lớn nhất trong objective space \cite{mesquita2023}.
+
+\section{Kiến trúc phần mềm đề xuất}
+
+Mã nguồn baseline được giữ làm mốc audit; phần mở rộng C++ nằm trong các tệp
+riêng và được link vào executable mới. Cấu trúc triển khai:
+
+\begin{verbatim}
+src/
+  hcorap2sat.cpp              # executable gốc để audit
+  hcorap_multi.cpp            # executable C++ cho B0/B1/B2
+  encodings/HCORAP/
+    HCORAPEncoding.*          # encoding gốc
+  proposed/
+    cpp/encodings/            # C++ ablation
+      CardinalityNetwork.*
+      ImpliedConstraints.*
+      SymmetryBreaking.*
+      HCORAPMultiObjectiveEncoding.*
+    hcorap/                   # Python oracle
+
+experiments/
+  run_cpp_experiments.sh
+  collect_cpp_results.py
+  configs/cpp/
+    full_configuration_matrix.env
+  results/
+
+docs/
+  FAIR_EXPERIMENT_PROTOCOL.md
+  IMPLIED_CONSTRAINTS.md
+  SYMMETRY_BREAKING.md
+
+instances/
+  official/                   # 800 official instances
+  corrected_v2/
+  stress/
+
+tests/
+  instances/tradeoff.txt
+  instances/symmetry.txt
+  instances/symmetry_partial.txt
+  test_cpp_campaign.py
+  test_cpp_multiobjective.py
+  test_cpp_crosscheck.py
+  ...                         # unit tests cho oracle/generator
+\end{verbatim}
+
+Phép so sánh phương pháp chính dùng chung parser, hard model, WCNF writer,
+compiler flags và Open-WBO C++ backend. Python không nằm trên đường chạy được
+đo. Trước full experiment, B0 C++ mới phải khớp optimum của C++ gốc và brute
+force/RC2 oracle trên các instance nhỏ; assignment có thể khác khi đồng tối ưu.
+
+Kiểm thử triển khai phát hiện helper \texttt{addPBGEQ} của thư viện C++ kế thừa
+ghi vào vector chưa cấp kích thước và truyền nhầm cận. Để không thay đổi baseline
+audit, phần mở rộng không sửa helper cũ mà mã hóa cục bộ
+$\sum_i q_i x_i\geq K$ thành
+$\sum_i q_i(1-x_i)\leq\sum_i q_i-K$. Mọi bound coverage/similarity của B1--B2
+đều dùng phép biến đổi này và có regression test.
+
+\subsection{Ba trục cấu hình encoding đã triển khai}
+
+Các cải tiến encoding được thiết kế thành ba trục độc lập. Giá trị đầu tiên ở
+mỗi trục là baseline mặc định:
+
+\begin{table}[H]
+\centering
+\caption{Ma trận cấu hình encoding trong executable \texttt{hcorap\_multi}.}
+\begin{tabularx}{\textwidth}{@{}p{3.4cm}>{\raggedright\arraybackslash}p{4.4cm}Y@{}}
+\toprule
+Trục & Giá trị & Vai trò \\
+\midrule
+Cardinality
+  & \texttt{sorting-network}, \texttt{totalizer}
+  & So sánh sorting network gốc với Totalizer hai chiều. \\
+Implied constraints
+  & \texttt{none}, \texttt{user-slots}, \texttt{slot-capacity},
+    \texttt{both}, \texttt{both-plus}
+  & Bổ sung các hệ quả logic và projection để tăng propagation. \\
+Symmetry breaking
+  & \texttt{none}, \texttt{slots}, \texttt{services},
+    \texttt{slot-service}, \texttt{all}
+  & Chọn một đại diện canonical trong mỗi lớp đối xứng exact. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Totalizer được mã hóa hai chiều để mỗi output unary tương đương chính xác với
+``có ít nhất $k$ input đúng''. Vì vậy các biến threshold dùng trong overtime và
+các tầng lexicographic không thể nhận giá trị tùy ý. Sorting network vẫn là
+baseline mặc định để bảo toàn khả năng audit.
+
+Nhóm implied constraints gồm: (i) đẳng thức giữa số occupied slot của user và
+số service đã phục vụ; (ii) upper bound theo maximum matching agent--user tại
+mỗi time slot; và (iii) cấu hình \texttt{both-plus} bổ sung projected service
+assignment, effective workload cap và service-slot clustering. Trong soft
+coverage, user-slot cardinality được channel với tổng biến
+\texttt{performed}, không bị cố định bằng tổng số service ban đầu.
+
+Đặt $E(a,s,h)=[r(a,s)>0]\land TSA(a,h)\land TSS(s,h)$ là điều kiện tồn tại
+candidate assignment.
+Symmetry breaking chỉ gộp các đối tượng tương đương exact. Hai slot phải có
+cùng vector candidate $E(a,s,h)$; hai service phải cùng user, cùng sequence,
+cùng reward và cùng candidate; hai agent phải cùng $\HN$, $\HE$, reward và
+candidate. Value precedence được dùng để chọn thứ tự canonical. Implied
+constraints giữ nguyên toàn bộ tập lịch khả thi, trong khi symmetry breaking
+loại các lịch có nhãn khác nhau nhưng tương đương và giữ ít nhất một đại diện
+trong mỗi orbit; cả hai phải bảo toàn SAT/UNSAT và optimum.
+
+Ma trận đầy đủ có:
+\begin{equation}
+  2\times5\times5=50\ \text{cấu hình encoding}.
+\end{equation}
+Runner ghi từng run vào JSON và \path{manifest.tsv}. Sau campaign, script
+\path{collect_cpp_results.py} tạo hai bảng UTF-8 BOM mở trực tiếp bằng Excel:
+\path{runs.csv} chứa dữ liệu thô và \path{configuration_summary.csv} chứa
+solved/timeout/error count, mean, median, PAR-2, encode/solve time, số biến,
+hard/soft clauses và quality metrics. Tại thời điểm cập nhật, toàn bộ
+112 regression tests đã qua; smoke campaign nhỏ gồm 200 top-level runs trên đủ
+50 cấu hình đều đạt \texttt{OPTIMUM} và qua verifier. Đây chỉ là kiểm thử chức
+năng bằng RC2-compatible test backend, không phải bằng chứng cải thiện runtime
+trên Open-WBO hoặc trên toàn bộ official benchmark.
+
+\section{Các gói công việc}
+
+\subsection{WP1: Đóng băng và tái lập baseline}
+
+\textbf{Mục tiêu:} xác nhận C++ gốc, parser, objective và bộ kiểm chứng nghiệm.
+
+\textbf{Nhiệm vụ:}
+\begin{enumerate}
+  \item tạo tag hoặc branch \texttt{baseline-original};
+  \item ghi lại commit hash, compiler và tham số build;
+  \item biên dịch \texttt{hcorap2sat} và sinh WCNF;
+  \item chạy một tập đại diện bằng solver được lựa chọn;
+  \item xây dựng verifier độc lập để tính $\COV$, $\SIM$, $\CONT$ và $\OT$;
+  \item tái lập trạng thái SAT/UNSAT/optimality và quality metrics của toàn bộ
+        800 instance; tái tạo đầy đủ các ô của Bảng 5--6 trong phạm vi solver
+        và time limit khả dụng.
+\end{enumerate}
+
+Để so sánh trực tiếp, báo cáo cả statistic gốc (runtime trung bình trên các
+instance được certified) và số liệu đã sửa gồm PAR-2, cactus plot, solved count
+và timeout count. Hai loại statistic phải đặt cạnh nhau và ghi rõ rằng khác
+biệt do PAR-2 không phải lỗi implementation. Không yêu cầu runtime tuyệt đối
+khớp bài báo vì phần cứng và phiên bản solver khác nhau; yêu cầu bắt buộc là
+khớp feasibility, objective và xu hướng theo cấu hình khi điều kiện cho phép.
+
+\textbf{Kiểm thử:} tạo các instance rất nhỏ có thể vét cạn toàn bộ nghiệm:
+2 agents--2 services; một sequence; một trường hợp cần overtime; một trường
+hợp UNSAT; và một trường hợp có ít nhất hai nghiệm không trội.
+
+\textbf{Điều kiện hoàn thành:}
+\begin{itemize}
+  \item mọi nghiệm đều thỏa hard constraints;
+  \item objective do verifier tính khớp objective của solver;
+  \item B0 C++ mở rộng và C++ gốc đạt cùng optimum trên các instance nhỏ;
+  \item oracle độc lập đạt cùng optimum và verifier chấp nhận mọi nghiệm;
+  \item khác biệt về assignment chỉ xuất hiện khi có nhiều nghiệm tối ưu.
+\end{itemize}
+
+\subsection{WP2: Xây dựng benchmark hiệu chỉnh}
+
+Hai bộ benchmark được duy trì song song:
+\begin{itemize}
+  \item \textbf{Official}: giữ nguyên 800 instance để tái lập và so sánh trực tiếp;
+  \item \textbf{Corrected v2}: sửa generator và thiết kế paired/nested.
+\end{itemize}
+
+Generator v2 phải:
+\begin{enumerate}
+  \item sinh language từ đúng tập \texttt{languages\_labels};
+  \item biểu diễn language nhất quán bằng danh sách;
+  \item bảo đảm mỗi user có đúng $V$ services nếu $V$ được gọi là
+        services-per-user;
+  \item sinh 25 agents trước và lấy các tập lồng nhau
+        $A_{10}\subset A_{15}\subset A_{20}\subset A_{25}$;
+  \item tạo cấu hình $V=4$ như tập con của cấu hình $V=5$;
+  \item sử dụng và lưu random seed;
+  \item lưu raw attributes, raw similarity và ma trận reward đã rời rạc hóa;
+  \item gắn nhãn nguyên nhân infeasibility, đặc biệt là service không có candidate;
+  \item tạo các mức tải low, critical và overload.
+\end{enumerate}
+
+Có thể điều khiển mức tải sơ bộ bằng:
+\begin{equation}
+  \rho=\frac{S}{\sum_a(\HN(a)+\HE(a))}.
+\end{equation}
+Tuy nhiên, $\rho$ không phải tiêu chuẩn feasibility: kết quả còn phụ thuộc time
+windows, qualification, candidate density và xung đột simultaneity. Vì vậy các
+giá trị $0.60$, $0.85$ và $1.05$ chỉ được xem là điểm khởi đầu của grid, không
+được gắn nhãn low/critical/overload trước khi có dữ liệu.
+
+Cuối tuần 5 phải chạy micro-pilot trên \emph{calibration seeds} không xuất hiện
+trong tập đánh giá cuối. Ngoài $\rho$, ghi nhận số candidate agent--time pairs
+trên mỗi service, tỷ lệ service có đúng một candidate và phân phối
+qualification scarcity. Nhãn tải tạm thời được gán theo hành vi baseline:
+\begin{itemize}
+  \item low: ít nhất $90\%$ instance full-coverage feasible và dưới $10\%$
+        nghiệm tối ưu có overtime;
+  \item critical: $60$--$90\%$ instance full-coverage feasible và ít nhất
+        $30\%$ nghiệm feasible có overtime;
+  \item overload stress test: ít nhất $80\%$ instance infeasible khi coverage
+        là hard, nhưng formulation coverage mềm vẫn đạt $\COV_N\geq0.85$.
+\end{itemize}
+Các ngưỡng này là quy tắc thiết kế provisional; phải được freeze cùng generator
+trước khi mở evaluation seeds và không được chỉnh theo kết quả của B1/B2.
+
+Với $U\in\{30,40\}$, $A\in\{10,15,20,25\}$,
+$V\in\{4,5\}$, ba vùng tham số và 5 calibration seeds, micro-pilot tối đa gồm:
+\begin{equation}
+  2\times4\times2\times3\times5=240\ \text{instance evaluations}.
+\end{equation}
+Micro-pilot chỉ dùng hard-feasibility check và B0 gốc với timeout ngắn; không
+chạy toàn bộ 16 weights hoặc mọi tầng multi-objective. Sau khi freeze benchmark,
+số evaluation seeds được quyết định bằng precision/power analysis ở WP6.
+
+\subsection{WP3: Weighted sensitivity analysis}
+
+Không chạy cơ học $16\times800=12{,}800$ solver calls trên official benchmark.
+Thiết kế tuần tự gồm:
+\begin{enumerate}
+  \item chạy B0 gốc $(1,1)$ trên toàn bộ 800 official instances;
+  \item chạy 16 cặp trọng số trên subset official và corrected-calibration được
+        phân tầng theo kích thước, feasibility, candidate density và load;
+  \item dùng kết quả screening để chọn tối đa 4--6 cấu hình đại diện hoặc tinh
+        chỉnh quanh các weight breakpoints;
+  \item chỉ chạy các cấu hình đã freeze trên evaluation set đầy đủ.
+\end{enumerate}
+
+Trước mỗi campaign phải tính
+\begin{equation}
+  N_{\mathrm{call}}=\sum_m N_{\mathrm{inst},m}
+                       N_{\mathrm{stage},m}
+\end{equation}
+và core-hour worst case theo cumulative timeout. Campaign vượt compute budget
+phải giảm subset hoặc số cấu hình trước khi chạy, không được bỏ timeout sau khi
+đã nhìn kết quả. Phân tích:
+\begin{itemize}
+  \item thay đổi assignment giữa các cấu hình trọng số;
+  \item thay đổi $\SIM_N$, $\CONT_N$ và $\OT_N$;
+  \item tỷ lệ instance có nhiều nghiệm chất lượng khác nhau nhưng weighted
+        objective gần tương đương;
+  \item mức độ trade-off theo load và số agent.
+\end{itemize}
+
+\subsection{WP3B: Ablation encoding và symmetry breaking}
+
+\textbf{Mục tiêu:} đo riêng ảnh hưởng của cách mã hóa và strengthening, không
+đồng nhất giảm số clause với giảm thời gian giải.
+
+\textbf{Nhiệm vụ:}
+\begin{enumerate}
+  \item chạy paired pilot cho hai cardinality encodings khi implied constraints
+        và symmetry đều cố định ở \texttt{none};
+  \item cố định cardinality encoding rồi ablate lần lượt năm cấu hình implied;
+  \item ablate năm cấu hình symmetry trên cùng thứ tự instance và cùng solver;
+  \item chỉ chạy ma trận $2\times5\times5$ đầy đủ trên subset phân tầng sau khi
+        pilot xác nhận compute budget;
+  \item so sánh số biến, hard/soft clauses, encode time, solve time, solved count
+        và PAR-2; xác nhận quality metrics và optimum không thay đổi;
+  \item chọn tối đa một hoặc hai cấu hình encoding cho bảng so sánh policy chính,
+        đồng thời luôn giữ baseline \texttt{sorting-network/none/none}.
+\end{enumerate}
+
+Symmetry breaking được đánh giá riêng vì nó chủ động loại các assignment có
+nhãn khác nhau trong cùng orbit. Regression phải chứng minh còn ít nhất một đại
+diện cho mỗi orbit trên tiny instances, giữ nguyên optimum trong cả full và soft
+coverage, và không tạo overhead encoding khi detector không tìm thấy lớp đối xứng.
+
+\subsection{WP4: Triển khai Lexicographic MaxSAT}
+
+Phiên bản đầu có thể khởi tạo lại solver giữa các tầng để ưu tiên tính đúng.
+Phiên bản sau tái sử dụng solver state bằng assumptions/incremental constraints
+nếu thư viện hỗ trợ ổn định.
+
+Timeout được áp dụng cho \emph{toàn bộ policy trên một instance}, không nhân
+riêng cho từng tầng. Full-coverage instances cần ba tầng; overload stress test
+cần thêm tầng coverage. Runtime có thể nhỏ hơn hoặc lớn hơn bội số số tầng vì
+các bounds làm thay đổi search space, nên phải báo cáo cumulative time, time mỗi
+tầng và số solver calls thay vì giả định overhead đúng $3\times$ hoặc $4\times$.
+Go/no-go gate cuối tuần 9: nếu dưới $60\%$ pilot instances hoàn tất trong
+cumulative timeout 3600 giây, B1 chỉ chạy trên critical subset hoặc chuyển sang
+incremental/native multi-objective implementation trước full experiment.
+
+Kiểm thử bắt buộc:
+\begin{itemize}
+  \item so sánh kết quả với brute force;
+  \item chứng minh tầng sau không làm xấu giá trị tối ưu của tầng trước;
+  \item kiểm tra cả hai thứ tự continuity-priority và overtime-priority;
+  \item kiểm tra objective có optimum bằng 0;
+  \item kiểm tra nhiều nghiệm đồng tối ưu ở mỗi tầng;
+  \item kiểm tra instance infeasible khi coverage là hard constraint.
+\end{itemize}
+
+\subsection{WP5: Triển khai similarity-budget
+\texorpdfstring{$\varepsilon$}{epsilon}-constraint}
+
+Với mỗi instance:
+\begin{enumerate}
+  \item tính $\SIM^*$;
+  \item lần lượt thêm năm mức similarity budget trong
+        Eq.~\eqref{eq:similarity-budget};
+  \item tối thiểu hóa $\CONT$, thêm $\CONT\leq\CONT^*$; tối thiểu hóa $\OT$,
+        thêm $\OT\leq\OT^*$; cuối cùng tối đa hóa lại $\SIM$;
+  \item lưu toàn bộ nghiệm và metric;
+  \item kiểm chứng non-dominance, gộp điểm trùng và ghi realized similarity loss.
+\end{enumerate}
+
+\subsection{WP6: Thực nghiệm đầy đủ và phân tích thống kê}
+
+Chỉ chạy thực nghiệm đầy đủ sau khi pilot xác nhận benchmark có đủ ba mức độ
+khó và overtime thực sự được kích hoạt trên critical/overload instances.
+Calibration seeds chỉ ước lượng variance và tỷ lệ zero differences. Trước khi
+mở evaluation seeds, xác định smallest effect size of interest (SESOI), mô phỏng
+power của paired Wilcoxon/sign test dưới các cỡ mẫu ứng viên và chọn số seed để
+đạt power mục tiêu ít nhất $0.8$ nếu compute budget cho phép. Nếu không đạt,
+nghiên cứu phải báo confidence interval/độ chính xác ước lượng và không dùng
+``không có ý nghĩa thống kê'' như bằng chứng hai phương pháp tương đương.
+
+\section{Thiết kế thực nghiệm}
+
+\subsection{Các phương pháp so sánh}
+
+\begin{table}[H]
+\centering
+\caption{Các phương pháp trong thực nghiệm.}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{3.4cm}YY@{}}
+\toprule
+Phương pháp & Mục đích & Ghi chú \\
+\midrule
+C++ gốc & Audit/tái lập baseline bài báo & Báo ở bảng tái lập riêng \\
+C++ weighted B0 & B0 gốc và calibrated weighted & Cùng model/writer/backend với B1--B2 \\
+C++ Lex (continuity) & Chính sách ưu tiên continuity & Sequential MaxSAT C++ \\
+C++ Lex (overtime) & Chính sách ưu tiên overtime & Sequential MaxSAT C++ \\
+C++ $\varepsilon$-constraint & Trade-off có similarity budget & Năm mức chính, có thể refine \\
+C++ CP-SAT hoặc MILP & Baseline ngoài MaxSAT & Chỉ đưa vào runtime chính sau khi port C++ \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Ma trận cấu hình thực nghiệm}
+
+Ba trục encoding độc lập với trục policy. File
+\path{full_configuration_matrix.env} khai báo 50 tổ hợp; runner duyệt tuần
+tự cardinality--implied--symmetry và, trong mỗi tổ hợp, chạy weighted,
+lex-continuity, lex-overtime cùng các mức $\delta$ của
+$\varepsilon$-constraint. Với năm mức $\delta$, một instance cần tối đa:
+\begin{equation}
+  50\times(3+5)=400\ \text{top-level runs},
+\end{equation}
+chưa tính các solver stage nội bộ của từng policy. Vì vậy full matrix chỉ dùng
+cho screening subset; bảng policy chính phải dùng encoding đã freeze từ pilot.
+
+Mỗi JSON lưu \path{cardinality_encoding},
+\path{implied_constraints}, \path{symmetry_breaking}, method, delta,
+timing theo stage, số biến/clause và metrics đã verify. Manifest lưu thêm
+SHA-256 của instance, result path và exit code. Không dùng lại result directory
+khi schema hoặc campaign thay đổi.
+
+\subsection{Môi trường chạy}
+
+Mọi phương pháp phải dùng:
+\begin{itemize}
+  \item cùng ngôn ngữ C++ trên đường chạy được đo và cùng mức tối ưu compiler;
+  \item cùng parser, hard model, WCNF writer và MaxSAT backend cho B0--B2;
+  \item cùng một CPU core và cùng máy;
+  \item cùng giới hạn RAM;
+  \item cùng timeout;
+  \item cùng instance và cùng objective definition;
+  \item ít nhất ba lần chạy nếu solver không deterministic;
+  \item log đầy đủ phiên bản compiler, solver, OS và tham số dòng lệnh.
+\end{itemize}
+
+Thời gian end-to-end được tính từ lúc đọc instance đến sau khi verifier C++
+kiểm tra nghiệm, gồm parse, encode, serialize WCNF, solve và verify. Timeout là
+ngân sách tích lũy cho toàn bộ policy. Shell runner chỉ điều phối và không chứa
+implementation của phương pháp. Tái lập runtime của executable C++ gốc được
+báo riêng nếu encoding hoặc định dạng WCNF chưa hoàn toàn đồng nhất.
+
+Các mốc timeout đề xuất là 60, 300 và 3600 giây.
+
+\subsection{KPI tính toán}
+
+\begin{itemize}
+  \item số instance tìm được nghiệm feasible;
+  \item số instance chứng nhận optimal/UNSAT;
+  \item time-to-first-solution;
+  \item time-to-best-solution;
+  \item time-to-proof;
+  \item peak memory;
+  \item PAR-2;
+  \item số biến và số clauses của encoding.
+\end{itemize}
+
+\subsection{KPI chất lượng nghiệm}
+
+\begin{itemize}
+  \item $\COV_N$, $\SIM_N$, $\CONT_N$ và $\OT_N$;
+  \item số caregiver trung bình và cực đại trên mỗi sequence;
+  \item số agent có overtime;
+  \item workload trung bình, độ lệch chuẩn và cực đại;
+  \item số điểm đại diện không bị trội và số budget tạo nghiệm trùng;
+  \item mức cải thiện continuity/overtime tại mỗi similarity budget.
+\end{itemize}
+
+\subsection{Phương pháp thống kê}
+
+Do corrected benchmark được thiết kế paired/nested, sử dụng:
+\begin{itemize}
+  \item median và interquartile range thay cho chỉ báo average đơn lẻ;
+  \item bootstrap $95\%$ confidence interval;
+  \item paired Wilcoxon signed-rank test;
+  \item paired rank-biserial effect size và smallest effect size of interest;
+  \item pilot-based power analysis và Holm correction cho multiple comparisons;
+  \item cactus plot và solved-over-time curve cho runtime;
+  \item objective-space trade-off plot cho ba thành phần chất lượng nghiệm.
+\end{itemize}
+
+Đơn vị thống kê độc lập là base scenario/seed. Các biến thể nested theo $A$ và
+$V$ trong cùng seed là repeated measures, không được gộp như những quan sát độc
+lập. Nếu paired differences có quá nhiều giá trị 0, dùng Wilcoxon--Pratt hoặc
+paired sign test và báo rõ quy ước. P-value luôn đi cùng effect size và
+confidence interval.
+
+Không tính runtime trung bình chỉ trên các instance đã giải xong, vì cách này
+loại bỏ các timeout và gây survivor bias.
+
+\section{Ablation study}
+
+Các cấu hình tối thiểu cần chạy:
+\begin{enumerate}
+  \item weighted objective gốc trên official benchmark;
+  \item weighted objective gốc với metric chuẩn hóa;
+  \item weighted sensitivity trên official benchmark;
+  \item weighted sensitivity trên corrected benchmark;
+  \item lexicographic trên official benchmark;
+  \item lexicographic trên corrected benchmark;
+  \item $\varepsilon$-constraint trên critical-load subset;
+  \item overload stress test với coverage là mục tiêu ưu tiên cao nhất.
+  \item sorting network so với Totalizer khi các trục khác ở baseline;
+  \item năm mức implied constraints với cardinality và symmetry cố định;
+  \item năm mức symmetry breaking với cardinality và implied cố định;
+  \item ma trận $2\times5\times5$ trên screening subset để phát hiện interaction.
+\end{enumerate}
+
+Ablation giúp phân biệt cải tiến đến từ phương pháp tối ưu, benchmark mới hay
+cách chuẩn hóa metric. Ablation encoding còn phân biệt ảnh hưởng của cấu trúc
+CNF, redundant constraints và loại bỏ nghiệm đối xứng. Không chọn cấu hình chỉ
+dựa trên một instance hoặc chỉ dựa trên số clause.
+
+\section{Tiêu chí thành công}
+
+\subsection{Mức tối thiểu}
+
+\begin{itemize}
+  \item tái lập được feasibility/optimality của baseline trên một tập đại diện;
+  \item verifier độc lập khớp objective trên toàn bộ nghiệm đã chạy;
+  \item chứng minh similarity tổng và similarity/service dẫn tới diễn giải khác nhau;
+  \item định lượng được độ nhạy của weighted solution theo trọng số;
+  \item sinh được ít nhất hai điểm không bị trội trên một tỷ lệ đáng kể các
+        critical-load instances.
+\end{itemize}
+
+\subsection{Mức tốt}
+
+Mục tiêu thực nghiệm, không phải kết quả được giả định trước:
+\begin{itemize}
+  \item tại similarity loss không quá $2.5\%$, confidence interval của thay đổi
+        continuity được báo cùng SESOI; chỉ tuyên bố cải thiện khi cả độ lớn
+        thực tiễn và độ bất định đều đạt tiêu chí đã preregister;
+  \item Lexicographic/$\varepsilon$-constraint MaxSAT giải được phần lớn pilot instances trong
+        300--3600 giây;
+  \item các kết luận chính ổn định qua nhiều seeds và có confidence interval hẹp;
+  \item benchmark v2 tạo được đủ instance low, critical và overload theo thiết kế.
+\end{itemize}
+
+\subsection{Mức đủ mạnh để công bố}
+
+\begin{itemize}
+  \item benchmark v2 và generator có thể tái lập;
+  \item implementation C++ weighted/lexicographic/$\varepsilon$-constraint
+        và verifier độc lập;
+  \item baseline MaxSAT và ít nhất một baseline ngoài MaxSAT;
+  \item tập điểm trade-off không bị trội, có phân tích paired và effect size;
+  \item source code, dữ liệu, cấu hình và raw result được công bố đầy đủ.
+\end{itemize}
+
+\section{Rủi ro và phương án xử lý}
+
+\begin{longtable}{@{}p{0.31\textwidth}p{0.62\textwidth}@{}}
+\caption{Rủi ro nghiên cứu và phương án xử lý.}\\
+\toprule
+Rủi ro & Phương án xử lý \\
+\midrule
+\endfirsthead
+\toprule
+Rủi ro & Phương án xử lý \\
+\midrule
+\endhead
+Official benchmark gần như không có overtime & Tạo critical-load và overload
+suite; chỉ dùng official benchmark cho tái lập. \\
+$\varepsilon$-constraint quá chậm & Áp cumulative timeout; giới hạn năm budget
+chính; tái sử dụng solver state và chỉ refine khi còn compute budget. \\
+C++ B0 mở rộng không khớp C++ gốc & Dừng campaign; dùng brute force, RC2 oracle
+và verifier độc lập để định vị khác biệt objective/encoding. \\
+Corrected benchmark quá dễ hoặc quá khó & Chạy pilot, hiệu chỉnh load theo
+feasibility thực tế thay vì chỉ dùng tỷ lệ capacity. \\
+Continuity cải thiện rất ít & Tăng tỷ lệ sequence nhiều services và tạo
+qualification scarcity có kiểm soát. \\
+EvalMaxSAT không ổn định trên nền tảng chạy & Khóa Open-WBO C++ đã qua smoke
+test cho mọi phương pháp; không thay solver giữa campaign. \\
+Symmetry breaking loại nhầm nghiệm không tương đương & Chỉ dùng signature exact
+trên reward, candidate, \texttt{SU/SEQ}, $\HN/\HE$; kiểm tra optimum bằng RC2/brute force
+trên full và soft coverage trước campaign. \\
+Ma trận $2\times5\times5$ làm vượt compute budget & Chạy tuần tự các ablation
+một trục, screening trên subset phân tầng, rồi mới freeze một số cấu hình cho
+evaluation set. \\
+Không có dữ liệu vận hành thật & Giới hạn kết luận ở benchmark mô phỏng; không
+tuyên bố hiệu quả lâm sàng hoặc triển khai thực tế. \\
+Reviewer xem sửa generator là đóng góp nhỏ & Xác định benchmark là điều kiện
+nền; đóng góp chính là nghiên cứu tách biệt benchmark/weights/optimizer, so sánh
+với calibrated weighted và baseline ngoài MaxSAT, cùng phân tích trade-off. \\
+Calibrated weighted đã đủ tốt & Báo đây là kết quả âm có giá trị: hạn chế nằm ở
+benchmark/đánh giá; không thổi phồng lexicographic như một cải tiến mặc định. \\
+Thiếu power hoặc compute budget & Giảm số policy bằng screening, tăng seed trước
+khi tăng số weight, báo precision/CI và không kết luận tương đương từ $p>0.05$. \\
+\bottomrule
+\end{longtable}
+
+\clearpage
+\section{Tiến độ 14 tuần và 2 tuần dự phòng}
+
+\begin{table}[H]
+\centering
+\caption{Kế hoạch triển khai có stage gates.}
+\begin{tabularx}{\textwidth}{@{}p{2cm}Yp{4cm}@{}}
+\toprule
+Thời gian & Công việc & Sản phẩm \\
+\midrule
+Tuần 1--2 & Đóng băng C++ gốc, viết verifier và brute-force tests
+           & Baseline và bộ test nhỏ \\
+Tuần 3 & Tái lập Bảng 5--6; báo cả statistic gốc và PAR-2
+           & Báo cáo tái lập \\
+Tuần 4 & Sửa generator, thiết kế nested benchmark và diagnostics
+           & Generator v2 alpha \\
+Tuần 5 & Chạy micro-pilot trên calibration seeds; hiệu chỉnh và freeze generator
+           & Gate G1: benchmark v2 frozen \\
+Tuần 6 & Paired pilot Totalizer, implied constraints và symmetry breaking
+           & Encoding shortlist; ma trận/log đã kiểm chứng \\
+Tuần 7 & Weighted screening, adaptive refinement và chốt compute budget
+           & Calibrated B0; policy shortlist \\
+Tuần 8--9 & Triển khai, kiểm thử và benchmark sequential Lexicographic MaxSAT
+           & Gate G2: B1 scalability \\
+Tuần 10 & Triển khai $\varepsilon$-constraint và kiểm chứng non-dominance
+           & B2 solver \\
+Tuần 11 & Integration pilot; power/precision analysis; freeze protocol
+           & Gate G3: preregistered protocol \\
+Tuần 12--13 & Chạy thực nghiệm đầy đủ và rerun lỗi kỹ thuật
+           & Raw results, logs, verified solutions \\
+Tuần 14 & Phân tích thống kê sơ bộ và audit kết quả
+           & Tables, figures, audit report \\
+Tuần 15--16 & Contingency cho benchmark/solver; nếu không dùng thì viết bài và
+               đóng gói reproducibility package
+           & Bản thảo và release package \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Sản phẩm bàn giao}
+
+Nghiên cứu dự kiến tạo ra:
+\begin{enumerate}
+  \item bản tái lập baseline C++ gốc;
+  \item báo cáo kiểm toán official benchmark;
+  \item corrected HCORAP benchmark v2 và generator có seed;
+  \item weighted, lexicographic và $\varepsilon$-constraint MaxSAT
+        implementations bằng C++;
+  \item hai cardinality encodings cùng năm cấu hình implied constraints và năm
+        cấu hình symmetry breaking có thể ablate độc lập;
+  \item independent solution verifier;
+  \item unit tests và tiny brute-force instances;
+  \item ma trận cấu hình, manifest, raw CSV tương thích Excel, summary PAR-2,
+        logs và script tạo biểu đồ;
+  \item cactus plots, normalized-quality plots và objective-space trade-off plots;
+  \item bản thảo bài báo hoặc luận văn;
+  \item reproducibility package kèm hướng dẫn chạy.
+\end{enumerate}
+
+\section{Thông điệp khoa học dự kiến}
+
+Thông điệp trung tâm của nghiên cứu được phát biểu thận trọng như sau:
+
+\begin{quote}
+Weighted MaxSAT cung cấp cách biểu diễn tự nhiên cho HCORAP, nhưng kết luận về
+chất lượng của nó phải tách ảnh hưởng của benchmark và cách hiệu chỉnh trọng số.
+Trên benchmark được kiểm soát, calibrated weighted, sequential lexicographic và
+$\varepsilon$-constraint MaxSAT cho các semantics quyết định khác nhau. Nghiên
+cứu xác định khi nào sự khác biệt đó có ý nghĩa thực tiễn, mức chi phí tính toán
+đi kèm, và chấp nhận kết quả rằng calibrated weighted đã đủ tốt nếu dữ liệu ủng
+hộ kết luận này.
+\end{quote}
+
+Kết luận cuối cùng chỉ được chấp nhận nếu được hỗ trợ bởi thực nghiệm paired,
+metric chuẩn hóa, kiểm định thống kê và bộ kiểm chứng nghiệm độc lập.
+
+\section{Hướng mở rộng sau nghiên cứu}
+
+Sau khi hoàn thành hướng chính, có thể mở rộng theo thứ tự:
+\begin{enumerate}
+  \item adaptive selection giữa cardinality/implied/symmetry configurations
+        dựa trên đặc trưng instance, cùng các AMO encodings mới;
+  \item UNSAT-core explanation và minimal resource augmentation;
+  \item incremental MaxSAT cho dynamic rescheduling và minimum disruption;
+  \item phối hợp specialist giữa nhiều khu vực;
+  \item tích hợp travel time, service duration và routing;
+  \item kiểm thử trên dữ liệu vận hành thật.
+\end{enumerate}
+
+\begin{thebibliography}{9}
+
+\bibitem{unceta2024}
+I. Unceta, B. Salbanya, J. Coll, M. Villaret, and J. Nin,
+``Optimizing resource allocation in home care services using MaxSAT,''
+\emph{Cognitive Systems Research}, vol. 88, 101291, 2024.
+\href{https://doi.org/10.1016/j.cogsys.2024.101291}
+{doi:10.1016/j.cogsys.2024.101291}.
+
+\bibitem{salbanya2023}
+B. Salbanya, I. Unceta, and J. Nin,
+``Resource Allocation in Home Care Services Using Reinforcement Learning,''
+in \emph{Artificial Intelligence Research and Development}, 2023.
+\href{https://doi.org/10.3233/FAIA230680}{doi:10.3233/FAIA230680}.
+
+\bibitem{greenhhc2024}
+``A multiobjective approach for weekly Green Home Health Care routing and
+scheduling problem with care continuity and synchronized services,''
+\emph{Operations Research Perspectives}, vol. 12, 100302, 2024.
+\href{https://doi.org/10.1016/j.orp.2024.100302}
+{doi:10.1016/j.orp.2024.100302}.
+
+\bibitem{reoptimization2024}
+``An exact two-phase approach to re-optimize tours in home care planning,''
+\emph{Computers \& Operations Research}, vol. 161, 106408, 2024.
+\href{https://doi.org/10.1016/j.cor.2023.106408}
+{doi:10.1016/j.cor.2023.106408}.
+
+\bibitem{demirovic2019}
+E. Demirovi\'c, N. Musliu, and F. Winter,
+``Modeling and solving staff scheduling with partial weighted MaxSAT,''
+\emph{Annals of Operations Research}, vol. 275, pp. 79--99, 2019.
+\href{https://doi.org/10.1007/s10479-017-2693-y}
+{doi:10.1007/s10479-017-2693-y}.
+
+\bibitem{mosquera2019}
+F. Mosquera, P. Smet, and G. Vanden Berghe,
+``Flexible home care scheduling,''
+\emph{Omega}, vol. 83, pp. 80--95, 2019.
+\href{https://doi.org/10.1016/j.omega.2018.02.005}
+{doi:10.1016/j.omega.2018.02.005}.
+
+\bibitem{bodvarsdottir2025}
+E. B. B\"o\dh varsd\'ottir and T. Stidsen,
+``A review of multi-objective optimization methods for personnel rostering
+problems,'' \emph{Journal of Scheduling}, 2025.
+\href{https://doi.org/10.1007/s10951-025-00845-0}
+{doi:10.1007/s10951-025-00845-0}.
+
+\bibitem{mesquita2023}
+M. Mesquita-Cunha, J. R. Figueira, and A. P. Barbosa-P\'ovoa,
+``New $\varepsilon$-constraint methods for multi-objective integer linear
+programming: A Pareto front representation approach,''
+\emph{European Journal of Operational Research}, vol. 306, no. 1,
+pp. 286--307, 2023.
+\href{https://doi.org/10.1016/j.ejor.2022.07.044}
+{doi:10.1016/j.ejor.2022.07.044}.
+
+\bibitem{jabs2025}
+C. Jabs, J. Berg, B. Bogaerts, and M. J\"arvisalo,
+``Certifying Pareto-optimality in multi-objective maximum satisfiability,''
+2025, arXiv:2501.17493.
+\href{https://doi.org/10.48550/arXiv.2501.17493}
+{doi:10.48550/arXiv.2501.17493}.
+
+\end{thebibliography}
+
+\end{document}
