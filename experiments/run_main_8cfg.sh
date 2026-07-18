@@ -3,6 +3,14 @@
 # run_main_8cfg.sh
 # Chạy 8 cấu hình so sánh (ORIGINAL + 7 đề xuất) trên toàn bộ 800 instances
 #
+# NOTE VỀ SOLVER:
+#   Bài báo gốc (Collcaballero et al.) dùng EvalMaxSAT trên Linux x86-64.
+#   EvalMaxSAT không hoạt động ổn định trên macOS arm64 với WCNF lớn
+#   (thoát mà không output 's OPTIMUM FOUND'; SIGSEGV khi gọi qua hcorap_multi).
+#   => Script này dùng open-wbo cho TẤT CẢ 8 cấu hình.
+#   So sánh thời gian với bài báo gốc là KHÔNG HỢP LỆ (khác solver + platform).
+#   So sánh objective value (SIM - CONT - OT) và ranking IC/SB giữa các cfg là HỢP LỆ.
+#
 # Usage:
 #   bash experiments/run_main_8cfg.sh            # chạy mới
 #   bash experiments/run_main_8cfg.sh --resume   # tiếp tục nếu bị ngắt
@@ -71,12 +79,13 @@ touch "$DONE_FILE"
 ENV_FILE="$RESULT_DIR/environment.txt"
 if [ ! -f "$ENV_FILE" ]; then
     {
-        printf 'created_utc='; date -u '+%Y-%m-%dT%H:%M:%SZ'
+        printf 'created_utc='; date -u '+%Y-%m-%dT%H%%3AM%%3A%SZ'
         printf 'uname='; uname -a
         printf 'hcorap_binary=%s\n' "$BINARY"
         printf 'hcorap_sha256='; shasum -a 256 "$BINARY" | awk '{print $1}'
-        printf 'solver=%s\n' "$SOLVER"
+        printf 'solver_used=%s\n' "$SOLVER"  # open-wbo (NOT EvalMaxSAT as in original paper)
         printf 'solver_sha256='; shasum -a 256 "$SOLVER" | awk '{print $1}'
+        printf 'solver_note=open-wbo built from source; paper used EvalMaxSAT on Linux x86-64\n'
         printf 'timeout=%s\nwc=%s\nwo=%s\nmethod=%s\n' "$TIMEOUT" "$WC" "$WO" "$METHOD"
         printf 'git_commit='; git rev-parse HEAD 2>/dev/null || printf 'unknown\n'
     } > "$ENV_FILE"
