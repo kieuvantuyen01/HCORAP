@@ -38,6 +38,12 @@ baseline audit nguyên vẹn, mã mới không sửa helper cũ mà mã hóa c�
 `sum(q_i*x_i) >= K` thành `sum(q_i*(not x_i)) <= sum(q_i)-K`. Các tầng cố định
 coverage/similarity và các test lexicographic/epsilon đều đi qua đường này.
 
+B2 dùng grid delta khóa trước `0, 0.01, 0.025, 0.05, 0.10`. Mỗi delta chạy
+trong result directory riêng. JSON phải lưu similarity reference optimum,
+ceiling lower bound, realized loss và bốn stage full-coverage. Sau campaign,
+các delta dẫn đến cùng `(coverage, similarity, continuity, overtime)` được gộp
+trong bảng unique points nhưng raw rows không bị xóa.
+
 ## Hai phép so sánh phải tách riêng
 
 1. **So sánh phương pháp tối ưu (bảng chính):** mọi phương pháp dùng cùng parser,
@@ -87,6 +93,11 @@ Timeout là ngân sách tích lũy cho toàn bộ policy trên một instance, k
 mỗi tầng. JSON còn lưu thời gian dựng công thức và thời gian solver theo tầng.
 Với phép đo bộ nhớ, bọc cùng binary bằng `/usr/bin/time`; không thay đổi command
 hoặc timeout giữa các phương pháp.
+
+Verifier C++ kiểm tra model, objective values và mọi inherited bound. Trạng thái
+optimality vẫn dựa trên `OPTIMUM` của backend; không mô tả kết quả là
+proof-carrying hoặc independently certified nếu chưa kiểm tra proof trace
+MaxSAT độc lập.
 
 ## Điều kiện phải khóa trước campaign
 

@@ -116,6 +116,20 @@ Thêm `--soft-coverage` cho overload stress test. Coverage được tối đa h�
 cố định trước các objective còn lại. `--print-assignments` đưa assignment vào
 JSON; `--output result.json` ghi kết quả ra file.
 
+Weighted, Lexicographic và similarity-budget epsilon-constraint là ba chế độ
+độc lập. Nếu không truyền `--method`, executable vẫn chạy B0 `weighted` để bảo
+toàn baseline. JSON ghi rõ
+`objective_mode`, `objective_policy`, optimum từng tầng trong `stages` và
+`weighted_reference_score`. Với B1, trường cuối chỉ dùng để tham chiếu; kết quả
+được xếp hạng bằng vector `stages` theo đúng thứ tự ưu tiên, không bằng tổng có
+trọng số.
+
+Với B2, JSON ghi thêm `similarity_reference_optimum`,
+`similarity_lower_bound`, `similarity_realized_loss_absolute` và
+`similarity_realized_loss_fraction`. `delta` được phân tích dưới dạng phân số
+thập phân chính xác và lower bound dùng ceiling, không dùng số thực dấu phẩy
+động.
+
 Timeout là ngân sách tích lũy cho toàn bộ policy. `elapsed_seconds` đo:
 
 ```text
@@ -125,6 +139,49 @@ parse + encode + serialize WCNF + solve + C++ verification
 Mỗi stage còn báo số biến/clauses, thời gian dựng công thức, thời gian solver và
 optimum. Mọi nghiệm `OPTIMUM` đều phải qua verifier C++ độc lập trước khi được
 ghi nhận.
+
+## Ma trận chính 8 cấu hình: tách B0, B1 và B2
+
+Campaign B0 giữ nguyên hàm mục tiêu weighted gốc:
+
+```sh
+bash experiments/run_main_8cfg.sh
+# tiếp tục sau khi bị ngắt:
+bash experiments/run_main_8cfg.sh --resume
+```
+
+Campaign B1 chạy tuần tự cả hai chính sách Lexicographic trên cùng 8 cấu hình:
+
+```sh
+bash experiments/run_lex_8cfg.sh
+# tiếp tục sau khi bị ngắt:
+bash experiments/run_lex_8cfg.sh --resume
+```
+
+Kết quả không trộn lẫn: B0 mặc định ở
+`experiments/results/main_8cfg`, còn B1 nằm trong hai thư mục
+`experiments/results/lex_8cfg/lex-continuity` và
+`experiments/results/lex_8cfg/lex-overtime`. Mỗi thư mục có CSV và summary
+riêng. Có thể đổi thư mục gốc của B1 bằng `RESULT_ROOT`.
+
+Campaign B2 chạy năm similarity budget chính trên cùng 8 cấu hình:
+
+```sh
+bash experiments/run_epsilon_8cfg.sh
+# tiếp tục sau khi bị ngắt:
+bash experiments/run_epsilon_8cfg.sh --resume
+```
+
+Mỗi delta được ghi riêng dưới
+`experiments/results/epsilon_8cfg/delta_*`. Sau campaign, runner tạo thêm:
+
+- `epsilon_results_all_deltas.csv`: toàn bộ B2 runs;
+- `epsilon_summary_by_delta_config.csv`: tổng hợp theo delta/cấu hình;
+- `epsilon_unique_points.csv`: gộp các delta dẫn đến cùng
+  `(coverage, similarity, continuity, overtime)`.
+
+Có thể pilot một grid nhỏ bằng `DELTAS="0 0.05"`. Full-coverage B2 dùng bốn
+solver calls cho mỗi delta; soft-coverage dùng thêm một tầng coverage.
 
 ## Campaign C++ tái lập
 
@@ -203,8 +260,10 @@ Python ở đây chỉ là test harness/oracle. Bộ test kiểm tra:
 - user-slot cardinality đúng trong cả full và partial coverage;
 - weighted score và đối chiếu với encoder C++ gốc;
 - hai policy lexicographic cho đúng hai nghiệm trade-off;
-- epsilon tại delta 0 và 0.2;
-- soft coverage và verifier nghiệm;
+- năm delta B2 chính dùng exact ceiling, cùng regression delta 0.2 tạo trade-off;
+- B2 giữ nguyên kết quả trên 8 cấu hình, kiểm tra đủ bốn tầng và metadata budget;
+- soft coverage chạy coverage trước B1/B2 và mọi nghiệm qua verifier;
+- bảng B2 gộp đúng các delta dẫn đến cùng objective point;
 - parser, generator, metrics và timeout semantics.
 
 `tests/instances/tradeoff.txt` có các kết quả mong đợi:

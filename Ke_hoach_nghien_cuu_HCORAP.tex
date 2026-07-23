@@ -487,14 +487,30 @@ rồi lần lượt tối thiểu hóa $\CONT$, tối thiểu hóa $\OT$ và cu�
 lại $\SIM$ trong các ties. Dùng ceiling bảo đảm tổn thất similarity không vượt
 budget đã công bố; dùng floor có thể vi phạm budget gần một đơn vị reward.
 
+Điểm $\delta=0$ không được diễn giải là tương đương với B1
+continuity-priority. Khi $\delta=0$, $L_0=\SIM^*$ nên B2 có thứ tự ưu tiên hiệu
+dụng $\max\SIM\succ\min\CONT\succ\min\OT$; tầng tối đa hóa similarity cuối là
+dư thừa vì similarity đã bị khóa ở optimum toàn cục. Ngược lại, B1
+continuity-priority dùng
+$\min\CONT\succ\max\SIM\succ\min\OT$. Vì vậy hai policy có thể trả về các
+nghiệm khác nhau. Trên regression instance trade-off hiện tại, B1
+continuity-priority cho $(\SIM,\CONT,\OT)=(8,0,1)$, trong khi B2 với
+$\delta=0$ cho $(9,1,0)$.
+
 Đây là $\varepsilon$-constraint tri-objective với lexicographic completion,
 không phải thuật toán liệt kê toàn bộ Pareto front. Sau ba tầng completion,
 không thể tồn tại nghiệm khác có $\SIM$ không nhỏ hơn, $\CONT$ không lớn hơn và
 $\OT$ không lớn hơn với ít nhất một bất đẳng thức nghiêm; nếu có, nghiệm đó sẽ
 mâu thuẫn với một trong ba optimum đã cố định. Do đó mỗi điểm hoàn tất là một
 điểm không bị trội, nhưng năm mức $\delta$ chỉ tạo một tập đại diện rời rạc.
-Các điểm trùng nhau được gộp; nếu còn budget tính toán, chèn thêm mức $\delta$
-vào khoảng có gap lớn nhất trong objective space \cite{mesquita2023}.
+Do $\SIM$ nhận giá trị nguyên và $L_\delta$ dùng ceiling, ánh xạ từ $\delta$
+sang $L_\delta$ là many-to-one: nhiều mức $\delta$ có thể tạo cùng miền khả
+thi và cùng $(\SIM,\CONT,\OT)$. Phân tích phải báo cáo riêng số mức $\delta$ đã
+chạy, số lower bound phân biệt và số objective point duy nhất; các điểm trùng
+không được xem là các quan sát Pareto độc lập. Bảng raw vẫn giữ mọi run để phân
+tích thời gian, còn bảng unique points gộp theo instance/cấu hình và lưu danh
+sách $\delta$ nguồn. Nếu còn budget tính toán, chèn thêm mức $\delta$ vào khoảng
+có gap lớn nhất trong objective space \cite{mesquita2023}.
 
 \section{Kiến trúc phần mềm đề xuất}
 
@@ -612,7 +628,7 @@ Runner ghi từng run vào JSON và \path{manifest.tsv}. Sau campaign, script
 \path{runs.csv} chứa dữ liệu thô và \path{configuration_summary.csv} chứa
 solved/timeout/error count, mean, median, PAR-2, encode/solve time, số biến,
 hard/soft clauses và quality metrics. Tại thời điểm cập nhật, toàn bộ
-112 regression tests đã qua; smoke campaign nhỏ gồm 200 top-level runs trên đủ
+156 regression tests đã qua; smoke campaign nhỏ gồm 200 top-level runs trên đủ
 50 cấu hình đều đạt \texttt{OPTIMUM} và qua verifier. Đây chỉ là kiểm thử chức
 năng bằng RC2-compatible test backend, không phải bằng chứng cải thiện runtime
 trên Open-WBO hoặc trên toàn bộ official benchmark.
@@ -815,6 +831,14 @@ Kiểm thử bắt buộc:
 \subsection{WP5: Triển khai similarity-budget
 \texorpdfstring{$\varepsilon$}{epsilon}-constraint}
 
+Implementation C++ dùng một policy tách khỏi B0/B1. Tham số $\delta$ được kiểm
+tra trước khi gọi solver và được phân tích dưới dạng phân số thập phân chính
+xác. Mỗi run ghi $\SIM^*$, $L_\delta$, realized similarity loss và optimum của
+từng tầng. Sau tầng tie-break, verifier đối chiếu metric cuối với
+$L_\delta$, $\SIM^*$, $\CONT^*$, $\OT^*$ và optimum similarity cuối; kiểm tra
+này xác nhận tính nhất quán của chuỗi nghiệm nhưng không thay thế proof
+certificate optimality của backend.
+
 Với mỗi instance:
 \begin{enumerate}
   \item tính $\SIM^*$;
@@ -884,10 +908,42 @@ sử dụng \textbf{8 cấu hình} cố định:
 \end{tabularx}
 \end{table}
 
-Script \texttt{run\_main\_8cfg.sh} chạy tuần tự toàn bộ 800~instances
-(400~\texttt{U30} + 400~\texttt{U40}), ghi JSON từng run vào
-\texttt{cfg}$k$/\textit{instance}\texttt{.json};
-hỗ trợ cờ \texttt{-{}-resume} để chạy lại từ điểm dừng.
+Ba họ objective được chạy thành campaign độc lập để không trộn baseline B0,
+B1 và B2. Script \texttt{run\_main\_8cfg.sh} mặc định chỉ chạy
+\texttt{method=weighted} trên toàn bộ 800~instances
+(400~\texttt{U30} + 400~\texttt{U40}), tức $8\times800=6\,400$ top-level
+runs. Script \texttt{run\_lex\_8cfg.sh} gọi cùng ma trận hai lần, một lần cho
+\texttt{lex-continuity} và một lần cho \texttt{lex-overtime}, tức
+$2\times8\times800=12\,800$ top-level runs; mỗi run full-coverage B1 có ba
+solver calls tuần tự dùng chung một cumulative timeout. Hai policy B1 được ghi
+vào hai result directory riêng, không ghi đè JSON, resume key hoặc bảng tổng
+hợp của B0.
+
+Script \texttt{run\_epsilon\_8cfg.sh} chạy năm mức $\delta$ trong
+Eq.~\eqref{eq:similarity-budget} vào năm result directory riêng. Nếu chạy đủ
+ma trận và 800 instances, B2 có
+$5\times8\times800=32\,000$ top-level runs. Mỗi run full-coverage gọi solver
+bốn lần: một lần tính $\SIM^*$ và ba lần cho
+$\min\CONT\rightarrow\min\OT\rightarrow\max\SIM$; soft-coverage gọi thêm một
+tầng coverage. Tầng similarity tie-break cuối là cần thiết khi
+$L_\delta<\SIM^*$ để loại nghiệm có cùng continuity/overtime nhưng similarity
+thấp hơn. Khi $L_\delta=\SIM^*$ tầng này là dư thừa về logic, nhưng vẫn được
+giữ để mọi mức $\delta$ có cùng schema bốn tầng và chi phí đo nhất quán. Báo
+cáo phải kèm \texttt{solver\_calls} và cumulative timeout để làm rõ chi phí
+sequential optimization. Vì ngân sách này lớn, full campaign chỉ được mở sau
+compute-budgeted pilot và go/no-go gate của WP5. Cả ba runner hỗ trợ cờ
+\texttt{-{}-resume}.
+
+Mỗi JSON ghi \texttt{objective\_mode}, \texttt{objective\_policy}, metric cuối
+cùng và optimum của từng tầng trong \texttt{stages}. Với B1, thứ tự so sánh
+chính là vector optimum theo policy; \texttt{weighted\_reference\_score} chỉ
+được lưu để phân tích tham chiếu và không được dùng thay cho thứ tự
+lexicographic. Với B2, JSON ghi thêm:
+\begin{itemize}[nosep]
+  \item \texttt{delta} và \texttt{similarity\_reference\_optimum};
+  \item \texttt{similarity\_lower\_bound};
+  \item realized similarity loss ở cả dạng tuyệt đối và phân số.
+\end{itemize}
 Script \texttt{collect\_main\_results.py} tổng hợp JSON thành ba file CSV:
 \begin{itemize}
   \item \texttt{results\_per\_instance.csv} --- 1~dòng/run, chứa toàn bộ metrics;
@@ -895,10 +951,21 @@ Script \texttt{collect\_main\_results.py} tổng hợp JSON thành ba file CSV:
         (PAR-2, OPTIMUM\%, mean/median elapsed, số biến, clause);
   \item \texttt{comparison\_pivot.csv} --- 1~dòng/instance, so sánh 8~cfg.
 \end{itemize}
-Các cột tối thiểu: \texttt{instance\_name}, \texttt{status},
-\texttt{elapsed\_s}, \texttt{variables}, \texttt{hard\_clauses},
-\texttt{soft\_clauses}, \texttt{best\_value}, \texttt{similarity},
-\texttt{continuity}, \texttt{overtime}, \texttt{coverage}.
+\texttt{collect\_epsilon\_results.py} còn tạo bảng gộp toàn bộ delta, summary
+theo delta/cấu hình và bảng unique objective points; các delta dẫn đến cùng
+$(\COV,\SIM,\CONT,\OT)$ được gộp nhưng danh sách delta nguồn vẫn được giữ.
+Khi phân tích B2, số raw delta runs, số $L_\delta$ phân biệt và số unique
+objective points được trình bày đồng thời để tránh phóng đại độ phủ Pareto.
+Các cột tối thiểu được chia thành năm nhóm:
+\begin{itemize}[nosep]
+  \item nhận dạng: \texttt{instance\_name}, \texttt{method},
+        \texttt{objective\_policy}, \texttt{status};
+  \item thời gian/công thức: \texttt{elapsed\_s}, \texttt{variables},
+        \texttt{hard\_clauses}, \texttt{soft\_clauses}, \texttt{solver\_calls};
+  \item các tầng: \texttt{stage\_objectives}, \texttt{stage\_optima};
+  \item metric nghiệm: similarity, continuity, overtime và coverage;
+  \item ngân sách B2: similarity reference, lower bound và realized loss.
+\end{itemize}
 Không tái sử dụng result directory khi schema hoặc campaign thay đổi.
 
 
@@ -932,9 +999,10 @@ EvalMaxSAT không tạo ra output \texttt{s OPTIMUM FOUND} trên macOS arm64
 với các WCNF lớn của HCORAP (thoát bình thường sau vài cải tiến trung gian;
 SIGSEGV khi gọi qua \texttt{hcorap\_multi}). Thực nghiệm này dùng
 \textbf{Open-WBO} (build từ source, macOS arm64) cho tất cả 8 cấu hình.
-So sánh thời gian với bài báo gốc là không hợp lệ (khác solver và platform);
-so sánh objective value $\SIM - w_c\,\CONT - w_o\,p\,\OT$ là hợp lệ vì cả
-hai solver chứng nhận optimality khi trả về \texttt{OPTIMUM}.
+So sánh thời gian với bài báo gốc là không hợp lệ (khác solver và platform).
+Khi backend trả về \texttt{OPTIMUM}, model, objective value và các inherited
+bounds được verifier C++ tính lại; tuy nhiên optimality vẫn dựa trên tính đúng
+của backend vì pipeline hiện chưa kiểm tra một proof trace MaxSAT độc lập.
 
 \subsection{KPI tính toán}
 

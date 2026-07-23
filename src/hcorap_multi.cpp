@@ -81,7 +81,16 @@ struct RunState {
     vector<StageRecord> stages;
     HCORAPSolutionMetrics metrics;
     string error;
+    int solverCalls;
+    int similarityReferenceOptimum;
+    int similarityLowerBound;
+
+    RunState()
+        : solverCalls(0), similarityReferenceOptimum(-1),
+          similarityLowerBound(-1) {}
 };
+
+static pair<long long, long long> parseDecimalFraction(const string &text);
 
 static void usage(const char *program) {
     cerr
@@ -166,6 +175,8 @@ static Options parseOptions(int argc, char **argv) {
     if (options.method != "weighted" && options.method != "lex-continuity" &&
         options.method != "lex-overtime" && options.method != "epsilon")
         throw runtime_error("unsupported method: " + options.method);
+    if (options.method == "epsilon")
+        parseDecimalFraction(options.delta);
     if (options.encodeOnly && (options.method != "weighted" || !options.fullCoverage))
         throw runtime_error(
             "--encode-only currently represents full-coverage weighted mode"
@@ -181,6 +192,8 @@ static pair<long long, long long> parseDecimalFraction(const string &text) {
         throw runtime_error("delta must be a decimal in [0,1]");
     string whole = dot == string::npos ? text : text.substr(0, dot);
     string fraction = dot == string::npos ? "" : text.substr(dot + 1);
+    if (whole.empty() && fraction.empty())
+        throw runtime_error("delta must contain at least one digit");
     if (whole.empty())
         whole = "0";
     if (fraction.size() > 9)
@@ -208,6 +221,15 @@ static int similarityThreshold(int optimum, const string &delta) {
     pair<long long, long long> parsed = parseDecimalFraction(delta);
     long long numerator = (parsed.second - parsed.first) * optimum;
     return static_cast<int>((numerator + parsed.second - 1) / parsed.second);
+}
+
+static int greatestCommonDivisor(int left, int right) {
+    while (right != 0) {
+        int remainder = left % right;
+        left = right;
+        right = remainder;
+    }
+    return left;
 }
 
 static string trim(const string &value) {
@@ -396,6 +418,24 @@ static string objectiveSense(HCORAPObjectiveKind objective) {
         ? "min" : "max";
 }
 
+static string objectiveMode(const string &method) {
+    if (method == "weighted")
+        return "weighted";
+    if (method == "lex-continuity" || method == "lex-overtime")
+        return "lexicographic";
+    return "epsilon-constraint";
+}
+
+static string objectivePolicy(const string &method) {
+    if (method == "lex-continuity")
+        return "continuity-priority";
+    if (method == "lex-overtime")
+        return "overtime-priority";
+    if (method == "epsilon")
+        return "similarity-budget";
+    return "weighted-sum";
+}
+
 static string temporaryBase(int stageIndex) {
     ostringstream name;
     name << "/tmp/hcorap_multi_" << static_cast<long>(getpid())
@@ -524,6 +564,7 @@ static ExternalStatus executeAndRecord(
     bool preserveOptimum
 ) {
     StageRecord record;
+    ++state.solverCalls;
     ExternalStatus status = solveStage(
         instance,
         options,
@@ -541,6 +582,168 @@ static ExternalStatus executeAndRecord(
             updateBound(bounds, objective, metrics);
     }
     return status;
+}
+
+static vector<HCORAPObjectiveKind> lexicographicOrder(const string &method) {
+    if (method == "lex-continuity") {
+        return {
+            HCORAP_CONTINUITY,
+            HCORAP_SIMILARITY,
+            HCORAP_OVERTIME
+        };
+    }
+    if (method == "lex-overtime") {
+        return {
+            HCORAP_OVERTIME,
+            HCORAP_CONTINUITY,
+            HCORAP_SIMILARITY
+        };
+    }
+    throw runtime_error("not a lexicographic method: " + method);
+}
+
+static ExternalStatus executeLexicographicPolicy(
+    HCORAP *instance,
+    const Options &options,
+    HCORAPObjectiveBounds &bounds,
+    const chrono::steady_clock::time_point &overallStarted,
+    RunState &state,
+    HCORAPSolutionMetrics &metrics
+) {
+    ExternalStatus status = EXTERNAL_OPTIMUM;
+    for (HCORAPObjectiveKind objective : lexicographicOrder(options.method)) {
+        status = executeAndRecord(
+            instance,
+            options,
+            objective,
+            bounds,
+            overallStarted,
+            state,
+            metrics,
+            true
+        );
+        if (status != EXTERNAL_OPTIMUM)
+            break;
+    }
+    return status;
+}
+
+static const StageRecord *findStage(
+    const RunState &state,
+    const string &name
+) {
+    for (const StageRecord &stage : state.stages) {
+        if (stage.name == name)
+            return &stage;
+    }
+    return NULL;
+}
+
+static bool validateEpsilonCompletion(
+    const Options &options,
+    const RunState &state,
+    const HCORAPSolutionMetrics &metrics,
+    string &error
+) {
+    const StageRecord *reference = findStage(state, "similarity_reference");
+    const StageRecord *continuity = findStage(state, "continuity");
+    const StageRecord *overtime = findStage(state, "overtime");
+    const StageRecord *tiebreak = findStage(state, "similarity_tiebreak");
+    if (reference == NULL || continuity == NULL || overtime == NULL ||
+        tiebreak == NULL) {
+        error = "epsilon completion is missing one or more optimization stages";
+        return false;
+    }
+
+    int expectedLowerBound = similarityThreshold(
+        state.similarityReferenceOptimum, options.delta
+    );
+    if (
+        reference->optimum != state.similarityReferenceOptimum ||
+        state.similarityLowerBound != expectedLowerBound
+    ) {
+        error = "epsilon similarity reference or lower bound is inconsistent";
+        return false;
+    }
+    if (
+        metrics.similarity < state.similarityLowerBound ||
+        metrics.similarity > state.similarityReferenceOptimum
+    ) {
+        error = "epsilon final similarity violates its certified budget interval";
+        return false;
+    }
+    if (
+        continuity->optimum != metrics.continuity ||
+        overtime->optimum != metrics.overtime ||
+        tiebreak->optimum != metrics.similarity
+    ) {
+        error = "epsilon final metrics do not match the sequential stage optima";
+        return false;
+    }
+
+    if (!options.fullCoverage) {
+        const StageRecord *coverage = findStage(state, "coverage");
+        if (coverage == NULL || coverage->optimum != metrics.coverage) {
+            error = "epsilon final coverage does not match the coverage optimum";
+            return false;
+        }
+    }
+    return true;
+}
+
+static ExternalStatus executeEpsilonPolicy(
+    HCORAP *instance,
+    const Options &options,
+    HCORAPObjectiveBounds &bounds,
+    const chrono::steady_clock::time_point &overallStarted,
+    RunState &state,
+    HCORAPSolutionMetrics &metrics
+) {
+    HCORAPSolutionMetrics referenceMetrics;
+    ExternalStatus status = executeAndRecord(
+        instance,
+        options,
+        HCORAP_SIMILARITY,
+        bounds,
+        overallStarted,
+        state,
+        referenceMetrics,
+        false
+    );
+    if (status != EXTERNAL_OPTIMUM)
+        return status;
+
+    state.stages.back().name = "similarity_reference";
+    state.similarityReferenceOptimum = referenceMetrics.similarity;
+    state.similarityLowerBound = similarityThreshold(
+        state.similarityReferenceOptimum, options.delta
+    );
+    bounds.minSimilarity = state.similarityLowerBound;
+
+    const HCORAPObjectiveKind completion[] = {
+        HCORAP_CONTINUITY,
+        HCORAP_OVERTIME,
+        HCORAP_SIMILARITY
+    };
+    for (size_t index = 0; index < 3; ++index) {
+        status = executeAndRecord(
+            instance,
+            options,
+            completion[index],
+            bounds,
+            overallStarted,
+            state,
+            metrics,
+            index + 1 < 3
+        );
+        if (status != EXTERNAL_OPTIMUM)
+            return status;
+    }
+
+    state.stages.back().name = "similarity_tiebreak";
+    if (!validateEpsilonCompletion(options, state, metrics, state.error))
+        return EXTERNAL_ERROR;
+    return EXTERNAL_OPTIMUM;
 }
 
 static string statusName(ExternalStatus status) {
@@ -575,55 +778,18 @@ static RunState solveMethod(
             instance, options, HCORAP_WEIGHTED, bounds, overallStarted,
             state, metrics, false
         );
-    } else if (status == EXTERNAL_OPTIMUM && options.method == "lex-continuity") {
-        const HCORAPObjectiveKind order[] = {
-            HCORAP_CONTINUITY, HCORAP_SIMILARITY, HCORAP_OVERTIME
-        };
-        for (HCORAPObjectiveKind objective : order) {
-            status = executeAndRecord(
-                instance, options, objective, bounds, overallStarted,
-                state, metrics, true
-            );
-            if (status != EXTERNAL_OPTIMUM)
-                break;
-        }
-    } else if (status == EXTERNAL_OPTIMUM && options.method == "lex-overtime") {
-        const HCORAPObjectiveKind order[] = {
-            HCORAP_OVERTIME, HCORAP_CONTINUITY, HCORAP_SIMILARITY
-        };
-        for (HCORAPObjectiveKind objective : order) {
-            status = executeAndRecord(
-                instance, options, objective, bounds, overallStarted,
-                state, metrics, true
-            );
-            if (status != EXTERNAL_OPTIMUM)
-                break;
-        }
-    } else if (status == EXTERNAL_OPTIMUM && options.method == "epsilon") {
-        HCORAPSolutionMetrics reference;
-        status = executeAndRecord(
-            instance, options, HCORAP_SIMILARITY, bounds, overallStarted,
-            state, reference, false
+    } else if (
+        status == EXTERNAL_OPTIMUM &&
+        (options.method == "lex-continuity" ||
+         options.method == "lex-overtime")
+    ) {
+        status = executeLexicographicPolicy(
+            instance, options, bounds, overallStarted, state, metrics
         );
-        if (status == EXTERNAL_OPTIMUM) {
-            state.stages.back().name = "similarity_reference";
-            bounds.minSimilarity = similarityThreshold(
-                reference.similarity, options.delta
-            );
-            const HCORAPObjectiveKind order[] = {
-                HCORAP_CONTINUITY, HCORAP_OVERTIME, HCORAP_SIMILARITY
-            };
-            for (HCORAPObjectiveKind objective : order) {
-                status = executeAndRecord(
-                    instance, options, objective, bounds, overallStarted,
-                    state, metrics, objective != HCORAP_SIMILARITY
-                );
-                if (status != EXTERNAL_OPTIMUM)
-                    break;
-            }
-            if (status == EXTERNAL_OPTIMUM)
-                state.stages.back().name = "similarity_tiebreak";
-        }
+    } else if (status == EXTERNAL_OPTIMUM && options.method == "epsilon") {
+        status = executeEpsilonPolicy(
+            instance, options, bounds, overallStarted, state, metrics
+        );
     }
 
     state.status = statusName(status);
@@ -649,12 +815,17 @@ static void writeResult(
     ostream &output,
     const RunState &state,
     const Options &options,
-    double totalSeconds
+    double totalSeconds,
+    const HCORAP *instance
 ) {
-    output << "{\n  \"schema_version\": 1,\n  \"status\": ";
+    output << "{\n  \"schema_version\": 2,\n  \"status\": ";
     jsonEscape(output, state.status);
     output << ",\n  \"method\": ";
     jsonEscape(output, options.method);
+    output << ",\n  \"objective_mode\": ";
+    jsonEscape(output, objectiveMode(options.method));
+    output << ",\n  \"objective_policy\": ";
+    jsonEscape(output, objectivePolicy(options.method));
     output << ",\n  \"language\": \"C++\",\n  \"instance\": ";
     jsonEscape(output, options.instancePath);
     output << ",\n  \"solver\": ";
@@ -663,9 +834,11 @@ static void writeResult(
            << "  \"timing_scope\": \"parse+encode+serialize+solve+verify\",\n"
            << "  \"timeout_seconds\": " << options.timeoutSeconds << ",\n"
            << "  \"elapsed_seconds\": " << setprecision(10) << totalSeconds << ",\n"
+           << "  \"solver_calls\": " << state.solverCalls << ",\n"
            << "  \"full_coverage\": " << (options.fullCoverage ? "true" : "false") << ",\n"
            << "  \"continuity_weight\": " << options.continuityWeight << ",\n"
            << "  \"overtime_weight\": " << options.overtimeWeight << ",\n"
+           << "  \"overtime_penalty_per_hour\": " << abs(instance->P) << ",\n"
            << "  \"cardinality_encoding\": \""
            << hcorapCardinalityEncodingName(options.cardinalityEncoding)
            << "\",\n"
@@ -677,6 +850,41 @@ static void writeResult(
            << "\",\n"
            << "  \"delta\": ";
     jsonEscape(output, options.delta);
+    output << ",\n  \"similarity_reference_optimum\": ";
+    if (state.similarityReferenceOptimum >= 0)
+        output << state.similarityReferenceOptimum;
+    else
+        output << "null";
+    output << ",\n  \"similarity_lower_bound\": ";
+    if (state.similarityLowerBound >= 0)
+        output << state.similarityLowerBound;
+    else
+        output << "null";
+    output << ",\n  \"similarity_realized_loss_absolute\": ";
+    if (state.status == "OPTIMUM" && state.similarityReferenceOptimum >= 0) {
+        output << state.similarityReferenceOptimum - state.metrics.similarity;
+    } else {
+        output << "null";
+    }
+    output << ",\n  \"similarity_realized_loss_fraction\": ";
+    if (state.status == "OPTIMUM" && state.similarityReferenceOptimum >= 0) {
+        int loss = state.similarityReferenceOptimum - state.metrics.similarity;
+        ostringstream fraction;
+        if (state.similarityReferenceOptimum == 0 || loss == 0) {
+            fraction << "0/1";
+        } else {
+            int divisor = greatestCommonDivisor(
+                loss, state.similarityReferenceOptimum
+            );
+            fraction
+                << loss / divisor
+                << '/'
+                << state.similarityReferenceOptimum / divisor;
+        }
+        jsonEscape(output, fraction.str());
+    } else {
+        output << "null";
+    }
     output << ",\n  \"stages\": [";
     for (size_t index = 0; index < state.stages.size(); ++index) {
         const StageRecord &stage = state.stages[index];
@@ -702,11 +910,16 @@ static void writeResult(
         output << ",\n";
     }
     if (state.status == "OPTIMUM") {
+        int weightedReferenceScore =
+            state.metrics.similarity
+            - options.continuityWeight * state.metrics.continuity
+            - options.overtimeWeight * abs(instance->P) * state.metrics.overtime;
         output << "  \"metrics\": {\"coverage\": " << state.metrics.coverage
                << ", \"similarity\": " << state.metrics.similarity
                << ", \"continuity\": " << state.metrics.continuity
                << ", \"overtime\": " << state.metrics.overtime
                << ", \"overtime_cost\": " << state.metrics.overtimeCost
+               << ", \"weighted_reference_score\": " << weightedReferenceScore
                << ", \"verified\": " << (state.metrics.valid ? "true" : "false")
                << "}";
         if (options.printAssignments) {
@@ -759,12 +972,12 @@ int main(int argc, char **argv) {
         ).count();
 
         if (options.outputPath.empty()) {
-            writeResult(cout, state, options, totalSeconds);
+            writeResult(cout, state, options, totalSeconds, instance);
         } else {
             ofstream output(options.outputPath.c_str());
             if (!output)
                 throw runtime_error("cannot open output file: " + options.outputPath);
-            writeResult(output, state, options, totalSeconds);
+            writeResult(output, state, options, totalSeconds, instance);
         }
         delete instance;
         return state.status == "OPTIMUM" ? 0 : 2;

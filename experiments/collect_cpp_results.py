@@ -21,6 +21,8 @@ RAW_COLUMNS = (
     "symmetry_breaking",
     "method",
     "delta",
+    "objective_mode",
+    "objective_policy",
     "status",
     "exit_code",
     "elapsed_seconds",
@@ -34,6 +36,7 @@ RAW_COLUMNS = (
     "overtime",
     "overtime_cost",
     "verified",
+    "solver_calls",
     "stage_count",
     "encode_seconds_sum",
     "solve_seconds_sum",
@@ -42,6 +45,10 @@ RAW_COLUMNS = (
     "soft_clauses_max",
     "stage_objectives",
     "stage_optima",
+    "similarity_reference_optimum",
+    "similarity_lower_bound",
+    "similarity_realized_loss_absolute",
+    "similarity_realized_loss_fraction",
     "solver",
     "result_file",
     "error",
@@ -77,6 +84,9 @@ SUMMARY_COLUMNS = GROUP_COLUMNS + (
     "mean_similarity",
     "mean_continuity",
     "mean_overtime",
+    "mean_similarity_reference_optimum",
+    "mean_similarity_lower_bound",
+    "mean_similarity_realized_loss_absolute",
 )
 
 
@@ -153,6 +163,8 @@ def flatten_campaign(result_dir: Path) -> list[dict[str, Any]]:
                 if entry["method"] == "epsilon"
                 else entry["delta"]
             ),
+            "objective_mode": result.get("objective_mode"),
+            "objective_policy": result.get("objective_policy"),
             "status": result.get("status", "MISSING_RESULT"),
             "exit_code": _integer(entry["exit_code"]),
             "elapsed_seconds": _number(result.get("elapsed_seconds")),
@@ -168,6 +180,7 @@ def flatten_campaign(result_dir: Path) -> list[dict[str, Any]]:
             "overtime": _integer(metrics.get("overtime")),
             "overtime_cost": _integer(metrics.get("overtime_cost")),
             "verified": metrics.get("verified"),
+            "solver_calls": _integer(result.get("solver_calls")),
             "stage_count": len(stages),
             "encode_seconds_sum": sum(
                 _number(stage.get("encode_seconds")) or 0 for stage in stages
@@ -192,6 +205,18 @@ def flatten_campaign(result_dir: Path) -> list[dict[str, Any]]:
             ),
             "stage_optima": " | ".join(
                 str(stage.get("optimum", "")) for stage in stages
+            ),
+            "similarity_reference_optimum": _integer(
+                result.get("similarity_reference_optimum")
+            ),
+            "similarity_lower_bound": _integer(
+                result.get("similarity_lower_bound")
+            ),
+            "similarity_realized_loss_absolute": _integer(
+                result.get("similarity_realized_loss_absolute")
+            ),
+            "similarity_realized_loss_fraction": result.get(
+                "similarity_realized_loss_fraction"
             ),
             "solver": result.get("solver", ""),
             "result_file": str(result_path),
@@ -248,6 +273,15 @@ def summarize(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
                 "mean_similarity": _mean(group, "similarity"),
                 "mean_continuity": _mean(group, "continuity"),
                 "mean_overtime": _mean(group, "overtime"),
+                "mean_similarity_reference_optimum": _mean(
+                    group, "similarity_reference_optimum"
+                ),
+                "mean_similarity_lower_bound": _mean(
+                    group, "similarity_lower_bound"
+                ),
+                "mean_similarity_realized_loss_absolute": _mean(
+                    group, "similarity_realized_loss_absolute"
+                ),
             }
         )
         summaries.append(summary)

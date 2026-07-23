@@ -120,7 +120,17 @@ def test_soft_coverage_is_optimized_first(partially_infeasible_instance) -> None
     for result in (
         solve_weighted(partially_infeasible_instance, require_full_coverage=False),
         solve_lexicographic(partially_infeasible_instance, require_full_coverage=False),
+        solve_epsilon_constraint(
+            partially_infeasible_instance,
+            delta="0.2",
+            require_full_coverage=False,
+        ),
         solve_cpsat_weighted(partially_infeasible_instance, require_full_coverage=False),
+        solve_cpsat_epsilon_constraint(
+            partially_infeasible_instance,
+            delta="0.2",
+            require_full_coverage=False,
+        ),
     ):
         assert result.status == "OPTIMUM"
         assert result.metrics.coverage == 1

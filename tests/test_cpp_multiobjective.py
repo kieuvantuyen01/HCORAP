@@ -22,6 +22,19 @@ SYMMETRY_PARTIAL_INSTANCE = (
 )
 RC2_STUB = ROOT / "tests" / "rc2_open_wbo.py"
 
+MAIN_8_CONFIGS = (
+    ("sorting-network", "none", "none"),
+    ("sorting-network", "none", "slot-service"),
+    ("sorting-network", "both", "none"),
+    ("sorting-network", "both", "slot-service"),
+    ("totalizer", "none", "none"),
+    ("totalizer", "none", "slot-service"),
+    ("totalizer", "both", "none"),
+    ("totalizer", "both", "slot-service"),
+)
+
+OFFICIAL_EPSILON_DELTAS = ("0", "0.01", "0.025", "0.05", "0.10")
+
 
 def _solver() -> str:
     configured = os.environ.get("OPEN_WBO_BIN")
@@ -168,6 +181,229 @@ def test_cpp_methods_recover_expected_tradeoffs(
         metrics["continuity"],
         metrics["overtime"],
     ) == expected
+
+
+def test_cpp_default_method_remains_weighted_b0() -> None:
+    if not BINARY.is_file():
+        pytest.skip("build hcorap_multi with: make -j4 YICES=0")
+    completed = subprocess.run(
+        [
+            str(BINARY),
+            str(INSTANCE),
+            "--solver",
+            _solver(),
+            "--timeout",
+            "30",
+        ],
+        check=True,
+        text=True,
+        capture_output=True,
+        timeout=35,
+    )
+    result = json.loads(completed.stdout)
+    assert result["method"] == "weighted"
+    assert result["objective_mode"] == "weighted"
+    assert result["objective_policy"] == "weighted-sum"
+    assert result["solver_calls"] == 1
+    assert [stage["objective"] for stage in result["stages"]] == [
+        "weighted_score"
+    ]
+    assert result["metrics"]["weighted_reference_score"] == 8
+
+
+@pytest.mark.parametrize(
+    ("method", "policy", "objectives", "optima"),
+    [
+        (
+            "lex-continuity",
+            "continuity-priority",
+            ["continuity", "similarity", "overtime"],
+            [0, 8, 1],
+        ),
+        (
+            "lex-overtime",
+            "overtime-priority",
+            ["overtime", "continuity", "similarity"],
+            [0, 1, 9],
+        ),
+    ],
+)
+def test_cpp_lexicographic_stages_preserve_priority_order(
+    method: str,
+    policy: str,
+    objectives: list[str],
+    optima: list[int],
+) -> None:
+    result = _run(method)
+    assert result["objective_mode"] == "lexicographic"
+    assert result["objective_policy"] == policy
+    assert [stage["objective"] for stage in result["stages"]] == objectives
+    assert [stage["optimum"] for stage in result["stages"]] == optima
+    assert result["solver_calls"] == 3
+    assert result["metrics"]["verified"] is True
+
+
+@pytest.mark.parametrize(("cardinality", "implied", "symmetry"), MAIN_8_CONFIGS)
+@pytest.mark.parametrize(
+    ("method", "expected"),
+    [
+        ("lex-continuity", (8, 0, 1)),
+        ("lex-overtime", (9, 1, 0)),
+    ],
+)
+def test_cpp_main_8_configs_preserve_lexicographic_policy(
+    cardinality: str,
+    implied: str,
+    symmetry: str,
+    method: str,
+    expected: tuple[int, int, int],
+) -> None:
+    result = _run(
+        method,
+        "--cardinality-encoding",
+        cardinality,
+        "--implied-constraints",
+        implied,
+        "--symmetry-breaking",
+        symmetry,
+    )
+    metrics = result["metrics"]
+    assert result["status"] == "OPTIMUM"
+    assert result["objective_mode"] == "lexicographic"
+    assert (
+        metrics["similarity"],
+        metrics["continuity"],
+        metrics["overtime"],
+    ) == expected
+    assert metrics["verified"] is True
+
+
+@pytest.mark.parametrize(
+    (
+        "delta",
+        "lower_bound",
+        "stage_optima",
+        "expected_metrics",
+        "loss_fraction",
+    ),
+    [
+        ("0", 9, [9, 1, 0, 9], (9, 1, 0), "0/1"),
+        ("0.2", 8, [9, 0, 1, 8], (8, 0, 1), "1/9"),
+    ],
+)
+def test_cpp_epsilon_policy_records_and_verifies_similarity_budget(
+    delta: str,
+    lower_bound: int,
+    stage_optima: list[int],
+    expected_metrics: tuple[int, int, int],
+    loss_fraction: str,
+) -> None:
+    result = _run("epsilon", "--delta", delta)
+    metrics = result["metrics"]
+    assert result["status"] == "OPTIMUM"
+    assert result["objective_mode"] == "epsilon-constraint"
+    assert result["objective_policy"] == "similarity-budget"
+    assert result["solver_calls"] == 4
+    assert result["similarity_reference_optimum"] == 9
+    assert result["similarity_lower_bound"] == lower_bound
+    assert result["similarity_realized_loss_absolute"] == 9 - expected_metrics[0]
+    assert result["similarity_realized_loss_fraction"] == loss_fraction
+    assert [stage["objective"] for stage in result["stages"]] == [
+        "similarity_reference",
+        "continuity",
+        "overtime",
+        "similarity_tiebreak",
+    ]
+    assert [stage["optimum"] for stage in result["stages"]] == stage_optima
+    assert (
+        metrics["similarity"],
+        metrics["continuity"],
+        metrics["overtime"],
+    ) == expected_metrics
+    assert metrics["similarity"] >= lower_bound
+    assert metrics["verified"] is True
+
+
+@pytest.mark.parametrize("delta", OFFICIAL_EPSILON_DELTAS)
+def test_cpp_official_epsilon_grid_uses_exact_ceiling(delta: str) -> None:
+    result = _run("epsilon", "--delta", delta)
+    assert result["similarity_reference_optimum"] == 9
+    assert result["similarity_lower_bound"] == 9
+    assert result["similarity_realized_loss_absolute"] == 0
+    assert result["metrics"]["similarity"] == 9
+
+
+@pytest.mark.parametrize(("cardinality", "implied", "symmetry"), MAIN_8_CONFIGS)
+def test_cpp_main_8_configs_preserve_epsilon_policy(
+    cardinality: str,
+    implied: str,
+    symmetry: str,
+) -> None:
+    result = _run(
+        "epsilon",
+        "--delta",
+        "0.2",
+        "--cardinality-encoding",
+        cardinality,
+        "--implied-constraints",
+        implied,
+        "--symmetry-breaking",
+        symmetry,
+    )
+    metrics = result["metrics"]
+    assert result["status"] == "OPTIMUM"
+    assert result["similarity_lower_bound"] == 8
+    assert (
+        metrics["similarity"],
+        metrics["continuity"],
+        metrics["overtime"],
+    ) == (8, 0, 1)
+    assert metrics["verified"] is True
+
+
+def test_cpp_epsilon_soft_coverage_is_fixed_before_similarity() -> None:
+    result = _run_instance(
+        PARTIAL_INSTANCE,
+        "epsilon",
+        "--delta",
+        "0.2",
+        "--soft-coverage",
+    )
+    assert result["status"] == "OPTIMUM"
+    assert result["solver_calls"] == 5
+    assert [stage["objective"] for stage in result["stages"]] == [
+        "coverage",
+        "similarity_reference",
+        "continuity",
+        "overtime",
+        "similarity_tiebreak",
+    ]
+    assert result["metrics"]["coverage"] == result["stages"][0]["optimum"] == 1
+    assert result["metrics"]["verified"] is True
+
+
+@pytest.mark.parametrize("delta", (".", "-0.1", "1.01", "0.1234567890"))
+def test_cpp_epsilon_rejects_invalid_delta_before_solver(delta: str) -> None:
+    if not BINARY.is_file():
+        pytest.skip("build hcorap_multi with: make -j4 YICES=0")
+    completed = subprocess.run(
+        [
+            str(BINARY),
+            str(INSTANCE),
+            "--solver",
+            "/definitely/missing/solver",
+            "--method",
+            "epsilon",
+            "--delta",
+            delta,
+        ],
+        check=False,
+        text=True,
+        capture_output=True,
+    )
+    assert completed.returncode == 2
+    assert "delta" in completed.stderr
+    assert "cannot execute solver" not in completed.stderr
 
 
 def test_cpp_soft_coverage_is_optimized_before_quality() -> None:

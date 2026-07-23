@@ -128,3 +128,7 @@ def test_cpp_campaign_can_run_epsilon_only(tmp_path: Path) -> None:
     assert raw[0]["delta"] == "0"
     assert raw[0]["status"] == "OPTIMUM"
     assert raw[0]["verified"] == "True"
+    assert raw[0]["solver_calls"] == "4"
+    assert raw[0]["similarity_reference_optimum"] != ""
+    assert raw[0]["similarity_lower_bound"] != ""
+    assert raw[0]["similarity_realized_loss_absolute"] == "0"
