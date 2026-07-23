@@ -617,6 +617,28 @@ hard/soft clauses và quality metrics. Tại thời điểm cập nhật, toàn 
 năng bằng RC2-compatible test backend, không phải bằng chứng cải thiện runtime
 trên Open-WBO hoặc trên toàn bộ official benchmark.
 
+\paragraph{Pilot 50 cấu hình và kết quả chọn lọ.}
+Pilot đã được chạy trên 4~instance (\texttt{inst\_1}, \texttt{inst\_5},
+\texttt{inst\_6}, \texttt{inst\_10}) với solver \textbf{Open-WBO}
+(build từ source, macOS arm64), timeout 60\,giây, method \texttt{weighted}.
+Kết quả tổng hợp 200 lần chạy cho thấy:
+\begin{itemize}
+  \item \texttt{both-plus} chỉ đạt 67\% OPTIMUM do timeout trên
+    \texttt{inst\_10} với cả hai cardinality encoding ---\
+    cấu hình này bị loại khỏi thực nghiệm chính.
+  \item IC \texttt{none} và \texttt{both}: 100\% OPTIMUM, độ tin cậy cao nhất
+    trong nhóm IC được giữ lại.
+  \item Symmetry breaking không tạo ra sự khác biệt có ý nghĩa trên
+    instance nhỏ; giữ \texttt{none} (baseline) và
+    \texttt{slot-service} (kết hợp hai loại SB) làm đại diện.
+\end{itemize}
+
+Từ đó, ma trận thực nghiệm chính được thu hẹp từ 50 xuống:
+\begin{equation}
+  2\times2\times2=8\ \text{cấu hình} \quad (\text{bao gồm ORIGINAL = cfg1}).
+  \label{eq:8-config-matrix}
+\end{equation}
+
 \section{Các gói công việc}
 
 \subsection{WP1: Đóng băng và tái lập baseline}
@@ -837,22 +859,42 @@ C++ CP-SAT hoặc MILP & Baseline ngoài MaxSAT & Chỉ đưa vào runtime chín
 
 \subsection{Ma trận cấu hình thực nghiệm}
 
-Ba trục encoding độc lập với trục policy. File
-\path{full_configuration_matrix.env} khai báo 50 tổ hợp; runner duyệt tuần
-tự cardinality--implied--symmetry và, trong mỗi tổ hợp, chạy weighted,
-lex-continuity, lex-overtime cùng các mức $\delta$ của
-$\varepsilon$-constraint. Với năm mức $\delta$, một instance cần tối đa:
-\begin{equation}
-  50\times(3+5)=400\ \text{top-level runs},
-\end{equation}
-chưa tính các solver stage nội bộ của từng policy. Vì vậy full matrix chỉ dùng
-cho screening subset; bảng policy chính phải dùng encoding đã freeze từ pilot.
+Từ kết quả pilot (Eq.~\ref{eq:8-config-matrix}), ma trận thực nghiệm chính
+sử dụng \textbf{8 cấu hình} cố định:
 
-Mỗi JSON lưu \path{cardinality_encoding},
-\path{implied_constraints}, \path{symmetry_breaking}, method, delta,
-timing theo stage, số biến/clause và metrics đã verify. Manifest lưu thêm
-SHA-256 của instance, result path và exit code. Không dùng lại result directory
-khi schema hoặc campaign thay đổi.
+\begin{table}[H]
+\centering
+\caption{8 cấu hình thực nghiệm chính (cfg1 = ORIGINAL baseline bài báo).}
+\begin{tabularx}{\textwidth}{@{}c>{\ttfamily}p{3.5cm}>{\ttfamily}p{2.5cm}>{\ttfamily}p{3cm}Y@{}}
+\toprule
+\# & Cardinality & IC & SB & Ghi chú \\
+\midrule
+1 & sorting-network & none & none & ORIGINAL ― baseline bài báo \\
+2 & sorting-network & none & slot-service & \\
+3 & sorting-network & both & none & \\
+4 & sorting-network & both & slot-service & \\
+5 & totalizer & none & none & \\
+6 & totalizer & none & slot-service & \\
+7 & totalizer & both & none & \\
+8 & totalizer & both & slot-service & \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Script \path{run_main_8cfg.sh} chạy tuần tự toàn bộ 800 instances
+(400 \texttt{U30} + 400 \texttt{U40}), ghi JSON từng run vào
+\path{cfg}$k$/\textit{instance}\path{.json}. Script
+\path{collect_main_results.py} tạo ba file CSV:
+\path{results_per_instance.csv} (1~dòng/run),
+\path{summary_by_config.csv} (1~dòng/cấu hình, có PAR-2 và OPTIMUM\%), và
+\path{comparison_pivot.csv} (1~dòng/instance, so sánh 8~cfg song song).
+Các cột CSV bao gồm tối thiểu:
+\texttt{instance\_name}, \texttt{status}, \texttt{elapsed\_s},
+\texttt{variables}, \texttt{hard\_clauses}, \texttt{soft\_clauses},
+\texttt{best\_value}, \texttt{similarity}, \texttt{continuity},
+\texttt{overtime}, \texttt{coverage}.
+Không tái sử dụng result directory khi schema hoặc campaign thay đổi.
+Chạy lại từ điểm dừng bằng cờ \texttt{-{}-resume}.
 
 \subsection{Môi trường chạy}
 
@@ -874,7 +916,19 @@ ngân sách tích lũy cho toàn bộ policy. Shell runner chỉ điều phối 
 implementation của phương pháp. Tái lập runtime của executable C++ gốc được
 báo riêng nếu encoding hoặc định dạng WCNF chưa hoàn toàn đồng nhất.
 
-Các mốc timeout đề xuất là 60, 300 và 3600 giây.
+Timeout cho thực nghiệm chính: \textbf{3600~giây} (1~giờ)/run.
+Pilot screening dùng 60~giây để tiết kiệm thời gian.
+
+\paragraph{Solver backend.}
+Bài báo gốc (Collcaballero et al.) dùng \textbf{EvalMaxSAT} trên Linux
+x86-64 cho toàn bộ thực nghiệm. Sau điều tra kỹ thuật,
+EvalMaxSAT không tạo ra output \texttt{s OPTIMUM FOUND} trên macOS arm64
+với các WCNF lớn của HCORAP (thoát bình thường sau vài cải tiến trung gian;
+SIGSEGV khi gọi qua \texttt{hcorap\_multi}). Thực nghiệm này dùng
+\textbf{Open-WBO} (build từ source, macOS arm64) cho tất cả 8 cấu hình.
+So sánh thời gian với bài báo gốc là không hợp lệ (khác solver và platform);
+so sánh objective value $\SIM - w_c\,\CONT - w_o\,p\,\OT$ là hợp lệ vì cả
+hai solver chứng nhận optimality khi trả về \texttt{OPTIMUM}.
 
 \subsection{KPI tính toán}
 
@@ -1004,14 +1058,18 @@ Corrected benchmark quá dễ hoặc quá khó & Chạy pilot, hiệu chỉnh lo
 feasibility thực tế thay vì chỉ dùng tỷ lệ capacity. \\
 Continuity cải thiện rất ít & Tăng tỷ lệ sequence nhiều services và tạo
 qualification scarcity có kiểm soát. \\
-EvalMaxSAT không ổn định trên nền tảng chạy & Khóa Open-WBO C++ đã qua smoke
-test cho mọi phương pháp; không thay solver giữa campaign. \\
+EvalMaxSAT không ổn định trên nền tảng chạy & \textbf{Đã xử lý:} EvalMaxSAT
+không output \texttt{OPTIMUM} trên macOS arm64 với WCNF lớn; khóa
+Open-WBO C++ đã qua smoke test cho mọi phương pháp; không thay solver giữa
+campaign. So sánh runtime với bài báo gốc là không hợp lệ; chỉ so sánh
+objective value. \\
 Symmetry breaking loại nhầm nghiệm không tương đương & Chỉ dùng signature exact
 trên reward, candidate, \texttt{SU/SEQ}, $\HN/\HE$; kiểm tra optimum bằng RC2/brute force
 trên full và soft coverage trước campaign. \\
-Ma trận $2\times5\times5$ làm vượt compute budget & Chạy tuần tự các ablation
-một trục, screening trên subset phân tầng, rồi mới freeze một số cấu hình cho
-evaluation set. \\
+Ma trận $2\times5\times5$ làm vượt compute budget & \textbf{Đã xử lý:} Pilot trên
+4~instance xác nhận loại \texttt{both-plus} (67\% OPTIMUM) và các SB
+không có ảnh hưởng ý nghĩa; cố định $2\times2\times2=8$~cấu hình
+cho thực nghiệm chính. \\
 Không có dữ liệu vận hành thật & Giới hạn kết luận ở benchmark mô phỏng; không
 tuyên bố hiệu quả lâm sàng hoặc triển khai thực tế. \\
 Reviewer xem sửa generator là đóng góp nhỏ & Xác định benchmark là điều kiện
