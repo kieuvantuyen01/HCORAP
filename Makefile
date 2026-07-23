@@ -71,6 +71,8 @@ GLUCOSE := 0
 MINISAT := 0
 CUSTOMYICES := 0
 CPOPTIMIZER := 0
+GUROBI ?= 0
+CPLEX ?= 0
 
 
 
@@ -85,6 +87,7 @@ DIRECTORIES := 	smtapi/src \
 			encodings/HCORAP \
 		proposed/cpp \
 			proposed/cpp/encodings \
+			proposed/cpp/commercial \
 		parser \
 		controllers
 
@@ -194,6 +197,15 @@ SOURCES += $(addprefix proposed/cpp/encodings/,\
 	HCORAPMultiObjectiveEncoding.cpp\
 )
 
+SOURCES += $(addprefix proposed/cpp/commercial/,\
+	CommercialTypes.cpp \
+	HCORAPMIPModel.cpp \
+	ReferenceBackend.cpp \
+	GurobiMIPBackend.cpp \
+	CplexMIPBackend.cpp \
+	CplexCPBackend.cpp\
+)
+
 
 SOURCES += $(addprefix parser/, \
  	parser.cpp \
@@ -221,6 +233,41 @@ DEFS+= -DCPOPTIMIZER -DIL_STD -DILOUSEMT -D_REENTRANT -DILM_REENTRANT
 LFLAGS+= -lcp -lcplex -lconcert -lpthread -lm -ldl
 endif
 
+ifeq ($(GUROBI),1)
+ifeq ($(strip $(GUROBI_HOME)),)
+$(error GUROBI=1 requires GUROBI_HOME to point to the Gurobi installation)
+endif
+GUROBI_CORE_LIBRARY_FILE := $(firstword $(wildcard $(GUROBI_HOME)/lib/libgurobi[0-9]*.dylib $(GUROBI_HOME)/lib/libgurobi[0-9]*.so $(GUROBI_HOME)/lib/libgurobi[0-9]*.a))
+ifeq ($(strip $(GUROBI_CORE_LIBRARY_FILE)),)
+$(error no versioned Gurobi core library found under $(GUROBI_HOME)/lib)
+endif
+GUROBI_CORE_LIB ?= $(patsubst lib%,%,$(basename $(notdir $(GUROBI_CORE_LIBRARY_FILE))))
+DEFS += -DHCORAP_WITH_GUROBI
+INCLUDES += -I$(GUROBI_HOME)/include
+LFLAGS += -L$(GUROBI_HOME)/lib -lgurobi_c++ -l$(GUROBI_CORE_LIB)
+endif
+
+ifeq ($(CPLEX),1)
+ifeq ($(strip $(CPLEX_STUDIO_DIR)),)
+$(error CPLEX=1 requires CPLEX_STUDIO_DIR to point to IBM ILOG CPLEX Optimization Studio)
+endif
+CPLEX_ARCH ?= $(notdir $(patsubst %/static_pic,%,$(firstword $(wildcard $(CPLEX_STUDIO_DIR)/concert/lib/*/static_pic))))
+ifeq ($(strip $(CPLEX_ARCH)),)
+$(error cannot detect CPLEX_ARCH under $(CPLEX_STUDIO_DIR)/concert/lib; set CPLEX_ARCH explicitly)
+endif
+DEFS += -DHCORAP_WITH_CPLEX -DIL_STD -DILOUSEMT -D_REENTRANT -DILM_REENTRANT
+INCLUDES += -I$(CPLEX_STUDIO_DIR)/concert/include
+INCLUDES += -I$(CPLEX_STUDIO_DIR)/cplex/include
+INCLUDES += -I$(CPLEX_STUDIO_DIR)/cpoptimizer/include
+LFLAGS += -L$(CPLEX_STUDIO_DIR)/concert/lib/$(CPLEX_ARCH)/static_pic
+LFLAGS += -L$(CPLEX_STUDIO_DIR)/cplex/lib/$(CPLEX_ARCH)/static_pic
+LFLAGS += -L$(CPLEX_STUDIO_DIR)/cpoptimizer/lib/$(CPLEX_ARCH)/static_pic
+LFLAGS += -lilocplex -lcp -lconcert -lcplex -lpthread -lm -ldl
+ifeq ($(shell uname -s),Darwin)
+LFLAGS += -framework CoreFoundation -framework IOKit
+endif
+endif
+
 ifeq ($(CUSTOMYICES),1)
 DEFS+= "-DCUSTOMYICES"
 endif
@@ -243,10 +290,10 @@ endif
 
 
 ifeq ($(DEBUG),1)
-BUILDROOT := $(DEBUG_BUILDROOT)
+BUILDROOT := $(DEBUG_BUILDROOT)$(if $(filter 1,$(GUROBI)),_gurobi)$(if $(filter 1,$(CPLEX)),_cplex)
 BINROOT := $(DEBUG_BINROOT)
 else
-BUILDROOT := $(RELEASE_BUILDROOT)
+BUILDROOT := $(RELEASE_BUILDROOT)$(if $(filter 1,$(GUROBI)),_gurobi)$(if $(filter 1,$(CPLEX)),_cplex)
 BINROOT := $(RELEASE_BINROOT)
 endif
 
@@ -277,12 +324,12 @@ OBJS := $(OBJS:%.cc=$(BUILDROOT)/%.o)
 SOURCES := $(addprefix src/, $(SOURCES))
 
 
-.PHONY: all hcorap2sat hcorap_multi
+.PHONY: all hcorap2sat hcorap_multi hcorap_commercial
 
 .SECONDARY: $(OBJS)
 
 
-all: hcorap2sat hcorap_multi
+all: hcorap2sat hcorap_multi hcorap_commercial
 
 clean:
 	@rm -rf build
@@ -292,6 +339,8 @@ clean:
 hcorap2sat: $(BUILDROOT) $(BINROOT) $(addprefix $(BUILDROOT)/, $(DIRECTORIES)) $(BUILDROOT)/hcorap2sat.o $(BINROOT)/hcorap2sat
 
 hcorap_multi: $(BUILDROOT) $(BINROOT) $(addprefix $(BUILDROOT)/, $(DIRECTORIES)) $(BUILDROOT)/hcorap_multi.o $(BINROOT)/hcorap_multi
+
+hcorap_commercial: $(BUILDROOT) $(BINROOT) $(addprefix $(BUILDROOT)/, $(DIRECTORIES)) $(BUILDROOT)/hcorap_commercial.o $(BINROOT)/hcorap_commercial
 
 # Compile the binary by calling the compiler with cflags, lflags, and any libs (if defined) and the list of objects.
 $(BINROOT)/%: $(OBJS) $(BUILDROOT)/%.o

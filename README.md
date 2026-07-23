@@ -10,6 +10,8 @@ Các thành phần chính:
 - `bin/release/hcorap2sat`: encoder C++ của tác giả, dùng cho audit/tái lập;
 - `bin/release/hcorap_multi`: weighted, hai policy lexicographic và
   epsilon-constraint bằng C++;
+- `bin/release/hcorap_commercial`: cùng policy/verifier cho Gurobi MIP,
+  CPLEX MIP và hai formulation CP Optimizer;
 - `src/proposed/cpp/encodings`: hard model C++ và các strategy encoding dùng
   cho ablation;
 - `experiments/run_cpp_experiments.sh`: điều phối campaign không có Python trên
@@ -26,9 +28,10 @@ chi tiết nằm trong `docs/FAIR_EXPERIMENT_PROTOCOL.md`.
 make -j4 YICES=0
 ```
 
-Lệnh này tạo cả `hcorap2sat` và `hcorap_multi` với cùng compiler flags. Phần mở
-rộng dùng một backend MaxSAT C++ chung. Backend đã kiểm thử là Open-WBO 2.1 tại
-commit `80f3073e41028b219b0b0ad7c61fba28351f88e6`.
+Lệnh này tạo `hcorap2sat`, `hcorap_multi` và bản
+`hcorap_commercial` không phụ thuộc SDK thương mại, với cùng compiler flags.
+Phần mở rộng MaxSAT dùng một backend C++ chung. Backend đã kiểm thử là Open-WBO
+2.1 tại commit `80f3073e41028b219b0b0ad7c61fba28351f88e6`.
 
 ```sh
 git clone https://github.com/sat-group/open-wbo.git /path/to/open-wbo
@@ -39,6 +42,36 @@ make -C /path/to/open-wbo -j4
 
 Open-WBO cần GMP. Xem hướng dẫn macOS và protocol khóa solver/compiler trong
 `docs/FAIR_EXPERIMENT_PROTOCOL.md`.
+
+## Gurobi MIP, CPLEX MIP và CP Optimizer
+
+MIP-E được dựng một lần rồi dịch sang Gurobi và CPLEX. CP Optimizer có hai
+formulation: `cp-t` dùng integer/table/global constraints và `cp-i` dùng
+optional intervals/`alternative`/`noOverlap`. Cả bốn cấu hình dùng chung
+parser, cumulative timeout, objective-policy driver, JSON schema và verifier
+độc lập.
+
+Kiểm tra backend đã được compile:
+
+```sh
+./bin/release/hcorap_commercial --list-backends
+```
+
+Build với SDK tương ứng:
+
+```sh
+GUROBI_HOME=/path/to/gurobi \
+make -j4 YICES=0 GUROBI=1 hcorap_commercial
+
+CPLEX_STUDIO_DIR=/path/to/CPLEX_Studio \
+make -j4 YICES=0 CPLEX=1 hcorap_commercial
+```
+
+Hướng dẫn đầy đủ về build/link, license, tham số fairness, bốn preset và
+campaign runner nằm trong
+[`docs/COMMERCIAL_SOLVERS.md`](docs/COMMERCIAL_SOLVERS.md). Mô hình toán và
+ánh xạ implementation nằm trong
+[`docs/MIP_CP_FORMULATIONS.md`](docs/MIP_CP_FORMULATIONS.md).
 
 ## Chạy các phương pháp C++
 
