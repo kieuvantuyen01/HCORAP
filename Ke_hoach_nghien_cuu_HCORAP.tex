@@ -633,7 +633,8 @@ Kết quả tổng hợp 200 lần chạy cho thấy:
     \texttt{slot-service} (kết hợp hai loại SB) làm đại diện.
 \end{itemize}
 
-Từ đó, ma trận thực nghiệm chính được thu hẹp từ 50 xuống:
+Từ đó, ma trận thực nghiệm chính được thu hẹp từ 50 xuống 8 cấu hình cố định
+(xem Bảng~\ref{tab:8-cfg-main} trong \S\ref{sec:matrix-cfg}):
 \begin{equation}
   2\times2\times2=8\ \text{cấu hình} \quad (\text{bao gồm ORIGINAL = cfg1}).
   \label{eq:8-config-matrix}
@@ -858,6 +859,7 @@ C++ CP-SAT hoặc MILP & Baseline ngoài MaxSAT & Chỉ đưa vào runtime chín
 \end{table}
 
 \subsection{Ma trận cấu hình thực nghiệm}
+\label{sec:matrix-cfg}
 
 Từ kết quả pilot (Eq.~\ref{eq:8-config-matrix}), ma trận thực nghiệm chính
 sử dụng \textbf{8 cấu hình} cố định:
@@ -865,7 +867,8 @@ sử dụng \textbf{8 cấu hình} cố định:
 \begin{table}[H]
 \centering
 \caption{8 cấu hình thực nghiệm chính (cfg1 = ORIGINAL baseline bài báo).}
-\begin{tabularx}{\textwidth}{@{}c>{\ttfamily}p{3.5cm}>{\ttfamily}p{2.5cm}>{\ttfamily}p{3cm}Y@{}}
+\label{tab:8-cfg-main}
+\begin{tabularx}{\textwidth}{@{}c>{\ttfamily\raggedright}p{4.2cm}>{\ttfamily}p{2.2cm}>{\ttfamily}p{3.2cm}X@{}}
 \toprule
 \# & Cardinality & IC & SB & Ghi chú \\
 \midrule
@@ -881,20 +884,23 @@ sử dụng \textbf{8 cấu hình} cố định:
 \end{tabularx}
 \end{table}
 
-Script \path{run_main_8cfg.sh} chạy tuần tự toàn bộ 800 instances
-(400 \texttt{U30} + 400 \texttt{U40}), ghi JSON từng run vào
-\path{cfg}$k$/\textit{instance}\path{.json}. Script
-\path{collect_main_results.py} tạo ba file CSV:
-\path{results_per_instance.csv} (1~dòng/run),
-\path{summary_by_config.csv} (1~dòng/cấu hình, có PAR-2 và OPTIMUM\%), và
-\path{comparison_pivot.csv} (1~dòng/instance, so sánh 8~cfg song song).
-Các cột CSV bao gồm tối thiểu:
-\texttt{instance\_name}, \texttt{status}, \texttt{elapsed\_s},
-\texttt{variables}, \texttt{hard\_clauses}, \texttt{soft\_clauses},
-\texttt{best\_value}, \texttt{similarity}, \texttt{continuity},
-\texttt{overtime}, \texttt{coverage}.
+Script \texttt{run\_main\_8cfg.sh} chạy tuần tự toàn bộ 800~instances
+(400~\texttt{U30} + 400~\texttt{U40}), ghi JSON từng run vào
+\texttt{cfg}$k$/\textit{instance}\texttt{.json};
+hỗ trợ cờ \texttt{-{}-resume} để chạy lại từ điểm dừng.
+Script \texttt{collect\_main\_results.py} tổng hợp JSON thành ba file CSV:
+\begin{itemize}
+  \item \texttt{results\_per\_instance.csv} --- 1~dòng/run, chứa toàn bộ metrics;
+  \item \texttt{summary\_by\_config.csv} --- 1~dòng/cấu hình
+        (PAR-2, OPTIMUM\%, mean/median elapsed, số biến, clause);
+  \item \texttt{comparison\_pivot.csv} --- 1~dòng/instance, so sánh 8~cfg.
+\end{itemize}
+Các cột tối thiểu: \texttt{instance\_name}, \texttt{status},
+\texttt{elapsed\_s}, \texttt{variables}, \texttt{hard\_clauses},
+\texttt{soft\_clauses}, \texttt{best\_value}, \texttt{similarity},
+\texttt{continuity}, \texttt{overtime}, \texttt{coverage}.
 Không tái sử dụng result directory khi schema hoặc campaign thay đổi.
-Chạy lại từ điểm dừng bằng cờ \texttt{-{}-resume}.
+
 
 \subsection{Môi trường chạy}
 
