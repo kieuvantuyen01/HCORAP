@@ -60,6 +60,22 @@ experiments/results/*
 /outputs/
 /EvalMaxSAT
 /open-wbo_macos
+/experiments/archive/
+
+# Local literature library (do not redistribute third-party PDFs)
+/docs/*.pdf
+
+# Legacy LaTeX build products; keep the manuscript source only
+/doc/main.aux
+/doc/main.fdb_latexmk
+/doc/main.fls
+/doc/main.log
+/doc/main.pdf
+/doc/main.synctex.gz
+/doc/main.toc
+
+# Scratch output, not research data
+/results/temp.csv
 
 # Generated files for the research-plan document
 /Ke_hoach_nghien_cuu_HCORAP.*

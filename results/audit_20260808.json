@@ -1,0 +1,401 @@
+{
+  "commercial": {
+    "groups": {
+      "cplex-cp:cp-i:epsilon:0": {
+        "INFEASIBLE": 3,
+        "PARSE_ERROR": 29,
+        "TIMEOUT_FEASIBLE": 68
+      },
+      "cplex-cp:cp-i:epsilon:0.01": {
+        "INFEASIBLE": 3,
+        "PARSE_ERROR": 29,
+        "TIMEOUT_FEASIBLE": 68
+      },
+      "cplex-cp:cp-i:epsilon:0.025": {
+        "INFEASIBLE": 3,
+        "PARSE_ERROR": 29,
+        "TIMEOUT_FEASIBLE": 68
+      },
+      "cplex-cp:cp-i:epsilon:0.05": {
+        "INFEASIBLE": 3,
+        "PARSE_ERROR": 29,
+        "TIMEOUT_FEASIBLE": 68
+      },
+      "cplex-cp:cp-i:epsilon:0.10": {
+        "INFEASIBLE": 3,
+        "PARSE_ERROR": 29,
+        "TIMEOUT_FEASIBLE": 68
+      },
+      "cplex-cp:cp-i:lex-continuity:-": {
+        "INFEASIBLE": 3,
+        "PARSE_ERROR": 29,
+        "TIMEOUT_FEASIBLE": 68
+      },
+      "cplex-cp:cp-i:lex-overtime:-": {
+        "INFEASIBLE": 3,
+        "PARSE_ERROR": 29,
+        "TIMEOUT_FEASIBLE": 68
+      },
+      "cplex-cp:cp-i:weighted:-": {
+        "INFEASIBLE": 3,
+        "PARSE_ERROR": 29,
+        "TIMEOUT_FEASIBLE": 68
+      },
+      "cplex-cp:cp-t:epsilon:0": {
+        "INFEASIBLE": 3,
+        "PARSE_ERROR": 29,
+        "TIMEOUT_FEASIBLE": 68
+      },
+      "cplex-cp:cp-t:epsilon:0.01": {
+        "INFEASIBLE": 3,
+        "PARSE_ERROR": 29,
+        "TIMEOUT_FEASIBLE": 68
+      },
+      "cplex-cp:cp-t:epsilon:0.025": {
+        "INFEASIBLE": 3,
+        "PARSE_ERROR": 29,
+        "TIMEOUT_FEASIBLE": 68
+      },
+      "cplex-cp:cp-t:epsilon:0.05": {
+        "INFEASIBLE": 3,
+        "PARSE_ERROR": 29,
+        "TIMEOUT_FEASIBLE": 68
+      },
+      "cplex-cp:cp-t:epsilon:0.10": {
+        "INFEASIBLE": 3,
+        "PARSE_ERROR": 29,
+        "TIMEOUT_FEASIBLE": 68
+      },
+      "cplex-cp:cp-t:lex-continuity:-": {
+        "INFEASIBLE": 3,
+        "PARSE_ERROR": 29,
+        "TIMEOUT_FEASIBLE": 68
+      },
+      "cplex-cp:cp-t:lex-overtime:-": {
+        "INFEASIBLE": 3,
+        "PARSE_ERROR": 29,
+        "TIMEOUT_FEASIBLE": 68
+      },
+      "cplex-cp:cp-t:weighted:-": {
+        "INFEASIBLE": 3,
+        "PARSE_ERROR": 29,
+        "TIMEOUT_FEASIBLE": 68
+      },
+      "cplex-mip:mip-e:epsilon:0": {
+        "INFEASIBLE": 3,
+        "OPTIMUM": 68,
+        "PARSE_ERROR": 29
+      },
+      "cplex-mip:mip-e:epsilon:0.01": {
+        "INFEASIBLE": 3,
+        "OPTIMUM": 68,
+        "PARSE_ERROR": 29
+      },
+      "cplex-mip:mip-e:epsilon:0.025": {
+        "INFEASIBLE": 3,
+        "OPTIMUM": 68,
+        "PARSE_ERROR": 29
+      },
+      "cplex-mip:mip-e:epsilon:0.05": {
+        "INFEASIBLE": 3,
+        "OPTIMUM": 68,
+        "PARSE_ERROR": 29
+      },
+      "cplex-mip:mip-e:epsilon:0.10": {
+        "INFEASIBLE": 3,
+        "OPTIMUM": 68,
+        "PARSE_ERROR": 29
+      },
+      "cplex-mip:mip-e:lex-continuity:-": {
+        "INFEASIBLE": 3,
+        "OPTIMUM": 68,
+        "PARSE_ERROR": 29
+      },
+      "cplex-mip:mip-e:lex-overtime:-": {
+        "INFEASIBLE": 3,
+        "OPTIMUM": 68,
+        "PARSE_ERROR": 29
+      },
+      "cplex-mip:mip-e:weighted:-": {
+        "INFEASIBLE": 3,
+        "OPTIMUM": 68,
+        "PARSE_ERROR": 29
+      },
+      "gurobi-mip:mip-e:epsilon:0": {
+        "INFEASIBLE": 3,
+        "OPTIMUM": 68,
+        "PARSE_ERROR": 29
+      },
+      "gurobi-mip:mip-e:epsilon:0.01": {
+        "INFEASIBLE": 3,
+        "OPTIMUM": 68,
+        "PARSE_ERROR": 29
+      },
+      "gurobi-mip:mip-e:epsilon:0.025": {
+        "INFEASIBLE": 3,
+        "OPTIMUM": 68,
+        "PARSE_ERROR": 29
+      },
+      "gurobi-mip:mip-e:epsilon:0.05": {
+        "INFEASIBLE": 3,
+        "OPTIMUM": 68,
+        "PARSE_ERROR": 29
+      },
+      "gurobi-mip:mip-e:epsilon:0.10": {
+        "INFEASIBLE": 3,
+        "OPTIMUM": 68,
+        "PARSE_ERROR": 29
+      },
+      "gurobi-mip:mip-e:lex-continuity:-": {
+        "INFEASIBLE": 3,
+        "OPTIMUM": 68,
+        "PARSE_ERROR": 29
+      },
+      "gurobi-mip:mip-e:lex-overtime:-": {
+        "INFEASIBLE": 3,
+        "OPTIMUM": 68,
+        "PARSE_ERROR": 29
+      },
+      "gurobi-mip:mip-e:weighted:-": {
+        "INFEASIBLE": 3,
+        "OPTIMUM": 68,
+        "PARSE_ERROR": 29
+      }
+    },
+    "parse_error_instances": [
+      "instance_30_15_4_11",
+      "instance_30_15_4_12",
+      "instance_30_15_4_19",
+      "instance_30_15_4_22",
+      "instance_30_15_4_23",
+      "instance_30_15_4_26",
+      "instance_30_15_4_28",
+      "instance_30_15_4_34",
+      "instance_30_15_4_35",
+      "instance_30_15_4_36",
+      "instance_30_15_4_4",
+      "instance_30_15_4_40",
+      "instance_30_15_4_41",
+      "instance_30_15_4_43",
+      "instance_30_15_4_44",
+      "instance_30_15_4_46",
+      "instance_30_15_4_7",
+      "instance_30_15_4_9",
+      "instance_40_25_5_10",
+      "instance_40_25_5_2",
+      "instance_40_25_5_23",
+      "instance_40_25_5_3",
+      "instance_40_25_5_31",
+      "instance_40_25_5_33",
+      "instance_40_25_5_34",
+      "instance_40_25_5_35",
+      "instance_40_25_5_4",
+      "instance_40_25_5_43",
+      "instance_40_25_5_6"
+    ],
+    "parse_error_unique_instances": 29,
+    "rows": 3200
+  },
+  "created_utc": "2026-08-08T18:17:15.165513+00:00",
+  "expected_official_instances": 800,
+  "provenance": {
+    "historical_weighted_csv_has_full_raw_json": false,
+    "ignored_experiment_results_excluded": true,
+    "manifest_files": [],
+    "raw_json_files_under_historical_results": 0
+  },
+  "schema_version": 1,
+  "weighted": {
+    "ORIGINAL.csv": {
+      "duplicate_instances": [],
+      "missing_count": 0,
+      "missing_instances": [],
+      "rows": 800,
+      "statuses": {
+        "OPTIMUM": 616,
+        "TIMEOUT": 25,
+        "UNSATISFIABLE": 159
+      },
+      "unique_instances": 800
+    },
+    "SN-both-none.csv": {
+      "duplicate_instances": [],
+      "missing_count": 3,
+      "missing_instances": [
+        "instance_40_20_5_9",
+        "instance_40_25_5_8",
+        "instance_40_25_5_9"
+      ],
+      "rows": 797,
+      "statuses": {
+        "OPTIMUM": 614,
+        "TIMEOUT": 24,
+        "UNSATISFIABLE": 159
+      },
+      "unique_instances": 797
+    },
+    "SN-both-ss.csv": {
+      "duplicate_instances": [],
+      "missing_count": 1,
+      "missing_instances": [
+        "instance_40_25_5_9"
+      ],
+      "rows": 799,
+      "statuses": {
+        "OPTIMUM": 614,
+        "TIMEOUT": 26,
+        "UNSATISFIABLE": 159
+      },
+      "unique_instances": 799
+    },
+    "SN-none-ss.csv": {
+      "duplicate_instances": [],
+      "missing_count": 0,
+      "missing_instances": [],
+      "rows": 800,
+      "statuses": {
+        "OPTIMUM": 615,
+        "TIMEOUT": 26,
+        "UNSATISFIABLE": 159
+      },
+      "unique_instances": 800
+    },
+    "TOT-both-none.csv": {
+      "duplicate_instances": [],
+      "missing_count": 0,
+      "missing_instances": [],
+      "rows": 800,
+      "statuses": {
+        "OPTIMUM": 619,
+        "TIMEOUT": 22,
+        "UNSATISFIABLE": 159
+      },
+      "unique_instances": 800
+    },
+    "TOT-both-ss.csv": {
+      "duplicate_instances": [],
+      "missing_count": 0,
+      "missing_instances": [],
+      "rows": 800,
+      "statuses": {
+        "OPTIMUM": 619,
+        "TIMEOUT": 22,
+        "UNSATISFIABLE": 159
+      },
+      "unique_instances": 800
+    },
+    "TOT-none-none.csv": {
+      "duplicate_instances": [],
+      "missing_count": 50,
+      "missing_instances": [
+        "instance_30_25_4_1",
+        "instance_30_25_4_10",
+        "instance_30_25_4_11",
+        "instance_30_25_4_12",
+        "instance_30_25_4_13",
+        "instance_30_25_4_14",
+        "instance_30_25_4_15",
+        "instance_30_25_4_16",
+        "instance_30_25_4_17",
+        "instance_30_25_4_18",
+        "instance_30_25_4_19",
+        "instance_30_25_4_2",
+        "instance_30_25_4_20",
+        "instance_30_25_4_21",
+        "instance_30_25_4_22",
+        "instance_30_25_4_23",
+        "instance_30_25_4_24",
+        "instance_30_25_4_25",
+        "instance_30_25_4_26",
+        "instance_30_25_4_27",
+        "instance_30_25_4_28",
+        "instance_30_25_4_29",
+        "instance_30_25_4_3",
+        "instance_30_25_4_30",
+        "instance_30_25_4_31",
+        "instance_30_25_4_32",
+        "instance_30_25_4_33",
+        "instance_30_25_4_34",
+        "instance_30_25_4_35",
+        "instance_30_25_4_36",
+        "instance_30_25_4_37",
+        "instance_30_25_4_38",
+        "instance_30_25_4_39",
+        "instance_30_25_4_4",
+        "instance_30_25_4_40",
+        "instance_30_25_4_41",
+        "instance_30_25_4_42",
+        "instance_30_25_4_43",
+        "instance_30_25_4_44",
+        "instance_30_25_4_45",
+        "instance_30_25_4_46",
+        "instance_30_25_4_47",
+        "instance_30_25_4_48",
+        "instance_30_25_4_49",
+        "instance_30_25_4_5",
+        "instance_30_25_4_50",
+        "instance_30_25_4_6",
+        "instance_30_25_4_7",
+        "instance_30_25_4_8",
+        "instance_30_25_4_9"
+      ],
+      "rows": 750,
+      "statuses": {
+        "OPTIMUM": 571,
+        "TIMEOUT": 20,
+        "UNSATISFIABLE": 159
+      },
+      "unique_instances": 750
+    },
+    "TOT-none-ss.csv": {
+      "duplicate_instances": [],
+      "missing_count": 0,
+      "missing_instances": [],
+      "rows": 800,
+      "statuses": {
+        "OPTIMUM": 619,
+        "TIMEOUT": 22,
+        "UNSATISFIABLE": 159
+      },
+      "unique_instances": 800
+    }
+  },
+  "weighted_missing_run_records_total": 54,
+  "weighted_optimum_crosscheck": {
+    "SN-both-none.csv": {
+      "mismatch_instances": [],
+      "paired_optimum_instances": 611,
+      "weighted_score_mismatches": 0
+    },
+    "SN-both-ss.csv": {
+      "mismatch_instances": [],
+      "paired_optimum_instances": 611,
+      "weighted_score_mismatches": 0
+    },
+    "SN-none-ss.csv": {
+      "mismatch_instances": [],
+      "paired_optimum_instances": 614,
+      "weighted_score_mismatches": 0
+    },
+    "TOT-both-none.csv": {
+      "mismatch_instances": [],
+      "paired_optimum_instances": 615,
+      "weighted_score_mismatches": 0
+    },
+    "TOT-both-ss.csv": {
+      "mismatch_instances": [],
+      "paired_optimum_instances": 614,
+      "weighted_score_mismatches": 0
+    },
+    "TOT-none-none.csv": {
+      "mismatch_instances": [],
+      "paired_optimum_instances": 566,
+      "weighted_score_mismatches": 0
+    },
+    "TOT-none-ss.csv": {
+      "mismatch_instances": [],
+      "paired_optimum_instances": 615,
+      "weighted_score_mismatches": 0
+    }
+  }
+}

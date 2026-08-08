@@ -88,11 +88,11 @@ def audit(workspace: Path) -> dict[str, Any]:
         {_instance_name(row) for row in commercial_rows if row.get("status") == "PARSE_ERROR"}
     )
 
-    raw_full = list((results_dir).glob("**/*.json"))
-    pilot_raw = list((workspace / "experiments" / "results").glob("**/*.json"))
-    manifests = list(workspace.glob("results/**/manifest.*")) + list(
-        (workspace / "experiments" / "results").glob("**/manifest.*")
-    )
+    # Only a run-level raw/ directory counts as historical raw provenance.
+    # Exclude this audit's own JSON and ignored pilot campaigns under
+    # experiments/results so the report is stable on a fresh clone.
+    raw_full = list(results_dir.glob("**/raw/*.json"))
+    manifests = list(results_dir.glob("**/manifest.*"))
     return {
         "schema_version": 1,
         "created_utc": datetime.now(timezone.utc).isoformat(),
@@ -109,10 +109,10 @@ def audit(workspace: Path) -> dict[str, Any]:
             "parse_error_instances": parse_error_instances,
         },
         "provenance": {
-            "json_files_under_results": len(raw_full),
-            "json_files_under_experiments_results": len(pilot_raw),
+            "raw_json_files_under_historical_results": len(raw_full),
             "manifest_files": [str(path.relative_to(workspace)) for path in manifests],
             "historical_weighted_csv_has_full_raw_json": bool(raw_full),
+            "ignored_experiment_results_excluded": True,
         },
     }
 
