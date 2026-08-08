@@ -22,7 +22,7 @@
 #   SOLVER=./path/to/solver
 #   HCORAP_BINARY=./path/to/hcorap_multi
 #   TIMEOUT=3600
-#   METHOD=weighted|lex-continuity|lex-overtime|epsilon
+#   METHOD=weighted|lex-continuity|lex-cos|lex-overtime|epsilon
 #   DELTA=0.05  # chỉ dùng khi METHOD=epsilon
 #   RESULT_DIR=experiments/results/main_8cfg
 #   INSTANCE_DIRS="dir1 dir2 ..."
@@ -41,7 +41,7 @@ case "$METHOD" in
     weighted)
         DEFAULT_RESULT_DIR="experiments/results/main_8cfg"
         ;;
-    lex-continuity|lex-overtime)
+    lex-continuity|lex-cos|lex-overtime)
         DEFAULT_RESULT_DIR="experiments/results/lex_8cfg/$METHOD"
         ;;
     epsilon)

@@ -1,0 +1,24 @@
+{
+  "binary": "../../bin/release/hcorap_multi",
+  "solver": "${OPEN_WBO_BIN}",
+  "result_dir": "../results/gcp_weight_screen",
+  "instances": [
+    "../../instances/corrected_v2_reduced_suite/calibration/calibration/critical/*.txt"
+  ],
+  "instance_filters": {"seeds": [1,2], "load_profiles": ["critical"]},
+  "expected_instances": 32,
+  "expected_runs": 128,
+  "timeout_seconds": 60,
+  "hard_grace_seconds": 30,
+  "workers": 1,
+  "order_seed": 20270813,
+  "configurations": [
+    {"cardinality": "totalizer", "implied": "both", "symmetry": "slot-service"}
+  ],
+  "runs": [
+    {"method": "weighted", "wc": 1, "wo": 1, "print_assignments": true},
+    {"method": "weighted", "wc": 1, "wo": 4, "print_assignments": true},
+    {"method": "weighted", "wc": 4, "wo": 1, "print_assignments": true},
+    {"method": "weighted", "wc": 8, "wo": 8, "print_assignments": true}
+  ]
+}

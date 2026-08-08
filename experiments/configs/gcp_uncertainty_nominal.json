@@ -1,0 +1,25 @@
+{
+  "binary": "../../bin/release/hcorap_multi",
+  "solver": "${OPEN_WBO_BIN}",
+  "result_dir": "../results/gcp_uncertainty_nominal",
+  "instances": [
+    "../../instances/corrected_v2_reduced_suite/evaluation_critical/evaluation/critical/*.txt"
+  ],
+  "instance_filters": {
+    "users": [30,40], "agents": [10,25], "visits": [4,5],
+    "seeds": [1001], "load_profiles": ["critical"]
+  },
+  "expected_instances": 8,
+  "expected_runs": 16,
+  "timeout_seconds": 300,
+  "hard_grace_seconds": 60,
+  "workers": 1,
+  "order_seed": 20270818,
+  "configurations": [
+    {"cardinality": "totalizer", "implied": "both", "symmetry": "slot-service"}
+  ],
+  "runs": [
+    {"method": "weighted", "wc": 1, "wo": 1, "print_assignments": true},
+    {"method": "lex-cos", "print_assignments": true}
+  ]
+}

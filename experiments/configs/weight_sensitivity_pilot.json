@@ -1,0 +1,37 @@
+{
+  "binary": "../../bin/release/hcorap_multi",
+  "solver": "../../open-wbo_macos",
+  "result_dir": "../results/weight_sensitivity_pilot",
+  "instances": [
+    "../../instances/corrected_v2_functional/calibration/critical/*_a4_v2_seed102_*.txt"
+  ],
+  "timeout_seconds": 15,
+  "hard_grace_seconds": 30,
+  "workers": 2,
+  "order_seed": 20270809,
+  "configurations": [
+    {
+      "cardinality": "totalizer",
+      "implied": "none",
+      "symmetry": "slot-service"
+    }
+  ],
+  "runs": [
+    {"method": "weighted", "wc": 1, "wo": 1},
+    {"method": "weighted", "wc": 1, "wo": 2},
+    {"method": "weighted", "wc": 1, "wo": 4},
+    {"method": "weighted", "wc": 1, "wo": 8},
+    {"method": "weighted", "wc": 2, "wo": 1},
+    {"method": "weighted", "wc": 2, "wo": 2},
+    {"method": "weighted", "wc": 2, "wo": 4},
+    {"method": "weighted", "wc": 2, "wo": 8},
+    {"method": "weighted", "wc": 4, "wo": 1},
+    {"method": "weighted", "wc": 4, "wo": 2},
+    {"method": "weighted", "wc": 4, "wo": 4},
+    {"method": "weighted", "wc": 4, "wo": 8},
+    {"method": "weighted", "wc": 8, "wo": 1},
+    {"method": "weighted", "wc": 8, "wo": 2},
+    {"method": "weighted", "wc": 8, "wo": 4},
+    {"method": "weighted", "wc": 8, "wo": 8}
+  ]
+}

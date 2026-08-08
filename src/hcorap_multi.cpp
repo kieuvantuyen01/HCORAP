@@ -95,7 +95,7 @@ static pair<long long, long long> parseDecimalFraction(const string &text);
 static void usage(const char *program) {
     cerr
         << "Usage: " << program << " INSTANCE [options]\n"
-        << "  --method weighted|lex-continuity|lex-overtime|epsilon\n"
+        << "  --method weighted|lex-continuity|lex-cos|lex-overtime|epsilon\n"
         << "  --solver PATH             Open-WBO-compatible C++ solver\n"
         << "  --timeout SECONDS         cumulative encode+solve timeout\n"
         << "  --wc INTEGER              continuity weight (weighted)\n"
@@ -173,7 +173,8 @@ static Options parseOptions(int argc, char **argv) {
     if (options.continuityWeight < 0 || options.overtimeWeight < 0)
         throw runtime_error("wc and wo must be non-negative");
     if (options.method != "weighted" && options.method != "lex-continuity" &&
-        options.method != "lex-overtime" && options.method != "epsilon")
+        options.method != "lex-cos" && options.method != "lex-overtime" &&
+        options.method != "epsilon")
         throw runtime_error("unsupported method: " + options.method);
     if (options.method == "epsilon")
         parseDecimalFraction(options.delta);
@@ -421,7 +422,8 @@ static string objectiveSense(HCORAPObjectiveKind objective) {
 static string objectiveMode(const string &method) {
     if (method == "weighted")
         return "weighted";
-    if (method == "lex-continuity" || method == "lex-overtime")
+    if (method == "lex-continuity" || method == "lex-cos" ||
+        method == "lex-overtime")
         return "lexicographic";
     return "epsilon-constraint";
 }
@@ -429,6 +431,8 @@ static string objectiveMode(const string &method) {
 static string objectivePolicy(const string &method) {
     if (method == "lex-continuity")
         return "continuity-priority";
+    if (method == "lex-cos")
+        return "continuity-overtime-similarity";
     if (method == "lex-overtime")
         return "overtime-priority";
     if (method == "epsilon")
@@ -590,6 +594,13 @@ static vector<HCORAPObjectiveKind> lexicographicOrder(const string &method) {
             HCORAP_CONTINUITY,
             HCORAP_SIMILARITY,
             HCORAP_OVERTIME
+        };
+    }
+    if (method == "lex-cos") {
+        return {
+            HCORAP_CONTINUITY,
+            HCORAP_OVERTIME,
+            HCORAP_SIMILARITY
         };
     }
     if (method == "lex-overtime") {
@@ -781,6 +792,7 @@ static RunState solveMethod(
     } else if (
         status == EXTERNAL_OPTIMUM &&
         (options.method == "lex-continuity" ||
+         options.method == "lex-cos" ||
          options.method == "lex-overtime")
     ) {
         status = executeLexicographicPolicy(

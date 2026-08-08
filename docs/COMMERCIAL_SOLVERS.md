@@ -153,9 +153,14 @@ CPLEX MIP chỉ ánh xạ detailed status `AbortTimeLim` thành `TIMEOUT` hoặc
 `TIMEOUT_FEASIBLE`. `AbortDetTimeLim`, `AbortUser`, node limit, memory limit,
 solution limit và các nguyên nhân dừng khác được báo `ERROR`, kể cả khi solver
 đã có incumbent. Quy tắc này ngăn PAR-2 và tỷ lệ timeout bị trộn với những run
-dừng bởi một termination control khác trong parameter file. Parameter file dùng
-cho campaign chính vì vậy không được đặt các termination limit ngoài wall-clock
-`TimeLimit`.
+dừng bởi một termination control khác trong parameter file. Một tuned campaign
+phụ dùng parameter file vì vậy không được đặt termination limit ngoài
+wall-clock `TimeLimit`.
+
+Campaign GCP chính trong `experiments/configs/gcp_commercial_*.json` không dùng
+parameter file: nó dùng native defaults của solver version đã ghi vào JSON và
+chỉ ghi đè các tham số fairness/determinism ở bảng trên. Không được thêm
+parameter file vào giữa lúc resume campaign chính.
 
 ## 6. Chạy từng backend
 

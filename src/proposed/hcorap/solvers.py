@@ -337,6 +337,11 @@ def solve_weighted(
 
 LEXICOGRAPHIC_POLICIES = {
     "continuity-priority": ("continuity", "similarity", "overtime"),
+    "continuity-overtime-similarity": (
+        "continuity",
+        "overtime",
+        "similarity",
+    ),
     "overtime-priority": ("overtime", "continuity", "similarity"),
 }
 

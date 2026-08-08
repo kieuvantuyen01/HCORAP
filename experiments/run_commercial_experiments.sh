@@ -143,7 +143,7 @@ for instance in "$@"; do
 
         for method in $methods_to_run; do
             case "$method" in
-                weighted|lex-continuity|lex-overtime) delta_values="-" ;;
+                weighted|lex-continuity|lex-cos|lex-overtime) delta_values="-" ;;
                 epsilon) delta_values=$DELTAS ;;
                 *)
                     echo "Unsupported method: $method" >&2

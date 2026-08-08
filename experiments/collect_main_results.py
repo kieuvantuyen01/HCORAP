@@ -14,7 +14,6 @@ from __future__ import annotations
 
 import csv
 import json
-import math
 import sys
 from collections import defaultdict
 from pathlib import Path
@@ -132,12 +131,14 @@ def parse_json_file(path: Path) -> dict:
     inferred_mode = {
         "weighted": "weighted",
         "lex-continuity": "lexicographic",
+        "lex-cos": "lexicographic",
         "lex-overtime": "lexicographic",
         "epsilon": "epsilon-constraint",
     }.get(method, "?")
     inferred_policy = {
         "weighted": "weighted-sum",
         "lex-continuity": "continuity-priority",
+        "lex-cos": "continuity-overtime-similarity",
         "lex-overtime": "overtime-priority",
         "epsilon": "similarity-budget",
     }.get(method, "?")

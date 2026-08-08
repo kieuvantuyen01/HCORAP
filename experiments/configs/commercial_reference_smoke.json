@@ -1,0 +1,29 @@
+{
+  "binary": "../../bin/release/hcorap_commercial",
+  "result_dir": "../results/commercial_reference_smoke",
+  "instances": [
+    "../../tests/instances/tradeoff.txt",
+    "../../tests/instances/sparse_users.txt"
+  ],
+  "expected_instances": 2,
+  "expected_runs": 6,
+  "timeout_seconds": 10,
+  "preflight_timeout_seconds": 10,
+  "threads": 1,
+  "seed": 0,
+  "mip_gap": 0,
+  "absolute_mip_gap": 0,
+  "workers": 1,
+  "order_seed": 20270814,
+  "commercial_configurations": [
+    {
+      "backend": "reference-enumerator",
+      "formulation": "direct-schedule-enumeration"
+    }
+  ],
+  "runs": [
+    {"method": "weighted", "print_assignments": true, "native_log": false},
+    {"method": "lex-cos", "print_assignments": true, "native_log": false},
+    {"method": "epsilon", "delta": "0.20", "print_assignments": true, "native_log": false}
+  ]
+}

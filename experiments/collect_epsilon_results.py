@@ -34,6 +34,8 @@ UNIQUE_COLUMNS = [
     "minimum_delta",
     "maximum_delta",
     "mean_elapsed_s",
+    "pareto_nondominated",
+    "dominated_by_points",
 ]
 
 
@@ -142,7 +144,7 @@ def deduplicate_points(rows: list[dict[str, str]]) -> list[dict[str, object]]:
             }
         )
 
-    return sorted(
+    ordered = sorted(
         unique_rows,
         key=lambda row: (
             str(row["instance_name"]),
@@ -150,6 +152,62 @@ def deduplicate_points(rows: list[dict[str, str]]) -> list[dict[str, object]]:
             _decimal(str(row["minimum_delta"])),
         ),
     )
+    return annotate_pareto(ordered)
+
+
+def _dominates(left: dict[str, object], right: dict[str, object]) -> bool:
+    """Return whether left weakly improves all HCORAP metrics and one strictly."""
+
+    left_values = (
+        _integer(str(left["coverage"])),
+        _integer(str(left["similarity"])),
+        _integer(str(left["continuity"])),
+        _integer(str(left["overtime"])),
+    )
+    right_values = (
+        _integer(str(right["coverage"])),
+        _integer(str(right["similarity"])),
+        _integer(str(right["continuity"])),
+        _integer(str(right["overtime"])),
+    )
+    weak = (
+        left_values[0] >= right_values[0]
+        and left_values[1] >= right_values[1]
+        and left_values[2] <= right_values[2]
+        and left_values[3] <= right_values[3]
+    )
+    return weak and left_values != right_values
+
+
+def annotate_pareto(points: list[dict[str, object]]) -> list[dict[str, object]]:
+    """Annotate dominance only within the same instance and formulation."""
+
+    groups: dict[tuple[str, ...], list[dict[str, object]]] = defaultdict(list)
+    for point in points:
+        key = tuple(
+            str(point.get(column, ""))
+            for column in (
+                "instance_name",
+                "cfg_id",
+                "cardinality",
+                "ic",
+                "sb",
+            )
+        )
+        groups[key].append(point)
+    for group in groups.values():
+        for point in group:
+            dominators = [
+                other
+                for other in group
+                if other is not point and _dominates(other, point)
+            ]
+            point["pareto_nondominated"] = not dominators
+            point["dominated_by_points"] = " | ".join(
+                f"SIM={other['similarity']},CONT={other['continuity']},OT={other['overtime']}"
+                for other in dominators
+            )
+    return points
 
 
 def collect_epsilon_results(
@@ -211,8 +269,17 @@ def main() -> int:
         UNIQUE_COLUMNS,
         unique_rows,
     )
+    _write_csv(
+        result_root / "epsilon_pareto_frontier.csv",
+        UNIQUE_COLUMNS,
+        [row for row in unique_rows if row["pareto_nondominated"]],
+    )
     print(f"All B2 runs: {len(raw_rows)}")
     print(f"Unique B2 points: {len(unique_rows)}")
+    print(
+        "Nondominated B2 points: "
+        f"{sum(bool(row['pareto_nondominated']) for row in unique_rows)}"
+    )
     print(f"Excel-ready B2 tables: {result_root}")
     return 0
 

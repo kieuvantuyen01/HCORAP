@@ -1,0 +1,18 @@
+{
+  "binary": "../../bin/release/hcorap_multi",
+  "solver": "../../open-wbo_macos",
+  "result_dir": "../results/uncertainty_functional_scenarios",
+  "instances": ["../../instances/uncertainty_functional/*.txt"],
+  "expected_instances": 2,
+  "expected_runs": 4,
+  "timeout_seconds": 15,
+  "workers": 1,
+  "order_seed": 20270828,
+  "configurations": [
+    {"cardinality": "totalizer", "implied": "none", "symmetry": "slot-service"}
+  ],
+  "runs": [
+    {"method": "weighted", "soft_coverage": true, "print_assignments": true},
+    {"method": "lex-cos", "soft_coverage": true, "print_assignments": true}
+  ]
+}

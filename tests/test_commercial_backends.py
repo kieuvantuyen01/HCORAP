@@ -11,6 +11,8 @@ ROOT = Path(__file__).resolve().parents[1]
 BINARY = ROOT / "bin" / "release" / "hcorap_commercial"
 TRADEOFF = ROOT / "tests" / "instances" / "tradeoff.txt"
 PARTIAL = ROOT / "tests" / "instances" / "partial_coverage.txt"
+SPARSE_USERS = ROOT / "tests" / "instances" / "sparse_users.txt"
+LEX_COS_TIE = ROOT / "tests" / "instances" / "lex_cos_tie.txt"
 
 
 def _require_binary() -> None:
@@ -117,6 +119,30 @@ def test_epsilon_uses_an_exact_decimal_ceiling() -> None:
     assert result["similarity_reference_optimum"] == 9
     assert result["similarity_lower_bound"] == 8
     assert result["metrics"]["similarity"] >= 8
+
+
+def test_reference_backend_accepts_omitted_empty_user_rows() -> None:
+    result = _run(SPARSE_USERS, "weighted")
+    assert result["status"] == "OPTIMUM"
+    assert result["metrics"]["verified"] is True
+    assert result["metrics"]["coverage"] == 2
+
+
+def test_lex_cos_prioritizes_overtime_before_similarity() -> None:
+    result = _run(LEX_COS_TIE, "lex-cos")
+    assert result["status"] == "OPTIMUM"
+    assert result["objective_policy"] == "continuity-overtime-similarity"
+    assert [stage["name"] for stage in result["stages"]] == [
+        "continuity",
+        "overtime",
+        "similarity",
+    ]
+    metrics = result["metrics"]
+    assert (metrics["similarity"], metrics["continuity"], metrics["overtime"]) == (
+        8,
+        0,
+        0,
+    )
 
 
 def test_soft_coverage_is_optimized_and_fixed_before_weighted_score() -> None:

@@ -1,0 +1,24 @@
+{
+  "binary": "../../bin/release/hcorap_multi",
+  "solver": "${OPEN_WBO_BIN}",
+  "result_dir": "../results/gcp_original_ablation",
+  "instances": ["../../instances/paperInstances/**/*.txt"],
+  "instance_filters": {"seeds": [1,2,3,4,5,6,7,8,9,10]},
+  "expected_instances": 160,
+  "expected_runs": 1280,
+  "timeout_seconds": 120,
+  "hard_grace_seconds": 45,
+  "workers": 1,
+  "order_seed": 20270820,
+  "configurations": [
+    {"cardinality": "sorting-network", "implied": "none", "symmetry": "none"},
+    {"cardinality": "sorting-network", "implied": "none", "symmetry": "slot-service"},
+    {"cardinality": "sorting-network", "implied": "both", "symmetry": "none"},
+    {"cardinality": "sorting-network", "implied": "both", "symmetry": "slot-service"},
+    {"cardinality": "totalizer", "implied": "none", "symmetry": "none"},
+    {"cardinality": "totalizer", "implied": "none", "symmetry": "slot-service"},
+    {"cardinality": "totalizer", "implied": "both", "symmetry": "none"},
+    {"cardinality": "totalizer", "implied": "both", "symmetry": "slot-service"}
+  ],
+  "runs": [{"method": "weighted", "wc": 1, "wo": 1}]
+}

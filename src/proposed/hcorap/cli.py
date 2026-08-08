@@ -15,7 +15,12 @@ from .cpsat import (
 )
 from .crosscheck import crosscheck_cpp_instance
 from .experiment import run_experiment_config
-from .generator import generate_nested_family, write_generated_instance
+from .generator import (
+    LOAD_PROFILES,
+    generate_benchmark_batch,
+    generate_nested_family,
+    write_generated_instance,
+)
 from .io import read_instance
 from .metrics import verify_assignments
 from .model import Assignment
@@ -168,6 +173,24 @@ def _crosscheck(arguments: argparse.Namespace) -> int:
     return 0 if result.get("match") is True else 4
 
 
+def _generate_benchmark(arguments: argparse.Namespace) -> int:
+    result = generate_benchmark_batch(
+        users=arguments.users,
+        agent_counts=arguments.agents,
+        services_per_user_counts=arguments.visits,
+        calibration_seeds=arguments.calibration_seeds,
+        evaluation_seeds=arguments.evaluation_seeds,
+        load_profiles=arguments.load_profiles,
+        normal_fraction=arguments.normal_fraction,
+        output_dir=arguments.output_dir,
+        days=arguments.days,
+        slots_per_day=arguments.slots_per_day,
+        overtime_penalty=arguments.overtime_penalty,
+    )
+    _write_json(result, None)
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="hcorap", description="Proposed reproducible HCORAP methods"
@@ -198,7 +221,11 @@ def build_parser() -> argparse.ArgumentParser:
     solve.add_argument("--overtime-weight", type=int, default=1)
     solve.add_argument(
         "--policy",
-        choices=("continuity-priority", "overtime-priority"),
+        choices=(
+            "continuity-priority",
+            "continuity-overtime-similarity",
+            "overtime-priority",
+        ),
         default="continuity-priority",
     )
     solve.add_argument("--delta", default="0.05")
@@ -233,6 +260,28 @@ def build_parser() -> argparse.ArgumentParser:
     generate.add_argument("--overtime-penalty", type=int, default=-1)
     generate.add_argument("--output-dir", type=Path, required=True)
     generate.set_defaults(handler=_generate)
+
+    benchmark = subcommands.add_parser(
+        "generate-benchmark",
+        help="generate a frozen corrected-v2 calibration/evaluation batch",
+    )
+    benchmark.add_argument("--users", type=int, nargs="+", required=True)
+    benchmark.add_argument("--agents", type=int, nargs="+", required=True)
+    benchmark.add_argument("--visits", type=int, nargs="+", required=True)
+    benchmark.add_argument("--calibration-seeds", type=int, nargs="*", default=())
+    benchmark.add_argument("--evaluation-seeds", type=int, nargs="*", default=())
+    benchmark.add_argument(
+        "--load-profiles",
+        nargs="+",
+        choices=tuple(LOAD_PROFILES),
+        default=tuple(LOAD_PROFILES),
+    )
+    benchmark.add_argument("--normal-fraction", type=float, default=0.85)
+    benchmark.add_argument("--days", type=int, default=5)
+    benchmark.add_argument("--slots-per-day", type=int, default=12)
+    benchmark.add_argument("--overtime-penalty", type=int, default=-1)
+    benchmark.add_argument("--output-dir", type=Path, required=True)
+    benchmark.set_defaults(handler=_generate_benchmark)
 
     experiment = subcommands.add_parser("experiment", help="run a JSON experiment grid")
     experiment.add_argument("config", type=Path)

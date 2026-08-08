@@ -20,6 +20,7 @@ SYMMETRY_INSTANCE = ROOT / "tests" / "instances" / "symmetry.txt"
 SYMMETRY_PARTIAL_INSTANCE = (
     ROOT / "tests" / "instances" / "symmetry_partial.txt"
 )
+LEX_COS_TIE_INSTANCE = ROOT / "tests" / "instances" / "lex_cos_tie.txt"
 RC2_STUB = ROOT / "tests" / "rc2_open_wbo.py"
 
 MAIN_8_CONFIGS = (
@@ -181,6 +182,23 @@ def test_cpp_methods_recover_expected_tradeoffs(
         metrics["continuity"],
         metrics["overtime"],
     ) == expected
+
+
+def test_cpp_lex_cos_prioritizes_overtime_before_similarity() -> None:
+    result = _run_instance(LEX_COS_TIE_INSTANCE, "lex-cos")
+    assert result["status"] == "OPTIMUM"
+    assert result["objective_policy"] == "continuity-overtime-similarity"
+    assert [stage["objective"] for stage in result["stages"]] == [
+        "continuity",
+        "overtime",
+        "similarity",
+    ]
+    metrics = result["metrics"]
+    assert (metrics["similarity"], metrics["continuity"], metrics["overtime"]) == (
+        8,
+        0,
+        0,
+    )
 
 
 def test_cpp_default_method_remains_weighted_b0() -> None:

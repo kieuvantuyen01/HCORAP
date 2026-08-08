@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from experiments.collect_epsilon_results import deduplicate_points
+from experiments.collect_epsilon_results import annotate_pareto, deduplicate_points
 from experiments.collect_main_results import compute_par2
 
 
@@ -62,6 +62,27 @@ def test_epsilon_points_are_deduplicated_per_instance_and_configuration() -> Non
     assert points[0]["mean_elapsed_s"] == 1.5
     assert points[1]["similarity"] == "8"
     assert points[1]["similarity_realized_loss_absolute"] == 1
+    assert all(point["pareto_nondominated"] for point in points)
+
+
+def test_pareto_annotation_detects_dominated_objective_vectors() -> None:
+    common = {
+        "instance_name": "example",
+        "cfg_id": "1",
+        "cardinality": "totalizer",
+        "ic": "none",
+        "sb": "none",
+        "coverage": "2",
+    }
+    points = annotate_pareto(
+        [
+            {**common, "similarity": "9", "continuity": "1", "overtime": "0"},
+            {**common, "similarity": "8", "continuity": "0", "overtime": "1"},
+            {**common, "similarity": "7", "continuity": "1", "overtime": "1"},
+        ]
+    )
+    assert [point["pareto_nondominated"] for point in points] == [True, True, False]
+    assert "SIM=9" in points[2]["dominated_by_points"]
 
 
 def test_main_collector_par2_uses_per_run_timeout_and_accepts_unsat() -> None:

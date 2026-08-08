@@ -137,7 +137,7 @@ for instance in "$@"; do
 
                 for method in $METHODS; do
                     case "$method" in
-                        weighted|lex-continuity|lex-overtime) ;;
+                        weighted|lex-continuity|lex-cos|lex-overtime) ;;
                         *)
                             echo "Unsupported method: $method" >&2
                             exit 2

@@ -1,0 +1,27 @@
+{
+  "binary": "../../bin/release/hcorap_multi",
+  "solver": "${OPEN_WBO_BIN}",
+  "result_dir": "../results/gcp_corrected_pareto",
+  "instances": [
+    "../../instances/corrected_v2_reduced_suite/evaluation_critical/evaluation/critical/*.txt"
+  ],
+  "instance_filters": {
+    "agents": [10,25], "seeds": [1001,1002,1003,1004,1005,1006,1007,1008,1009,1010]
+  },
+  "expected_instances": 80,
+  "expected_runs": 400,
+  "timeout_seconds": 300,
+  "hard_grace_seconds": 60,
+  "workers": 1,
+  "order_seed": 20270825,
+  "configurations": [
+    {"cardinality": "totalizer", "implied": "both", "symmetry": "slot-service"}
+  ],
+  "runs": [
+    {"method": "epsilon", "delta": "0"},
+    {"method": "epsilon", "delta": "0.01"},
+    {"method": "epsilon", "delta": "0.025"},
+    {"method": "epsilon", "delta": "0.05"},
+    {"method": "epsilon", "delta": "0.10"}
+  ]
+}

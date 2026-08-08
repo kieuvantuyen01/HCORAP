@@ -71,6 +71,10 @@ def test_weighted_matches_bruteforce_and_cpsat(tradeoff_instance) -> None:
     "policy,key",
     [
         ("continuity-priority", lambda m: (m.continuity_penalty, -m.similarity, m.overtime)),
+        (
+            "continuity-overtime-similarity",
+            lambda m: (m.continuity_penalty, m.overtime, -m.similarity),
+        ),
         ("overtime-priority", lambda m: (m.overtime, m.continuity_penalty, -m.similarity)),
     ],
 )

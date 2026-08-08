@@ -1,0 +1,19 @@
+{
+  "binary": "../../bin/release/hcorap_multi",
+  "solver": "${OPEN_WBO_BIN}",
+  "result_dir": "../results/gcp_uncertainty_scenarios",
+  "instances": ["../../instances/uncertainty_screen/*.txt"],
+  "expected_instances": 120,
+  "expected_runs": 240,
+  "timeout_seconds": 120,
+  "hard_grace_seconds": 60,
+  "workers": 1,
+  "order_seed": 20270819,
+  "configurations": [
+    {"cardinality": "totalizer", "implied": "both", "symmetry": "slot-service"}
+  ],
+  "runs": [
+    {"method": "weighted", "wc": 1, "wo": 1, "soft_coverage": true, "print_assignments": true},
+    {"method": "lex-cos", "soft_coverage": true, "print_assignments": true}
+  ]
+}

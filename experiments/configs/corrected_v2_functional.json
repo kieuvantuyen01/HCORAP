@@ -1,0 +1,31 @@
+{
+  "binary": "../../bin/release/hcorap_multi",
+  "solver": "../../open-wbo_macos",
+  "result_dir": "../results/corrected_v2_functional",
+  "instances": [
+    "../../instances/corrected_v2_functional/calibration/critical/*_a4_v2_seed102_*.txt"
+  ],
+  "timeout_seconds": 15,
+  "hard_grace_seconds": 30,
+  "workers": 2,
+  "order_seed": 20270810,
+  "configurations": [
+    {
+      "cardinality": "totalizer",
+      "implied": "none",
+      "symmetry": "slot-service"
+    }
+  ],
+  "runs": [
+    {"method": "weighted", "wc": 1, "wo": 1},
+    {"method": "lex-continuity"},
+    {"method": "lex-cos"},
+    {"method": "lex-overtime"},
+    {"method": "epsilon", "delta": "0"},
+    {"method": "epsilon", "delta": "0.01"},
+    {"method": "epsilon", "delta": "0.025"},
+    {"method": "epsilon", "delta": "0.05"},
+    {"method": "epsilon", "delta": "0.10"},
+    {"method": "epsilon", "delta": "0.20"}
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "binary": "../../bin/release/hcorap_multi",
+  "solver": "${OPEN_WBO_BIN}",
+  "result_dir": "../results/gcp_multiobjective_screen",
+  "instances": [
+    "../../instances/corrected_v2_reduced_suite/calibration/calibration/critical/*.txt"
+  ],
+  "instance_filters": {"seeds": [1,2], "load_profiles": ["critical"]},
+  "expected_instances": 32,
+  "expected_runs": 128,
+  "timeout_seconds": 60,
+  "hard_grace_seconds": 30,
+  "workers": 1,
+  "order_seed": 20270812,
+  "configurations": [
+    {"cardinality": "totalizer", "implied": "both", "symmetry": "slot-service"}
+  ],
+  "runs": [
+    {"method": "lex-cos"},
+    {"method": "epsilon", "delta": "0"},
+    {"method": "epsilon", "delta": "0.05"},
+    {"method": "epsilon", "delta": "0.10"}
+  ]
+}

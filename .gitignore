@@ -43,12 +43,23 @@ __pycache__/
 .pytest_cache/
 .venv/
 .python-deps/
+.DS_Store
 
 # Experiment/build outputs (keep source configs and result placeholder)
 experiments/results/*
 !experiments/results/.gitkeep
+/instances/corrected_v2_suite/
+/instances/corrected_v2_reduced_suite/
+/instances/corrected_v2_functional/
+/instances/corrected_v2_pilot/
+/instances/uncertainty_functional/
+/instances/uncertainty_screen/
+/artifacts/
+/vm-logs/
 /output/
 /outputs/
+/EvalMaxSAT
+/open-wbo_macos
 
 # Generated files for the research-plan document
 /Ke_hoach_nghien_cuu_HCORAP.*

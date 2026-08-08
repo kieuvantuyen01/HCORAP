@@ -1,0 +1,17 @@
+{
+  "binary": "../../bin/release/hcorap_multi",
+  "solver": "${OPEN_WBO_BIN}",
+  "result_dir": "../results/gcp_original_weighted_primary",
+  "instances": ["../../instances/paperInstances/**/*.txt"],
+  "expected_instances": 800,
+  "expected_runs": 1600,
+  "timeout_seconds": 300,
+  "hard_grace_seconds": 60,
+  "workers": 1,
+  "order_seed": 20270821,
+  "configurations": [
+    {"cardinality": "sorting-network", "implied": "none", "symmetry": "none"},
+    {"cardinality": "totalizer", "implied": "both", "symmetry": "slot-service"}
+  ],
+  "runs": [{"method": "weighted", "wc": 1, "wo": 1, "print_assignments": true}]
+}

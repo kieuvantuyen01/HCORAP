@@ -6,6 +6,7 @@
 
 - `hcorap_multi --method weighted`: B0, tương đương objective weighted gốc;
 - `hcorap_multi --method lex-continuity`: ưu tiên continuity;
+- `hcorap_multi --method lex-cos`: `CONT -> OT -> SIM`, policy chính;
 - `hcorap_multi --method lex-overtime`: ưu tiên overtime;
 - `hcorap_multi --method epsilon`: similarity-budget epsilon-constraint;
 - một binary Open-WBO C++ đã khóa commit cho tất cả các phương pháp.
@@ -38,11 +39,13 @@ baseline audit nguyên vẹn, mã mới không sửa helper cũ mà mã hóa c�
 `sum(q_i*x_i) >= K` thành `sum(q_i*(not x_i)) <= sum(q_i)-K`. Các tầng cố định
 coverage/similarity và các test lexicographic/epsilon đều đi qua đường này.
 
-B2 dùng grid delta khóa trước `0, 0.01, 0.025, 0.05, 0.10`. Mỗi delta chạy
-trong result directory riêng. JSON phải lưu similarity reference optimum,
-ceiling lower bound, realized loss và bốn stage full-coverage. Sau campaign,
-các delta dẫn đến cùng `(coverage, similarity, continuity, overtime)` được gộp
-trong bảng unique points nhưng raw rows không bị xóa.
+B2 đầy đủ ban đầu dùng grid delta `0, 0.01, 0.025, 0.05, 0.10`. Trong campaign
+ICIIT rút gọn, full confirmation đã hoãn và exploratory screen chỉ khóa ba mức
+`0, 0.05, 0.10`. JSON phải lưu similarity reference optimum, ceiling lower
+bound, realized loss và bốn stage full-coverage. Sau campaign, các delta dẫn
+đến cùng `(coverage, similarity, continuity, overtime)` được gộp trong bảng
+unique points nhưng raw rows không bị xóa. Không trình bày screen ba mức như một
+Pareto-front confirmation.
 
 ## Hai phép so sánh phải tách riêng
 
@@ -105,6 +108,8 @@ MaxSAT độc lập.
 - cùng compiler, cờ `-O3 -DNDEBUG -std=c++11` và cùng commit mã nguồn;
 - cùng Open-WBO binary/commit và tham số solver;
 - cùng thứ tự instance ngẫu nhiên đã lưu seed;
+- chạy blocked-instance: xáo thứ tự instance và xáo cấu hình trong từng block;
+- publication run dùng một worker được pin vào một vCPU;
 - cùng timeout tích lũy và định nghĩa `OPTIMUM`, `TIMEOUT`, `UNSATISFIABLE`;
 - cùng cardinality encoding trong bảng so sánh method; nếu ablation encoding,
   chạy paired và phân tầng kết quả theo `cardinality_encoding`;

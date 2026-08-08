@@ -120,8 +120,11 @@ vector<string> validateHCORAPInstance(const HCORAP *instance) {
     if (static_cast<int>(instance->HN.size()) != instance->A ||
         static_cast<int>(instance->HE.size()) != instance->A)
         violations.push_back("HN/HE length does not match A");
-    if (static_cast<int>(instance->SU.size()) != instance->U)
-        violations.push_back("SU row count does not match U");
+    // The original benchmark writer omits users with no services.  Therefore
+    // SU may contain fewer non-empty rows than the declared number of users;
+    // correctness is determined by the service-partition check below.
+    if (static_cast<int>(instance->SU.size()) > instance->U)
+        violations.push_back("SU row count exceeds U");
 
     for (int agent = 0; agent < instance->A; ++agent) {
         if (agent < static_cast<int>(instance->TSA.size()) &&

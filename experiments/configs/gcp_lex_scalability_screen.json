@@ -1,0 +1,21 @@
+{
+  "binary": "../../bin/release/hcorap_multi",
+  "solver": "${OPEN_WBO_BIN}",
+  "result_dir": "../results/gcp_lex_scalability_screen",
+  "instances": ["../../instances/paperInstances/**/*.txt"],
+  "instance_filters": {"seeds": [1,2,3,4,5]},
+  "expected_instances": 80,
+  "expected_runs": 320,
+  "timeout_seconds": 300,
+  "hard_grace_seconds": 60,
+  "workers": 1,
+  "order_seed": 20270814,
+  "configurations": [
+    {"cardinality": "sorting-network", "implied": "none", "symmetry": "none"},
+    {"cardinality": "totalizer", "implied": "both", "symmetry": "slot-service"}
+  ],
+  "runs": [
+    {"method": "weighted", "wc": 1, "wo": 1},
+    {"method": "lex-cos"}
+  ]
+}

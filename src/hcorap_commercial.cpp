@@ -79,7 +79,7 @@ static void usage(const char *program) {
         << "Formulations:\n"
         << "  mip-e (MIP), cp-t or cp-i (CP Optimizer)\n"
         << "Optimization:\n"
-        << "  --method weighted|lex-continuity|lex-overtime|epsilon\n"
+        << "  --method weighted|lex-continuity|lex-cos|lex-overtime|epsilon\n"
         << "  --soft-coverage           maximize and fix coverage first\n"
         << "  --wc INTEGER              continuity weight in weighted mode\n"
         << "  --wo INTEGER              overtime multiplier in weighted mode\n"
@@ -249,6 +249,7 @@ static Options parseOptions(int argc, char **argv) {
         );
     if (options.method != "weighted" &&
         options.method != "lex-continuity" &&
+        options.method != "lex-cos" &&
         options.method != "lex-overtime" &&
         options.method != "epsilon")
         throw runtime_error("unsupported method: " + options.method);
@@ -510,6 +511,7 @@ static RunState solvePolicy(
     } else if (
         status == COMMERCIAL_OPTIMUM &&
         (options.method == "lex-continuity" ||
+         options.method == "lex-cos" ||
          options.method == "lex-overtime")
     ) {
         vector<HCORAPCommercialObjective> order;
@@ -517,6 +519,10 @@ static RunState solvePolicy(
             order.push_back(COMMERCIAL_CONTINUITY);
             order.push_back(COMMERCIAL_SIMILARITY);
             order.push_back(COMMERCIAL_OVERTIME);
+        } else if (options.method == "lex-cos") {
+            order.push_back(COMMERCIAL_CONTINUITY);
+            order.push_back(COMMERCIAL_OVERTIME);
+            order.push_back(COMMERCIAL_SIMILARITY);
         } else {
             order.push_back(COMMERCIAL_OVERTIME);
             order.push_back(COMMERCIAL_CONTINUITY);
@@ -596,6 +602,18 @@ static const char *objectiveMode(const string &method) {
     return "lexicographic";
 }
 
+static const char *objectivePolicy(const string &method) {
+    if (method == "lex-continuity")
+        return "continuity-priority";
+    if (method == "lex-cos")
+        return "continuity-overtime-similarity";
+    if (method == "lex-overtime")
+        return "overtime-priority";
+    if (method == "epsilon")
+        return "similarity-budget";
+    return "weighted-sum";
+}
+
 static void writeNullableNumber(
     ostream &output, bool available, double value
 ) {
@@ -627,6 +645,8 @@ static void writeResult(
     jsonString(output, options.method);
     output << ",\n  \"objective_mode\": ";
     jsonString(output, objectiveMode(options.method));
+    output << ",\n  \"objective_policy\": ";
+    jsonString(output, objectivePolicy(options.method));
     output << ",\n  \"timing_scope\": "
            << "\"parse+build+solve+verify; cumulative across stages\",\n"
            << "  \"timeout_seconds\": " << options.timeoutSeconds << ",\n"

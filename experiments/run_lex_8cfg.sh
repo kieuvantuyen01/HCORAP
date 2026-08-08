@@ -22,7 +22,8 @@ if [ -n "$RESUME" ] && [ "$RESUME" != "--resume" ]; then
     exit 2
 fi
 
-for method in lex-continuity lex-overtime; do
+METHODS=${METHODS:-"lex-continuity lex-cos lex-overtime"}
+for method in $METHODS; do
     result_dir="$RESULT_ROOT/$method"
     echo "=== B1 policy: $method ==="
     if [ -n "$RESUME" ]; then
