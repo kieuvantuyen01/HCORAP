@@ -181,7 +181,7 @@ Conclusion chỉ nhắc lại claim đã có bảng/hình hỗ trợ.
 - [ ] Related-work table có citation đầy đủ, không biến thành danh sách tóm tắt.
 - [ ] Methods đủ chi tiết để tái triển khai.
 - [ ] Experimental setup khớp exact scope trong `screening_decision.json`
-  (đúng 1.270 measured runs).
+  (đúng 732 measured runs).
 - [ ] Mọi dòng `OPTIMUM` trong bảng có nghiệm qua independent solution verifier;
       không gọi đó là independently certified optimum nếu chưa kiểm tra proof
       trace.

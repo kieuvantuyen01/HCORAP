@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Analyze the frozen corrected-v2 weighted/LEX-COS validation campaign."""
+"""Analyze corrected-v2 objective and priority-order results."""
 
 from __future__ import annotations
 
@@ -106,7 +106,7 @@ def analyze(result_dir: Path, output_dir: Path) -> dict[str, Any]:
         pairs.append(item)
 
     policy_rows = []
-    for method in ("weighted", "lex-cos"):
+    for method in ("weighted", "lex-cos", "lex-overtime"):
         group = [row for row in rows if row["method"] == method]
         optimum = [row for row in group if row["status"] == "OPTIMUM"]
         policy_rows.append(
@@ -179,20 +179,21 @@ def analyze(result_dir: Path, output_dir: Path) -> dict[str, Any]:
         ),
         "methods": {
             method: sum(row["method"] == method for row in rows)
-            for method in ("weighted", "lex-cos")
+            for method in ("weighted", "lex-cos", "lex-overtime")
         },
     }
     result["valid"] = (
-        result["runs"] == 160
-        and result["instances"] == 80
-        and result["paired_instances"] == 80
+        result["runs"] == 144
+        and result["instances"] == 48
+        and result["paired_instances"] == 48
         and result["missing_pairs"] == 0
         and result["configuration_errors"] == 0
         and result["load_profile_errors"] == 0
         and result["duplicate_logical_keys"] == 0
         and result["hard_errors"] == 0
         and result["unverified_optima"] == 0
-        and result["methods"] == {"weighted": 80, "lex-cos": 80}
+        and result["methods"]
+        == {"weighted": 48, "lex-cos": 48, "lex-overtime": 48}
     )
     output_dir.mkdir(parents=True, exist_ok=True)
     _write(output_dir / "corrected_policy_pairs.csv", pairs)

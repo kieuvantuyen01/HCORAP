@@ -6,11 +6,11 @@
     "../../instances/corrected_v2_reduced_suite/evaluation_critical/evaluation/critical/*.txt"
   ],
   "instance_filters": {
-    "seeds": [1001,1002,1003,1004,1005],
+    "seeds": [1001,1002,1003],
     "load_profiles": ["critical"]
   },
-  "expected_instances": 80,
-  "expected_runs": 160,
+  "expected_instances": 48,
+  "expected_runs": 144,
   "timeout_seconds": 300,
   "hard_grace_seconds": 60,
   "workers": 1,
@@ -20,6 +20,7 @@
   ],
   "runs": [
     {"method": "weighted", "wc": 1, "wo": 1, "print_assignments": true},
-    {"method": "lex-cos", "print_assignments": true}
+    {"method": "lex-cos", "print_assignments": true},
+    {"method": "lex-overtime", "print_assignments": true}
   ]
 }

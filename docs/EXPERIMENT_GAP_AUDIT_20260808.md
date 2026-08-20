@@ -2,7 +2,7 @@
 
 > **Cập nhật vận hành 20/08/2026:** audit bên dưới được giữ để truy vết quyết
 > định và chất lượng dữ liệu lịch sử. Ma trận 4.996 runs mô tả trong bản audit
-> gốc đã bị thay thế bởi compact campaign **1.270 measured runs / 105,83
+> gốc đã bị thay thế bởi compact campaign **732 measured runs / 61,00
 > core-hour**. Nguồn hiện hành là
 > [`COMPACT_EXPERIMENT_MATRIX_20260820.md`](COMPACT_EXPERIMENT_MATRIX_20260820.md)
 > và `experiments/configs/reduced_campaign_manifest.json`. Mọi con số 4.996,
@@ -24,9 +24,9 @@ nghiêm trọng nhất là:
 Đã sửa parser, thêm chính sách `LEX-COS = CONT -> OT -> SIM`, thêm corrected-v2
 có feasible witness và dựng runner tái lập. Các pilot mới xác nhận mục tiêu mới
 tạo ra trade-off thực, nhưng chưa thay thế campaign chính trên GCP. Sau lần rà
-soát thứ hai, campaign mặc định còn 1.270 measured runs: factorial 640,
-original weighted/LEX-COS 280, LEX-OCS 70, corrected-v2 160, commercial MIP 80
-và MaxSAT commercial weighted/LEX 40. Pareto/epsilon, weight confirmation,
+soát thứ ba, campaign mặc định còn 732 measured runs: factorial 384, original
+weighted/LEX-COS 84, corrected-v2 weighted/LEX-COS/LEX-OCS 144, commercial MIP
+80 và MaxSAT commercial weighted/LEX 40. Pareto/epsilon, weight confirmation,
 uncertainty, load stress
 và CP baseline đều nằm ngoài lệnh `all`.
 
@@ -122,13 +122,14 @@ pilot sinh trước khi có witness được chuyển nguyên trạng vào
 
 ### Campaign corrected-v2 hiện hành
 
-Publication runner chỉ lấy 80 evaluation-critical instances: đủ 16 strata và
-seeds 1001--1005 cho mỗi stratum. Mỗi instance chạy weighted và LEX-COS bằng R,
-tổng 160 runs ở timeout 300 s. Calibration, relaxed/saturated load stress,
+Publication runner chỉ lấy 48 evaluation-critical instances: đủ 16 strata và
+seeds 1001--1003 cho mỗi stratum. Mỗi instance chạy weighted, LEX-COS và
+LEX-OCS bằng R, tổng 144 runs ở timeout 300 s. Calibration,
+relaxed/saturated load stress,
 multiobjective screen và weight screen không nằm trong measured compact
 campaign. Chúng chỉ được giữ làm functional/development assets.
 
-Factorial 640 runs trên 80 original instances là hard gate duy nhất: peak RSS
+Factorial 384 runs trên 48 original instances là hard gate duy nhất: peak RSS
 không quá 12 GB, không có technical/validation error, unverified optimum hoặc
 weighted-objective mismatch. Không dùng evaluation results để chọn lại sample,
 policy hoặc cấu hình.
@@ -254,8 +255,8 @@ Trước campaign chính còn phải:
 ## 9. GCP C4 execution
 
 Runbook đầy đủ nằm ở `docs/GCP_EXPERIMENT_RUNBOOK.md`. Ma trận compact được khóa
-trong `experiments/configs/reduced_campaign_manifest.json`: 1.270 measured runs,
-105,83 core-hour hay 4,41 ngày tuần tự worst case. Script một lệnh là
+trong `experiments/configs/reduced_campaign_manifest.json`: 732 measured runs,
+61 core-hour hay 2,54 ngày tuần tự worst case. Script một lệnh là
 `experiments/run_all_remaining_publication.sh`.
 
 Thứ tự bắt buộc là `preflight -> commercial-preflight -> factorial hard gate ->
@@ -271,7 +272,7 @@ Main paper không cần thêm figure. Ba visual đã dùng hết ngân sách 5 t
 bảng taxonomy ở Related Work và hai bảng full-width trong Results. Bảng Results
 thứ nhất chứa đủ tám factorial cells, bốn direct-factor contrasts cần để đọc
 interaction, full 12 contrasts trong artifact, và một dòng end-to-end B--R tái
-sử dụng cùng 80 instances. Bảng thứ hai chứa policy effects, corrected-v2 và
+sử dụng cùng 48 instances. Bảng thứ hai chứa policy effects, corrected-v2 và
 20-instance exact-objective agreement. Cấu trúc prose là RQ1 -> RQ2 -> RQ3 ->
 validation/scope; epsilon, weight, uncertainty và routing chỉ xuất hiện ở scope
 limitations, không có exploratory plot.

@@ -79,7 +79,7 @@ def test_screening_gate_reports_go_and_detects_objective_mismatch(
     config = {
         "encoding_result_dir": str(encoding),
         "output": str(tmp_path / "decision.json"),
-        "expected_measured_runs": 1270,
+        "expected_measured_runs": 732,
         "encoding": {
             "baseline": {
                 "cardinality": "sorting-network",
@@ -104,7 +104,7 @@ def test_screening_gate_reports_go_and_detects_objective_mismatch(
     initial = evaluate(config_path)
     assert initial["decision"] == "GO"
     assert initial["publication_scope"] == "COMPACT"
-    assert initial["expected_measured_runs"] == 1270
+    assert initial["expected_measured_runs"] == 732
     assert initial["branches"]["original_lexicographic"]["enabled"]
     assert initial["branches"]["corrected_v2_lexicographic"]["enabled"]
 

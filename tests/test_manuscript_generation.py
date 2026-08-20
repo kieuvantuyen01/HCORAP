@@ -34,7 +34,7 @@ def test_generate_complete_branch_aware_manuscript_bundle(tmp_path: Path) -> Non
         json.dumps(
             {
                 "decision": "GO",
-                "expected_measured_runs": 1270,
+                "expected_measured_runs": 732,
                 "branches": {
                     "original_lexicographic": {"enabled": True},
                     "corrected_v2_lexicographic": {"enabled": True},
@@ -58,10 +58,10 @@ def test_generate_complete_branch_aware_manuscript_bundle(tmp_path: Path) -> Non
         [
             {
                 **_configuration(configuration),
-                "runs": 80,
-                "optimum_runs": 120,
-                "unsat_runs": 20,
-                "timeout_runs": 20,
+                "runs": 48,
+                "optimum_runs": 36,
+                "unsat_runs": 6,
+                "timeout_runs": 6,
                 "par2_seconds": 35,
                 "median_peak_rss_mb": 140,
             }
@@ -75,10 +75,10 @@ def test_generate_complete_branch_aware_manuscript_bundle(tmp_path: Path) -> Non
                 {
                     "factor": "encoding",
                     "condition": f"IC={implied};SB={symmetry}",
-                    "both_proved_pairs": 70,
-                    "right_faster": 40,
+                    "both_proved_pairs": 40,
+                    "right_faster": 22,
                     "ties": 0,
-                    "left_faster": 30,
+                    "left_faster": 18,
                     "median_speedup_left_over_right": 1.2,
                     "bootstrap_95_ci_low": 1.05,
                     "bootstrap_95_ci_high": 1.35,
@@ -92,10 +92,10 @@ def test_generate_complete_branch_aware_manuscript_bundle(tmp_path: Path) -> Non
                 {
                     "factor": "implied",
                     "condition": f"Enc={cardinality};SB={symmetry}",
-                    "both_proved_pairs": 68,
-                    "right_faster": 35,
+                    "both_proved_pairs": 38,
+                    "right_faster": 20,
                     "ties": 1,
-                    "left_faster": 32,
+                    "left_faster": 17,
                     "median_speedup_left_over_right": 1.1,
                     "bootstrap_95_ci_low": 0.95,
                     "bootstrap_95_ci_high": 1.25,
@@ -109,10 +109,10 @@ def test_generate_complete_branch_aware_manuscript_bundle(tmp_path: Path) -> Non
                 {
                     "factor": "symmetry",
                     "condition": f"Enc={cardinality};IC={implied}",
-                    "both_proved_pairs": 65,
-                    "right_faster": 30,
+                    "both_proved_pairs": 36,
+                    "right_faster": 17,
                     "ties": 2,
-                    "left_faster": 33,
+                    "left_faster": 17,
                     "median_speedup_left_over_right": 0.98,
                     "bootstrap_95_ci_low": 0.85,
                     "bootstrap_95_ci_high": 1.12,
@@ -125,10 +125,10 @@ def test_generate_complete_branch_aware_manuscript_bundle(tmp_path: Path) -> Non
         primary / "weighted_composite_paired_summary.csv",
         [
             {
-                "both_proved_pairs": 70,
-                "reference_faster": 40,
+                "both_proved_pairs": 40,
+                "reference_faster": 22,
                 "ties": 0,
-                "baseline_faster": 30,
+                "baseline_faster": 18,
                 "median_speedup_baseline_over_reference": 1.18,
                 "bootstrap_95_ci_low": 1.08,
                 "bootstrap_95_ci_high": 1.28,
@@ -141,10 +141,10 @@ def test_generate_complete_branch_aware_manuscript_bundle(tmp_path: Path) -> Non
         policy_rows.append(
             {
                 **_configuration(configuration),
-                "pairs": 140,
-                "weighted_proved_runs": 125,
-                "lex_cos_proved_runs": 120,
-                "both_optimum_pairs": 110,
+                "pairs": 42,
+                "weighted_proved_runs": 38,
+                "lex_cos_proved_runs": 36,
+                "both_optimum_pairs": 34,
                 "median_similarity_change": -5,
                 "median_continuity_change": -2,
                 "median_overtime_change": 0,
@@ -155,11 +155,11 @@ def test_generate_complete_branch_aware_manuscript_bundle(tmp_path: Path) -> Non
         sensitivity_rows.append(
             {
                 **_configuration(configuration),
-                "pairs": 70,
-                "lex_cos_proved_runs": 70,
-                "lex_ocs_proved_runs": 68,
-                "both_optimum_pairs": 60,
-                "same_objective_vector_pairs": 55,
+                "pairs": 48,
+                "lex_cos_proved_runs": 45,
+                "lex_ocs_proved_runs": 44,
+                "both_optimum_pairs": 40,
+                "same_objective_vector_pairs": 35,
                 "median_similarity_change": -1,
                 "median_continuity_change": 1,
                 "median_overtime_change": -1,
@@ -176,9 +176,9 @@ def test_generate_complete_branch_aware_manuscript_bundle(tmp_path: Path) -> Non
         [
             {
                 "method": method,
-                "runs": 80,
-                "optimum_runs": 70,
-                "timeout_runs": 10,
+                "runs": 48,
+                "optimum_runs": 42,
+                "timeout_runs": 6,
                 "median_similarity": 90 if method == "weighted" else 85,
                 "median_continuity": 4 if method == "weighted" else 2,
                 "median_overtime": 2 if method == "weighted" else 1,
@@ -191,7 +191,7 @@ def test_generate_complete_branch_aware_manuscript_bundle(tmp_path: Path) -> Non
         corrected / "corrected_paired_summary.csv",
         [
             {
-                "both_optimum_pairs": 65,
+                "both_optimum_pairs": 38,
                 "median_similarity_change": -5,
                 "median_continuity_change": -2,
                 "median_overtime_change": -1,
@@ -221,11 +221,11 @@ def test_generate_complete_branch_aware_manuscript_bundle(tmp_path: Path) -> Non
         )
     )
     assert provenance["valid"]
-    assert provenance["expected_measured_runs"] == 1270
+    assert provenance["expected_measured_runs"] == 732
     results = (output / "results.tex").read_text(encoding="utf-8")
     assert results.count(r"\begin{table*}") == 2
-    assert "end-to-end, $n=80$" in results
-    assert "80 original instances" in results
+    assert "end-to-end, $n=48$" in results
+    assert "48 original instances" in results
     assert r"\resultplaceholder" not in results
     assert "EvalMaxSAT / Gurobi / CPLEX" in results
     assert (output / "manuscript-provenance.json").is_file()

@@ -13,13 +13,12 @@ agreement.
 
 | Campaign | Runs | Timeout | Worst-case core-hour |
 |---|---:|---:|---:|
-| original factorial: 80 × 8 × weighted | 640 | 300 s | 53,33 |
-| original policy: 140 × R × weighted/LEX-COS | 280 | 300 s | 23,33 |
-| LEX-OCS sensitivity: 70 × R | 70 | 300 s | 5,83 |
-| corrected-v2: 80 × weighted/LEX-COS × R | 160 | 300 s | 13,33 |
+| original factorial: 48 × 8 × weighted | 384 | 300 s | 32,00 |
+| original policy: 42 × R × weighted/LEX-COS | 84 | 300 s | 7,00 |
+| corrected-v2 policy and priority: 48 × R × 3 policies | 144 | 300 s | 12,00 |
 | Gurobi/CPLEX: 20 × 2 backends × 2 policies | 80 | 300 s | 6,67 |
 | EvalMaxSAT commercial: 20 × R × weighted/LEX-COS | 40 | 300 s | 3,33 |
-| **Tổng measured** | **1.270** |  | **105,83** |
+| **Tổng measured** | **732** |  | **61,00** |
 
 Ngoài bảng có 4 EvalMaxSAT LEX-COS scalability-calibration runs ở timeout 300 s
 và 18 commercial correctness-smoke runs ở timeout 30 s; không đưa timing của
@@ -65,10 +64,10 @@ LEX-OCS = OT -> CONT -> SIM
 dụng hai cell của factorial. RQ1 và commercial validation chạy lại weighted
 cùng LEX-COS trên sample riêng; mọi measured row dùng cùng timeout 300 s.
 
-Factorial dùng đủ 16 lớp × seeds 1--5. Original LEX-COS dùng 14 lớp × seeds
-1--10; loại `30_15_4` và `40_25_5` vì đã
-được xem trong commercial development. LEX-OCS dùng subset seeds 1--5.
-Corrected-v2 dùng 16 critical strata × evaluation seeds 1001--1005.
+Factorial dùng đủ 16 lớp × seeds 1--3. Original LEX-COS dùng 14 lớp × cùng ba
+seeds; loại `30_15_4` và `40_25_5` vì đã được xem trong commercial development.
+Corrected-v2 dùng 16 critical strata × evaluation seeds 1001--1003 và chạy cả
+weighted, LEX-COS, LEX-OCS trong cùng campaign block.
 
 ## 3. Chuẩn bị VM
 
@@ -103,7 +102,7 @@ export EVALMAXSAT_BIN=/opt/evalmaxsat/EvalMaxSAT_bin
 export GUROBI_HOME=/absolute/path/to/gurobi/platform
 export CPLEX_STUDIO_DIR=/absolute/path/to/CPLEX_Studio
 export HCORAP_CPU_CORE=0
-export HCORAP_EXPECTED_COMMIT=iciit2027-exp-v2
+export HCORAP_EXPECTED_COMMIT=iciit2027-exp-v3
 export HCORAP_BACKUP_DIR=/mnt/hcorap-backup
 ```
 
@@ -121,8 +120,8 @@ python3 experiments/validate_campaign_manifest.py
 python3 experiments/validate_publication_campaign.py
 ```
 
-Expected output của validator phải là 1.270 measured runs, 381.000 worst-case
-seconds, 105,8333 core-hour và contract `valid: true`.
+Expected output của validator phải là 732 measured runs, 219.600 worst-case
+seconds, 61 core-hour và contract `valid: true`.
 
 ## 4. Preflight
 
@@ -168,9 +167,9 @@ build/test/benchmark/task-count checks
 -> warm-up
 -> 4-row EvalMaxSAT LEX-COS scalability gate
 -> C1 factorial hard gate
--> C2 weighted/LEX-COS + C3 LEX-OCS
--> C4 corrected-v2
--> C5 commercial MIP + C6 EvalMaxSAT commercial weighted/LEX
+-> C2 original weighted/LEX-COS
+-> C3 corrected-v2 weighted/LEX-COS/LEX-OCS
+-> C4 commercial MIP + C5 EvalMaxSAT commercial weighted/LEX
 -> analysis -> package -> checkpoint
 ```
 
@@ -221,15 +220,14 @@ chưa đủ expected rows.
 
 | Output | Điều kiện |
 |---|---|
-| `gcp_original_ablation` | 640 rows; 80/cell |
+| `gcp_original_ablation` | 384 rows; 48/cell |
 | `gcp_evalmaxsat_lex_calibration` | 4 non-measured LEX-COS rows; ít nhất 2 optimum |
-| `gcp_original_lex_primary` | 280 rows; 140/policy under R |
-| `gcp_original_lex_sensitivity` | 70 LEX-OCS R rows |
-| `gcp_corrected_primary` | 160 rows; 80/policy |
+| `gcp_original_lex_primary` | 84 rows; 42/policy under R |
+| `gcp_corrected_primary` | 144 rows; 48/policy for weighted/LEX-COS/LEX-OCS |
 | `gcp_commercial_original` | 80 rows; 20/backend/policy |
 | `gcp_maxsat_commercial_validation` | 40 rows; 20/policy under R |
-| `gcp_primary_analysis` | valid; 8 cells, 12 contrasts, 80 B--R, 140 policy pairs, 70 sensitivity pairs |
-| `gcp_corrected_analysis` | valid; 80 instances/policy |
+| `gcp_primary_analysis` | valid; 8 cells, 12 contrasts, 48 B--R, 42 original policy pairs, 48 corrected sensitivity pairs |
+| `gcp_corrected_analysis` | valid; 48 instances/policy |
 | `gcp_cross_paradigm_analysis` | valid; 20 groups/policy |
 
 Objective deltas chỉ dùng jointly-optimum, verifier-passing pairs. Solved count

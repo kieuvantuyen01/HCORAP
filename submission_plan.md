@@ -1,7 +1,7 @@
 # Kế hoạch hoàn thiện và nộp bài ICIIT 2027
 
 Cập nhật ngày 20/08/2026. Ma trận publication hiện hành là compact campaign
-1.270 measured runs trong
+732 measured runs trong
 `experiments/configs/reduced_campaign_manifest.json`. Bản phân tích đầy đủ về
 cấu hình, kết quả cũ và lý do loại nhánh nằm tại
 [`docs/COMPACT_EXPERIMENT_MATRIX_20260820.md`](docs/COMPACT_EXPERIMENT_MATRIX_20260820.md).
@@ -37,8 +37,8 @@ thuộc lớp instance đều là kết quả hợp lệ.
 
 ### RQ1 — Objective policy
 
-Weighted B0 và LEX-COS khác nhau thế nào về CONT, OT, SIM, proved count và
-PAR-2? LEX-OCS có làm thay đổi vector objective trên subset paired hay không?
+Weighted và LEX-COS khác nhau thế nào về CONT, OT, SIM, proved count và PAR-2?
+Trên corrected benchmark, LEX-OCS có làm thay đổi vector objective hay không?
 
 ### RQ2 — Totalizer
 
@@ -67,10 +67,10 @@ B = sorting-network / implied none / symmetry none
 R = totalizer / implied both / symmetry slot-service
 ```
 
-- original factorial: 16 lớp, seeds 1--5, 80 instances;
-- original LEX-COS: 14 lớp, seeds 1--10, 140 instances, chỉ R;
-- LEX-OCS sensitivity: cùng 14 lớp, seeds 1--5, 70 instances, chỉ R;
-- corrected-v2: 16 critical strata, evaluation seeds 1001--1005, 80 instances;
+- original factorial: 16 lớp, seeds 1--3, 48 instances;
+- original weighted/LEX-COS: 14 lớp, seeds 1--3, 42 instances, chỉ R;
+- corrected-v2: 16 critical strata, evaluation seeds 1001--1003, 48 instances,
+  chạy weighted/LEX-COS/LEX-OCS dưới R;
 - commercial subset: hai lớp `30_15_4`, `40_25_5`, seeds 1--10, 20 instances.
 
 Hai commercial-development classes bị loại khỏi original LEX sets. Chúng vẫn
@@ -83,22 +83,21 @@ measured top-level run dùng timeout 300 s.
 
 | Campaign | Thiết kế | Runs | Timeout | Worst-case core-hour |
 |---|---|---:|---:|---:|
-| original factorial ablation | 80 × 8 configs × weighted | 640 | 300 s | 53,33 |
-| original policy comparison | 140 × R × weighted/LEX-COS | 280 | 300 s | 23,33 |
-| LEX-OCS sensitivity | 70 × R × LEX-OCS | 70 | 300 s | 5,83 |
-| corrected-v2 validation | 80 × R × weighted/LEX-COS | 160 | 300 s | 13,33 |
+| original factorial ablation | 48 × 8 configs × weighted | 384 | 300 s | 32,00 |
+| original policy comparison | 42 × R × weighted/LEX-COS | 84 | 300 s | 7,00 |
+| corrected-v2 policy and priority | 48 × R × weighted/LEX-COS/LEX-OCS | 144 | 300 s | 12,00 |
 | Gurobi/CPLEX validation | 20 × 2 backends × weighted/LEX-COS | 80 | 300 s | 6,67 |
 | EvalMaxSAT commercial validation | 20 × R × weighted/LEX-COS | 40 | 300 s | 3,33 |
-| **Tổng measured** |  | **1.270** |  | **105,83** |
+| **Tổng measured** |  | **732** |  | **61,00** |
 
 Ngoài measured matrix có 4 EvalMaxSAT LEX-COS scalability-calibration runs ở
 timeout 300 s và 18 commercial correctness-smoke runs ở timeout 30 s. Chúng
 không được dùng trong runtime tables. Calibration phải đạt ít nhất 2/4 optimum
-trước khi measured campaign bắt đầu. Worst case measured tuần tự là 4,41
-ngày. So với kế hoạch 4.996 runs/335,27 core-hour trước đó, thiết kế mới giảm
-74,58% số run và 68,43% worst-case compute. Diagnostic lịch sử cho thấy cả 12
-direct-factor contrasts giữ cùng hướng khi giảm từ 10 xuống 5 seeds/lớp; các
-effect size lịch sử không được dùng làm publication evidence.
+trước khi measured campaign bắt đầu. Worst case measured tuần tự là 2,54 ngày.
+So với campaign 1.270 runs ngay trước lần rà soát này, thiết kế mới giảm 42,36%
+số run và 42,36% worst-case compute. Mỗi factorial contrast vẫn có 48 paired
+blocks trên đủ 16 lớp; kết quả theo từng lớp chỉ được trình bày mô tả vì mỗi lớp
+có ba seeds.
 
 ## 5. Phần hoãn hoặc loại khỏi bài
 
@@ -143,7 +142,7 @@ export EVALMAXSAT_BIN=/opt/evalmaxsat/EvalMaxSAT_bin
 export GUROBI_HOME=/absolute/path/to/gurobi/platform
 export CPLEX_STUDIO_DIR=/absolute/path/to/CPLEX_Studio
 export HCORAP_CPU_CORE=0
-export HCORAP_EXPECTED_COMMIT=iciit2027-exp-v2
+export HCORAP_EXPECTED_COMMIT=iciit2027-exp-v3
 export HCORAP_BACKUP_DIR=/mnt/hcorap-backup
 export CONFIRM_PUBLICATION_CAMPAIGN=YES
 
@@ -155,9 +154,9 @@ Thứ tự pipeline:
 ```text
 build/test/benchmark checks
 -> commercial license + 18-run correctness smoke
--> 640-run factorial hard gate
--> 140 weighted + 140 LEX-COS + 70 LEX-OCS
--> 160 corrected-v2
+-> 384-run factorial hard gate
+-> 42 weighted + 42 LEX-COS trên original
+-> 48 weighted + 48 LEX-COS + 48 LEX-OCS trên corrected-v2
 -> 80 commercial MIP + 40 MaxSAT commercial weighted/LEX
 -> analysis -> package -> manuscript freeze
 ```
@@ -172,7 +171,7 @@ Chi tiết resume và checkpoint nằm trong
 - all tests và C++ builds pass;
 - solver source/binary đúng pinned commit;
 - corrected-v2 instances qua witness/hash/matrix verification;
-- manifest đúng 1.270 measured + 18 non-measured runs;
+- manifest đúng 732 measured + 4 calibration + 18 smoke runs;
 - mọi MaxSAT config resolve đúng instance/task count;
 - commercial preflight và 18/18 smoke runs qua verifier;
 - ba smoke backends agreement trên 6 instance-policy groups.
@@ -186,7 +185,7 @@ nhanh hơn B. Không còn branch gate hậu nghiệm cho epsilon, weight hoặc 
 
 ### G3 — Data freeze
 
-- chính xác 1.270 measured rows, không duplicate/unexpected run ID;
+- chính xác 732 measured rows, không duplicate/unexpected run ID;
 - mọi `OPTIMUM` qua independent verifier;
 - all analyzers trả `valid=true` với expected pair/group counts;
 - MaxSAT/Gurobi/CPLEX objective agreement được tính chỉ trên groups cả ba backend
@@ -199,10 +198,10 @@ nhanh hơn B. Không còn branch gate hậu nghiệm cho epsilon, weight hoặc 
 
 | Claim/bảng | Nguồn duy nhất được phép dùng |
 |---|---|
-| factorial RQ2/RQ3 và B--R 80 pairs | `gcp_primary_analysis/factorial_*`, `weighted_composite_*` |
-| weighted--LEX-COS R, 140 pairs | `gcp_primary_analysis/lex_confirmatory_*` |
-| LEX-COS--LEX-OCS R, 70 pairs | `lex_policy_sensitivity_{pairs,summary}.csv` |
-| corrected-v2, 80 instances/policy | `gcp_corrected_analysis/corrected_*` |
+| factorial RQ2/RQ3 và B--R 48 pairs | `gcp_primary_analysis/factorial_*`, `weighted_composite_*` |
+| original weighted--LEX-COS R, 42 pairs | `gcp_primary_analysis/lex_confirmatory_*` |
+| corrected LEX-COS--LEX-OCS R, 48 pairs | `lex_policy_sensitivity_{pairs,summary}.csv` |
+| corrected-v2, 48 instances/policy | `gcp_corrected_analysis/corrected_*` |
 | three-backend agreement, 20 groups/policy | `gcp_cross_paradigm_analysis/*` |
 | reproducibility | resolved configs, environment, manifests, hashes, validators |
 
@@ -216,7 +215,7 @@ verifier-passing pairs.
 Giữ đúng hai visual kết quả full-width:
 
 1. bảng factorial: tám cells, bốn direct contrasts tiêu biểu và B--R trên cùng
-   80 instances; đủ 12 direct contrasts nằm trong artifact;
+   48 instances; đủ 12 direct contrasts nằm trong artifact;
 2. bảng policy/validation: weighted--LEX-COS, LEX-OCS sensitivity,
    corrected-v2 và 20-instance three-backend agreement.
 
@@ -227,7 +226,7 @@ exploratory plot.
 ## 11. Definition of done
 
 - [ ] Publication commit/tag sạch và `HCORAP_EXPECTED_COMMIT` đã khóa.
-- [ ] G1, G2, G3 pass; exact count là 1.270 measured rows.
+- [ ] G1, G2, G3 pass; exact count là 732 measured rows.
 - [ ] Tất cả bảng và prose định lượng sinh từ frozen raw data.
 - [ ] Mỗi con số trong Abstract/Conclusion truy về generated evidence.
 - [ ] Không dùng historical/development/pilot runtime làm publication evidence.

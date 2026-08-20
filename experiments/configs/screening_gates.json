@@ -1,7 +1,7 @@
 {
   "encoding_result_dir": "../results/gcp_original_ablation",
   "output": "../results/screening_decision.json",
-  "expected_measured_runs": 1270,
+  "expected_measured_runs": 732,
   "encoding": {
     "baseline": {
       "cardinality": "sorting-network",

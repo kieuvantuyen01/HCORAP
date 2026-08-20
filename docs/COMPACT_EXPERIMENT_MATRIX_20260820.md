@@ -10,8 +10,8 @@ loại dữ liệu: publication evidence cần chạy mới, dữ liệu lịch 
 Giữ lại đúng bốn nhóm bằng chứng cần để bảo vệ các claim của bài:
 
 1. factorial đầy đủ để tách hiệu ứng Totalizer, implied constraints và symmetry;
-2. weighted so với LEX-COS, cộng một sensitivity nhỏ cho LEX-OCS;
-3. corrected-v2 để kiểm tra policy khi overtime bớt sparse;
+2. weighted so với LEX-COS trên benchmark gốc;
+3. corrected-v2 để kiểm tra policy và thứ tự LEX-COS/LEX-OCS khi overtime bớt sparse;
 4. Gurobi/CPLEX để kiểm tra exact-objective agreement khác paradigm.
 
 Nguyên tắc giảm tải là tái sử dụng một run khi toàn bộ khóa thực nghiệm giống
@@ -43,18 +43,17 @@ nổ số cell và làm khó quy kết tác động trong bài năm trang.
 
 | ID | Dataset và phép lấy mẫu | Cấu hình/phương pháp | Runs | T | Bằng chứng |
 |---|---|---|---:|---:|---|
-| C1 | original, 16 lớp × seed 1--5 = 80 | 8 factorial cells × weighted | 640 | 300 s | RQ2, RQ3 và B--R end-to-end |
-| C2 | original, 14 lớp × seed 1--10 = 140 | R × weighted/LEX-COS | 280 | 300 s | RQ1 với cùng timeout cho hai policy |
-| C3 | cùng 14 lớp × seed 1--5 = 70 | R × LEX-OCS | 70 | 300 s | order sensitivity; LEX-COS tái sử dụng từ C2 |
-| C4 | corrected-v2 critical, 16 strata × seed 1001--1005 = 80 | R × weighted/LEX-COS | 160 | 300 s | policy validation dưới excess workload |
-| C5 | original commercial subset, 2 lớp × seed 1--10 = 20 | Gurobi/CPLEX × weighted/LEX-COS | 80 | 300 s | cross-paradigm exactness |
-| C6 | cùng commercial subset | EvalMaxSAT R × weighted/LEX-COS | 40 | 300 s | ghép nhóm cùng-budget với C5 |
-| **Tổng** |  |  | **1.270** |  | **105,83 core-hour worst case** |
+| C1 | original, 16 lớp × seed 1--3 = 48 | 8 factorial cells × weighted | 384 | 300 s | RQ2, RQ3 và B--R end-to-end |
+| C2 | original, 14 lớp × seed 1--3 = 42 | R × weighted/LEX-COS | 84 | 300 s | RQ1 với paired order và cùng timeout |
+| C3 | corrected-v2 critical, 16 strata × seed 1001--1003 = 48 | R × weighted/LEX-COS/LEX-OCS | 144 | 300 s | policy validation và priority-order sensitivity dưới excess workload |
+| C4 | original commercial subset, 2 lớp × seed 1--10 = 20 | Gurobi/CPLEX × weighted/LEX-COS | 80 | 300 s | cross-paradigm exactness |
+| C5 | cùng commercial subset | EvalMaxSAT R × weighted/LEX-COS | 40 | 300 s | ghép nhóm cùng-budget với C4 |
+| **Tổng** |  |  | **732** |  | **61,00 core-hour worst case** |
 
-Hai lớp `30_15_4` và `40_25_5` bị loại khỏi C2--C3 vì đã được xem trong quá
-trình commercial development. Chúng chỉ xuất hiện trong C5--C6 với vai trò tập
+Hai lớp `30_15_4` và `40_25_5` bị loại khỏi C2 vì đã được xem trong quá
+trình commercial development. Chúng chỉ xuất hiện trong C4--C5 với vai trò tập
 validation được khai báo tường minh. Corrected-v2 chỉ giữ profile `critical` và
-năm evaluation seeds đầu; không giữ relaxed/saturated hoặc thêm seeds vì không
+ba evaluation seeds đầu; không giữ relaxed/saturated hoặc thêm seeds vì không
 cần cho claim hiện tại.
 
 Ngoài measured matrix có 4 EvalMaxSAT LEX-COS scalability-calibration runs trên
@@ -63,11 +62,12 @@ runs: 3 toy instances × 3 backends × weighted/LEX-COS, timeout 30 s. Chúng l�
 gate phần mềm/khả thi, không là publication runtime evidence. Measured campaign
 chỉ bắt đầu nếu ít nhất 2/4 calibration rows đạt optimum.
 
-Không tái sử dụng weighted rows của C1 cho RQ1 hoặc commercial validation vì
-sample khác nhau. C2 và C6 phải chạy weighted lại để tạo các policy/backend pair
-trên chính sample đã khai báo. Cắt 160 rows này sẽ làm thiếu paired policy
-comparison và giảm số three-backend groups; đó là tiết kiệm không hợp lệ về mặt
-phương pháp.
+Không tái sử dụng 42 weighted-R rows của C1 cho C2 dù các instance trùng nhau.
+C2 xen kẽ weighted và LEX-COS trong cùng campaign block và lưu assignment cho
+kiểm tra objective; thiết kế này kiểm soát execution order tốt hơn cho phép so
+sánh policy. C5 cũng phải giữ cả hai MaxSAT policies để tạo đủ nhóm kiểm chứng
+ba backend. Đây là các lượt lặp có mục đích, không phải duplication ngoài ý
+muốn.
 
 Timeout 300 s được khóa cho toàn bộ measured matrix. Nghiên cứu gốc dùng 1 giờ
 và 16 GB cho mỗi execution, nhưng thời gian trung bình certified lớn nhất được
@@ -91,35 +91,34 @@ dồn qua mọi stage; timeout rows được giữ trong solved count và PAR-2.
 | `experiments/results/weight_sensitivity_pilot` | 16 functional runs | cỡ mẫu quá nhỏ và branch đã hoãn | không đưa claim weight sensitivity |
 | `experiments/results/uncertainty_functional_*` | 2 nominal + 4 scenario runs | functional test, chưa phải uncertainty study | không đưa claim robustness |
 
-Kết luận audit: hiện có **0/1.270 publication-eligible measured rows** theo
+Kết luận audit: hiện có **0/732 publication-eligible measured rows** theo
 manifest compact. Các file cũ vẫn có giá trị phát hiện lỗi và kiểm tra xu hướng,
 nhưng không thể trộn vào ma trận mới vì khác solver, commit, timeout, policy,
-sampling và provenance. Việc chạy lại 1.270 rows là cần thiết để có một dataset
+sampling và provenance. Việc chạy lại 732 rows là cần thiết để có một dataset
 đồng nhất; không phải vì toàn bộ kết quả cũ vô giá trị.
 
 ## 5. Những cấu hình bị loại
 
 | Nhánh cũ | Quyết định | Lý do |
 |---|---|---|
-| factorial 160 instances | còn 80 | vẫn giữ đủ 16 lớp và 5 paired seeds/lớp; diagnostic lịch sử giữ nguyên hướng của 12/12 contrasts khi so với seeds 1--10 |
+| factorial 160 instances | còn 48 | vẫn giữ đủ 16 lớp và 3 paired seeds/lớp; mỗi direct contrast có 48 block trước timeout filtering |
 | weighted B/R trên 800 instances | bỏ campaign riêng | B/R 80 pairs đã có trong factorial; 800 pairs tốn 133,33 giờ mà không thêm factor attribution |
 | lex scalability 2 configs × 2 methods | bỏ | trùng mục tiêu RQ1; chỉ giữ R là cấu hình policy reference |
 | LEX-COS trên B và R | chỉ giữ R | paper không claim encoding-policy interaction; giảm một nửa policy runs |
-| LEX-OCS trên B và R, 80 instances | chỉ R, 70 instances | sensitivity chứ không phải main effect; năm seeds/lớp vẫn paired và cân bằng |
-| corrected-v2 160 instances | còn 80 | giữ đủ 16 strata và lấy năm evaluation seeds/stratum |
+| LEX-OCS trên benchmark gốc | chuyển sang corrected-v2 | original có OT quá sparse; corrected critical trả lời trực tiếp sensitivity của thứ tự ưu tiên |
+| corrected-v2 160 instances | 48 instances × 3 policies | giữ đủ 16 strata, ba evaluation seeds/stratum và ghép cả priority sensitivity trong cùng block |
 | commercial 100 instances | còn 20 | validation agreement, không ước lượng runtime population; hai lớp × mười seeds đủ để phát hiện mismatch hệ thống |
 | epsilon/Pareto, weight sensitivity | hoãn toàn bộ measured branch | không phải contribution cốt lõi; pilot không tạo bằng chứng đủ mạnh |
 | routing, uncertainty | loại khỏi campaign | model/claim hiện tại chưa hỗ trợ nghiên cứu thực nghiệm đầy đủ |
 
-Diagnostic giảm factorial được tính từ CSV lịch sử chỉ để chọn cỡ mẫu: với
-seeds 1--5, mỗi direct contrast có 71--76 cặp proved và cả 12 contrast giữ cùng
-hướng median time-ratio như seeds 1--10. Điều này không chứng minh effect size
-cho EvalMaxSAT/GCP publication run mới; vì vậy các số diagnostic không xuất
-hiện trong Results.
+Ba seeds mỗi stratum là mức tối thiểu để vừa giữ toàn bộ 16 strata vừa có lặp
+trong stratum. Phân tích chính vẫn paired theo instance ($n=48$ cho mỗi direct
+factor contrast), còn kết quả theo stratum chỉ mang tính mô tả; không ước lượng
+effect riêng cho từng stratum từ ba quan sát.
 
-So với manifest 4.996 runs trước đó, ma trận mới giảm 3.726 runs (74,58%) và
-giảm worst-case từ 335,27 xuống 105,83 core-hour (68,43%). Với một worker tuần
-tự, worst case là 4,41 ngày; thời gian thực tế thường thấp hơn do nhiều run kết
+So với campaign 1.270 runs ngay trước lần rà soát này, ma trận mới giảm 538 runs
+(42,36%) và giảm worst-case từ 105,83 xuống 61,00 core-hour. Với một worker tuần
+tự, worst case là 2,54 ngày; thời gian thực tế thường thấp hơn do nhiều run kết
 thúc trước timeout.
 
 ## 6. Thứ tự chạy và điều kiện dừng
@@ -130,10 +129,9 @@ thúc trước timeout.
 4. `screen`: chạy C1. Đây vừa là primary evidence vừa là hard gate; dừng nếu có
    technical error, unverified optimum, weighted-objective mismatch hoặc RSS
    vượt 12 GB.
-5. `original-primary`: chạy C2 và C3. Weighted và LEX-COS trong C2 dùng cùng
-   timeout 300 s; C3 ghép LEX-OCS với LEX-COS subset từ C2.
-6. `corrected-primary`: chạy C4.
-7. `commercial`: chạy C5--C6 với cùng timeout 300 s cho hai MaxSAT policies.
+5. `original-primary`: chạy C2; weighted và LEX-COS dùng cùng timeout 300 s.
+6. `corrected-primary`: chạy C3 theo block ba policy trên từng instance.
+7. `commercial`: chạy C4--C5 với cùng timeout 300 s cho hai MaxSAT policies.
 8. `analyze`, `package`, freeze manuscript.
 
 Lệnh một lần trên VM sau khi đã tạo clean publication commit/tag:
@@ -143,7 +141,7 @@ export EVALMAXSAT_BIN=/opt/evalmaxsat/EvalMaxSAT_bin
 export GUROBI_HOME=/absolute/path/to/gurobi/platform
 export CPLEX_STUDIO_DIR=/absolute/path/to/CPLEX_Studio
 export HCORAP_CPU_CORE=0
-export HCORAP_EXPECTED_COMMIT=iciit2027-exp-v2
+export HCORAP_EXPECTED_COMMIT=iciit2027-exp-v3
 export HCORAP_BACKUP_DIR=/mnt/hcorap-backup
 export CONFIRM_PUBLICATION_CAMPAIGN=YES
 
@@ -156,12 +154,12 @@ sau khi đã xem kết quả. Chỉ resume các row lỗi kỹ thuật hoặc ch
 
 ## 7. Điều kiện đủ để đưa vào bản thảo
 
-- đúng 1.270 measured rows, không duplicate hoặc unexpected run ID;
+- đúng 732 measured rows, không duplicate hoặc unexpected run ID;
 - mọi solver-reported `OPTIMUM` qua independent verifier;
-- đủ 80 instances ở mỗi factorial cell và đủ 12 direct factor contrasts;
-- đủ 140 weighted/LEX-COS R pairs và 70 LEX-COS/LEX-OCS R pairs trước khi lọc
+- đủ 48 instances ở mỗi factorial cell và đủ 12 direct factor contrasts;
+- đủ 42 weighted/LEX-COS R pairs và 48 corrected LEX-COS/LEX-OCS R pairs trước khi lọc
   jointly-optimum cho objective deltas;
-- đủ 80 corrected-v2 rows cho mỗi policy;
+- đủ 48 corrected-v2 rows cho mỗi policy;
 - đủ 20 three-backend groups cho mỗi policy, báo agreement chỉ khi cả ba backend
   chứng minh optimum;
 - bảng, quantitative prose và provenance được sinh từ frozen raw data;

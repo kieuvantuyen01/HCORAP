@@ -33,15 +33,9 @@ FACTORIAL = [
     for symmetry in ("none", "slot-service")
 ]
 EXPECTED_MEASURED = [
-    ("original_factorial_ablation", "gcp_original_ablation.json", 640, 300),
-    ("original_lex_cos_primary", "gcp_original_lex_primary.json", 280, 300),
-    (
-        "original_lex_ocs_sensitivity",
-        "gcp_original_lex_sensitivity.json",
-        70,
-        300,
-    ),
-    ("corrected_v2_validation", "gcp_corrected_primary.json", 160, 300),
+    ("original_factorial_ablation", "gcp_original_ablation.json", 384, 300),
+    ("original_lex_cos_primary", "gcp_original_lex_primary.json", 84, 300),
+    ("corrected_v2_policy_and_priority", "gcp_corrected_primary.json", 144, 300),
     ("commercial_exact_validation", "gcp_commercial_original.json", 80, 300),
     (
         "maxsat_commercial_validation",
@@ -110,7 +104,7 @@ def validate(manifest_path: Path = DEFAULT_MANIFEST) -> dict[str, Any]:
     _check_equal(
         errors, "non-measured campaign matrix", smoke_rows, EXPECTED_NON_MEASURED
     )
-    _check_equal(errors, "measured run total", manifest.get("expected_measured_runs"), 1270)
+    _check_equal(errors, "measured run total", manifest.get("expected_measured_runs"), 732)
     _check_equal(
         errors,
         "MaxSAT solver identity",
@@ -125,7 +119,7 @@ def validate(manifest_path: Path = DEFAULT_MANIFEST) -> dict[str, Any]:
         errors,
         "worst-case measured seconds",
         manifest.get("expected_worst_case_seconds"),
-        381000,
+        219600,
     )
 
     configs: dict[str, dict[str, Any]] = {}
@@ -148,14 +142,13 @@ def validate(manifest_path: Path = DEFAULT_MANIFEST) -> dict[str, Any]:
             _check_equal(errors, f"{filename} hard grace", config.get("hard_grace_seconds"), 60)
 
     factorial = configs.get("gcp_original_ablation.json", {})
-    _check_equal(errors, "factorial instances", factorial.get("expected_instances"), 80)
+    _check_equal(errors, "factorial instances", factorial.get("expected_instances"), 48)
     _check_equal(errors, "factorial configurations", factorial.get("configurations"), FACTORIAL)
     _check_equal(errors, "factorial methods", _methods(factorial), ["weighted"])
 
     maxsat_filenames = {
         "gcp_original_ablation.json",
         "gcp_original_lex_primary.json",
-        "gcp_original_lex_sensitivity.json",
         "gcp_corrected_primary.json",
         "gcp_maxsat_commercial_validation.json",
         "gcp_evalmaxsat_lex_calibration.json",
@@ -169,9 +162,11 @@ def validate(manifest_path: Path = DEFAULT_MANIFEST) -> dict[str, Any]:
         )
 
     maxsat_specs = {
-        "gcp_original_lex_primary.json": (140, ["weighted", "lex-cos"]),
-        "gcp_original_lex_sensitivity.json": (70, ["lex-overtime"]),
-        "gcp_corrected_primary.json": (80, ["weighted", "lex-cos"]),
+        "gcp_original_lex_primary.json": (42, ["weighted", "lex-cos"]),
+        "gcp_corrected_primary.json": (
+            48,
+            ["weighted", "lex-cos", "lex-overtime"],
+        ),
         "gcp_maxsat_commercial_validation.json": (20, ["weighted", "lex-cos"]),
         "gcp_evalmaxsat_lex_calibration.json": (4, ["lex-cos"]),
     }
@@ -180,6 +175,17 @@ def validate(manifest_path: Path = DEFAULT_MANIFEST) -> dict[str, Any]:
         _check_equal(errors, f"{filename} instances", config.get("expected_instances"), instances)
         _check_equal(errors, f"{filename} reference configuration", config.get("configurations"), [REFERENCE])
         _check_equal(errors, f"{filename} methods", _methods(config), methods)
+
+    seed_specs = {
+        "gcp_original_ablation.json": [1, 2, 3],
+        "gcp_original_lex_primary.json": [1, 2, 3],
+        "gcp_corrected_primary.json": [1001, 1002, 1003],
+        "gcp_maxsat_commercial_validation.json": list(range(1, 11)),
+        "gcp_commercial_original.json": list(range(1, 11)),
+    }
+    for filename, seeds in seed_specs.items():
+        observed = configs.get(filename, {}).get("instance_filters", {}).get("seeds")
+        _check_equal(errors, f"{filename} evaluation seeds", observed, seeds)
 
     commercial_specs = {
         "gcp_commercial_original.json": [
@@ -210,7 +216,7 @@ def validate(manifest_path: Path = DEFAULT_MANIFEST) -> dict[str, Any]:
     return {
         **arithmetic,
         "valid": not errors,
-        "contract": "ICIIT 2027 compact campaign, revision 2026-08-20",
+        "contract": "ICIIT 2027 compact campaign, revision 2026-08-20-v3",
         "measured_timeout_seconds": 300,
         "smoke_timeout_seconds": 30,
         "maxsat_solver": manifest.get("maxsat_solver"),

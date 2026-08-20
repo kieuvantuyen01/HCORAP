@@ -14,8 +14,8 @@ def test_corrected_validation_builds_policy_and_paired_tables(tmp_path: Path) ->
         json.dumps({"complete": True}), encoding="utf-8"
     )
     rows = []
-    for index in range(80):
-        for method in ("weighted", "lex-cos"):
+    for index in range(48):
+        for method in ("weighted", "lex-cos", "lex-overtime"):
             rows.append(
                 {
                     "instance_sha256": f"sha-{index}",
@@ -30,9 +30,9 @@ def test_corrected_validation_builds_policy_and_paired_tables(tmp_path: Path) ->
                     "elapsed_seconds": "2",
                     "timeout_seconds": "300",
                     "peak_rss_mb": "100",
-                    "similarity": "90" if method == "lex-cos" else "100",
-                    "continuity": "1" if method == "lex-cos" else "3",
-                    "overtime": "0" if method == "lex-cos" else "1",
+                    "similarity": "90" if method != "weighted" else "100",
+                    "continuity": "1" if method != "weighted" else "3",
+                    "overtime": "0" if method != "weighted" else "1",
                 }
             )
     with (source / "runs.csv").open("w", newline="", encoding="utf-8") as stream:
@@ -46,6 +46,6 @@ def test_corrected_validation_builds_policy_and_paired_tables(tmp_path: Path) ->
         newline="", encoding="utf-8"
     ) as stream:
         summary = next(csv.DictReader(stream))
-    assert summary["both_optimum_pairs"] == "80"
+    assert summary["both_optimum_pairs"] == "48"
     assert summary["median_continuity_change"] == "-2.0"
     assert summary["median_overtime_change"] == "-1.0"

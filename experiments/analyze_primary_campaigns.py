@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build confirmatory factorial and lexicographic manuscript tables."""
+"""Build factorial and objective-rule manuscript tables."""
 
 from __future__ import annotations
 
@@ -658,7 +658,19 @@ def analyze(arguments: argparse.Namespace) -> dict[str, Any]:
     lex = [row for row in policy if row["method"] == "lex-cos"]
     if len(weighted_policy) + len(lex) != len(policy):
         raise ValueError("original policy campaign contains an unexpected method")
-    sensitivity = _rows(arguments.sensitivity_results)
+    sensitivity_source = _rows(arguments.sensitivity_results)
+    sensitivity_methods = {row["method"] for row in sensitivity_source}
+    if sensitivity_methods != {"weighted", "lex-cos", "lex-overtime"}:
+        raise ValueError(
+            "corrected sensitivity campaign has unexpected methods: "
+            f"{sorted(sensitivity_methods)}"
+        )
+    sensitivity_base = [
+        row for row in sensitivity_source if row["method"] == "lex-cos"
+    ]
+    sensitivity = [
+        row for row in sensitivity_source if row["method"] == "lex-overtime"
+    ]
     factorial_pairs, factorial_summary = _factorial(ablation, output_dir)
     factorial_contrasts = _factorial_contrasts(ablation, output_dir)
     weighted_pairs, weighted_summary, weighted_paired_summary = (
@@ -666,7 +678,7 @@ def analyze(arguments: argparse.Namespace) -> dict[str, Any]:
     )
     lex_pairs, lex_summary = _lex_vs_weighted(weighted_policy, lex, output_dir)
     sensitivity_pairs, sensitivity_summary = _policy_sensitivity(
-        lex, sensitivity, output_dir
+        sensitivity_base, sensitivity, output_dir
     )
     all_rows = [*ablation, *policy, *sensitivity]
     counts = {
@@ -676,10 +688,10 @@ def analyze(arguments: argparse.Namespace) -> dict[str, Any]:
         "lex_sensitivity": len(sensitivity),
     }
     expected = {
-        "ablation": 640,
-        "weighted_policy": 140,
-        "lex_confirmatory": 140,
-        "lex_sensitivity": 70,
+        "ablation": 384,
+        "weighted_policy": 42,
+        "lex_confirmatory": 42,
+        "lex_sensitivity": 48,
     }
     result = {
         "scope": "compact",
@@ -726,13 +738,13 @@ def analyze(arguments: argparse.Namespace) -> dict[str, Any]:
         and result["factorial_configurations"] == 8
         and result["factorial_contrasts"] == 12
         and result["factorial_contrast_objective_mismatches"] == 0
-        and result["weighted_composite_pairs"] == 80
+        and result["weighted_composite_pairs"] == 48
         and result["weighted_composite_configurations"] == 2
         and result["weighted_composite_status_mismatches"] == 0
         and result["weighted_composite_objective_mismatches"] == 0
-        and result["lex_confirmatory_pairs"] == 140
+        and result["lex_confirmatory_pairs"] == 42
         and result["lex_confirmatory_configurations"] == 1
-        and result["policy_sensitivity_pairs"] == 70
+        and result["policy_sensitivity_pairs"] == 48
         and result["policy_sensitivity_configurations"] == 1
     )
     (output_dir / "analysis_validation.json").write_text(
@@ -745,7 +757,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--ablation-results", type=Path, default=Path("experiments/results/gcp_original_ablation"))
     parser.add_argument("--lex-results", type=Path, default=Path("experiments/results/gcp_original_lex_primary"))
-    parser.add_argument("--sensitivity-results", type=Path, default=Path("experiments/results/gcp_original_lex_sensitivity"))
+    parser.add_argument("--sensitivity-results", type=Path, default=Path("experiments/results/gcp_corrected_primary"))
     parser.add_argument("--output-dir", type=Path, default=Path("experiments/results/gcp_primary_analysis"))
     arguments = parser.parse_args()
     try:

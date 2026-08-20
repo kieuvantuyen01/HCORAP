@@ -5,31 +5,32 @@
 \section{Results}
 \label{sec:results}
 
-\outlineblock{Open with the scope selected by the screening gate, the
-exact number of measured runs, and one integrity sentence: complete rows, no
-hard errors, no unverified OPTIMUM assignments, and no factorial objective
-mismatches.  Do not repeat the full machine protocol from Section~5.}
+\outlineblock{Open with the campaign size and state in one sentence that all
+reported optimal assignments pass verification.}
 
-\subsection{RQ1: Objective-policy effects}
+\subsection{RQ1: Objective-rule effects}
 \label{sec:rq1}
 
-\outlineblock{Lead with weighted B0 versus LEX-COS under configuration R on the
-140 pre-specified original instances.  Both policies use configuration R and
+\outlineblock{Lead with the weighted objective versus the continuity-first
+objective under the enhanced encoding on the 42 original
+instances.  Both objective rules use the enhanced encoding and
 the same 300-s budget.  Report solved counts and
 PAR-2 on all runs; compute objective deltas only on matched, verifier-passing
-pairs where both policies report OPTIMUM.  Then report LEX-OCS sensitivity on
-the pre-specified 70-instance subset.  State explicitly whether sparse overtime makes priority order
-immaterial on the original benchmark; do not generalize that observation.}
+pairs where both runs report OPTIMUM.  Then report overtime-first sensitivity
+on the 48 corrected-benchmark instances, where overtime variation is stronger.}
 
-\paragraph{Weighted versus LEX-COS.}
-Across \resultplaceholder{n} matched OPTIMUM pairs, LEX-COS changes median
-continuity by \resultplaceholder{x}, overtime by \resultplaceholder{x}, and
-similarity by \resultplaceholder{x}.  The corresponding improved/equal/worse
+\paragraph{Weighted versus continuity-first objective.}
+Across \resultplaceholder{n} matched OPTIMUM pairs, the continuity-first
+objective changes median additional-caregiver count (CONT) by
+\resultplaceholder{x}, overtime workload (OT) by \resultplaceholder{x}, and
+compatibility score (SIM) by \resultplaceholder{x}.  The corresponding
+improved/equal/worse
 counts and the all-run PAR-2 values are reported in
 Table~\ref{tab:policy-validation}A.
 
 \paragraph{Priority-order sensitivity.}
-LEX-COS and LEX-OCS return the same verified objective vector on
+The continuity-first and overtime-first objectives return the same verified
+objective vector on
 \resultplaceholder{n}/\resultplaceholder{n} matched OPTIMUM pairs.  On the
 remaining pairs, Table~\ref{tab:policy-validation}A reports the direction and
 magnitude of each objective change.
@@ -38,44 +39,43 @@ magnitude of each objective change.
 \label{sec:rq2}
 
 \outlineblock{Use Table~\ref{tab:factorial}A for all eight cells and
-Table~\ref{tab:factorial}B for paired factor flips.  In the paragraph report
+Table~\ref{tab:factorial}B for paired factor comparisons.  In the paragraph report
 formula structure, peak RSS, proved count, PAR-2, and the paired effect with its
-bootstrap interval.  A speedup above one favors the right-hand configuration.
+bootstrap confidence interval.  A speedup above one favors the second configuration.
 If the interval crosses one or class effects reverse, describe the result as
 mixed rather than faster.}
 
 Relative to sorting networks, Totalizer changes median variables by
 \resultplaceholder{x}, hard clauses by \resultplaceholder{x}, and soft clauses
-by \resultplaceholder{x}.  Its paired proof-time ratio is
-\resultplaceholder{x} (95\% bootstrap CI \resultplaceholder{lo--hi}) over
-\resultplaceholder{n} mutually proved runs.
+by \resultplaceholder{x}.  Its median runtime ratio is
+\resultplaceholder{x} (95\% bootstrap confidence interval
+\resultplaceholder{lo--hi}) over \resultplaceholder{n} paired runs for which
+both configurations prove optimality.
 
 \subsection{RQ3: Implied constraints and symmetry breaking}
 \label{sec:rq3}
 
-\outlineblock{Read the direct IC and SB flips in Table~\ref{tab:factorial}B,
-not the bundled B--R contrast.  Report encoding-by-IC and encoding-by-SB
+\outlineblock{Read the direct implied-constraint and symmetry-breaking comparisons in
+Table~\ref{tab:factorial}B, not the bundled baseline--enhanced contrast.  Report
+their interactions with the counting encoding
 interactions when their direction differs.  Negative or neutral effects are
 first-class findings.  Do not attribute an aggregate difference to one factor
-unless its paired flip supports the claim.}
+unless its paired comparison supports the claim.}
 
 The implied-constraint treatment has paired ratio
 \resultplaceholder{x} under sorting networks and \resultplaceholder{x} under
-Totalizer.  Exact slot-service symmetry breaking has paired ratio
+Totalizer.  Symmetry breaking for interchangeable slots and services has paired ratio
 \resultplaceholder{x}; its win/tie/loss counts are
 \resultplaceholder{w/t/l}.
 
 \begin{table*}[t]
-  \caption{Weighted factorial and end-to-end encoding results.  Panel~A uses
-  80 original instances ($T=120$\,s).  Panel~B displays four direct factor
-  flips from that factorial and the $B$--$R$ comparison on the same 80
-  instances ($T=120$\,s); all 12 direct flips remain in the artifact.
-  \textsc{Opt}, \textsc{Unsat}, and TO denote
-  solver-reported optimum, established infeasibility, and timeout; all optimum
-  assignments pass independent solution verification.  PAR-2 and peak RSS are
-  lower-is-better.  In Panel~B, speedup is left time divided by right time, so a
-  value above one favors the right-hand treatment; intervals are paired
-  bootstrap 95\% CIs.}
+  \caption{Factorial and end-to-end encoding results on 48 original instances
+  ($T=300$\,s).  Panel~A reports all eight configurations; Panel~B reports the
+  direct factor and baseline--enhanced comparisons.  SN denotes sorting network,
+  TOT Totalizer, IC implied constraints, SB symmetry breaking, W/T/L
+  wins/ties/losses, and CI confidence interval.  \textsc{Opt}, \textsc{Unsat},
+  and TO denote optimal, infeasible, and timeout runs.  Speedup is left runtime
+  divided by right runtime; PAR-2 and RSS are lower-is-better.}
   \label{tab:factorial}
   \centering
   \scriptsize
@@ -84,25 +84,25 @@ Totalizer.  Exact slot-service symmetry breaking has paired ratio
   \begin{tabularx}{\textwidth}{@{}Xlllrrrrr@{}}
     \toprule
     \multicolumn{9}{@{}l}{\textit{Panel A: factorial cells and all-run performance}} \\
-    Configuration & Enc. & IC & SB & \textsc{Opt} & \textsc{Unsat} & TO & PAR-2 (s) & RSS (MB) \\
+    Configuration & Counting & IC & SB & \textsc{Opt} & \textsc{Unsat} & TO & PAR-2 (s) & RSS (MB) \\
     \midrule
-    SN-none-none  & SN  & none & none & \resultplaceholder{n} & \resultplaceholder{n} & \resultplaceholder{n} & \resultplaceholder{x} & \resultplaceholder{x} \\
-    SN-none-ss    & SN  & none & ss   & \resultplaceholder{n} & \resultplaceholder{n} & \resultplaceholder{n} & \resultplaceholder{x} & \resultplaceholder{x} \\
-    SN-both-none  & SN  & both & none & \resultplaceholder{n} & \resultplaceholder{n} & \resultplaceholder{n} & \resultplaceholder{x} & \resultplaceholder{x} \\
-    SN-both-ss    & SN  & both & ss   & \resultplaceholder{n} & \resultplaceholder{n} & \resultplaceholder{n} & \resultplaceholder{x} & \resultplaceholder{x} \\
-    TOT-none-none & TOT & none & none & \resultplaceholder{n} & \resultplaceholder{n} & \resultplaceholder{n} & \resultplaceholder{x} & \resultplaceholder{x} \\
-    TOT-none-ss   & TOT & none & ss   & \resultplaceholder{n} & \resultplaceholder{n} & \resultplaceholder{n} & \resultplaceholder{x} & \resultplaceholder{x} \\
-    TOT-both-none & TOT & both & none & \resultplaceholder{n} & \resultplaceholder{n} & \resultplaceholder{n} & \resultplaceholder{x} & \resultplaceholder{x} \\
-    TOT-both-ss   & TOT & both & ss   & \resultplaceholder{n} & \resultplaceholder{n} & \resultplaceholder{n} & \resultplaceholder{x} & \resultplaceholder{x} \\
+    SN-off-off  & SN  & off & off & \resultplaceholder{n} & \resultplaceholder{n} & \resultplaceholder{n} & \resultplaceholder{x} & \resultplaceholder{x} \\
+    SN-off-on   & SN  & off & on  & \resultplaceholder{n} & \resultplaceholder{n} & \resultplaceholder{n} & \resultplaceholder{x} & \resultplaceholder{x} \\
+    SN-on-off   & SN  & on  & off & \resultplaceholder{n} & \resultplaceholder{n} & \resultplaceholder{n} & \resultplaceholder{x} & \resultplaceholder{x} \\
+    SN-on-on    & SN  & on  & on  & \resultplaceholder{n} & \resultplaceholder{n} & \resultplaceholder{n} & \resultplaceholder{x} & \resultplaceholder{x} \\
+    TOT-off-off & TOT & off & off & \resultplaceholder{n} & \resultplaceholder{n} & \resultplaceholder{n} & \resultplaceholder{x} & \resultplaceholder{x} \\
+    TOT-off-on  & TOT & off & on  & \resultplaceholder{n} & \resultplaceholder{n} & \resultplaceholder{n} & \resultplaceholder{x} & \resultplaceholder{x} \\
+    TOT-on-off  & TOT & on  & off & \resultplaceholder{n} & \resultplaceholder{n} & \resultplaceholder{n} & \resultplaceholder{x} & \resultplaceholder{x} \\
+    TOT-on-on   & TOT & on  & on  & \resultplaceholder{n} & \resultplaceholder{n} & \resultplaceholder{n} & \resultplaceholder{x} & \resultplaceholder{x} \\
     \midrule
-    \multicolumn{9}{@{}l}{\textit{Panel B: paired factor contrasts and composite validation}} \\
-    Contrast (left $\to$ right) & \multicolumn{2}{c}{Condition} & Pairs & W/T/L & \multicolumn{2}{c}{Median speedup [95\% CI]} & $\Delta$vars & $\Delta$hard \\
+    \multicolumn{9}{@{}l}{\textit{Panel B: paired factor comparisons and baseline--enhanced validation}} \\
+    Contrast (left $\to$ right) & \multicolumn{2}{c}{Condition} & Pairs & W/T/L & \multicolumn{2}{c}{Median speedup [95\% CI]} & $\Delta$variables & $\Delta$hard clauses \\
     \midrule
-    SN $\to$ TOT & \multicolumn{2}{l}{IC none, SB none} & \resultplaceholder{n} & \resultplaceholder{w/t/l} & \multicolumn{2}{c}{\resultplaceholder{x [lo, hi]}} & \resultplaceholder{x} & \resultplaceholder{x} \\
-    SN $\to$ TOT & \multicolumn{2}{l}{IC both, SB ss} & \resultplaceholder{n} & \resultplaceholder{w/t/l} & \multicolumn{2}{c}{\resultplaceholder{x [lo, hi]}} & \resultplaceholder{x} & \resultplaceholder{x} \\
-    none $\to$ both & \multicolumn{2}{l}{TOT, SB none} & \resultplaceholder{n} & \resultplaceholder{w/t/l} & \multicolumn{2}{c}{\resultplaceholder{x [lo, hi]}} & \resultplaceholder{x} & \resultplaceholder{x} \\
-    none $\to$ ss & \multicolumn{2}{l}{TOT, IC both} & \resultplaceholder{n} & \resultplaceholder{w/t/l} & \multicolumn{2}{c}{\resultplaceholder{x [lo, hi]}} & \resultplaceholder{x} & \resultplaceholder{x} \\
-    B $\to$ R & \multicolumn{2}{l}{same factorial, $n=80$} & \resultplaceholder{n} & \resultplaceholder{w/t/l} & \multicolumn{2}{c}{\resultplaceholder{x [lo, hi]}} & -- & -- \\
+    SN $\to$ TOT & \multicolumn{2}{l}{IC off, SB off} & \resultplaceholder{n} & \resultplaceholder{w/t/l} & \multicolumn{2}{c}{\resultplaceholder{x [lo, hi]}} & \resultplaceholder{x} & \resultplaceholder{x} \\
+    SN $\to$ TOT & \multicolumn{2}{l}{IC on, SB on} & \resultplaceholder{n} & \resultplaceholder{w/t/l} & \multicolumn{2}{c}{\resultplaceholder{x [lo, hi]}} & \resultplaceholder{x} & \resultplaceholder{x} \\
+    IC off $\to$ on & \multicolumn{2}{l}{TOT, SB off} & \resultplaceholder{n} & \resultplaceholder{w/t/l} & \multicolumn{2}{c}{\resultplaceholder{x [lo, hi]}} & \resultplaceholder{x} & \resultplaceholder{x} \\
+    SB off $\to$ on & \multicolumn{2}{l}{TOT, IC on} & \resultplaceholder{n} & \resultplaceholder{w/t/l} & \multicolumn{2}{c}{\resultplaceholder{x [lo, hi]}} & \resultplaceholder{x} & \resultplaceholder{x} \\
+    Baseline $\to$ enhanced & \multicolumn{2}{l}{same factorial, $n=48$} & \resultplaceholder{n} & \resultplaceholder{w/t/l} & \multicolumn{2}{c}{\resultplaceholder{x [lo, hi]}} & -- & -- \\
     \bottomrule
   \end{tabularx}
 \end{table*}
@@ -110,26 +110,25 @@ Totalizer.  Exact slot-service symmetry breaking has paired ratio
 \subsection{Validation and scope}
 \label{sec:validation}
 
-\outlineblock{Panel B tests whether the directional policy findings persist on
-the 80 evaluation-critical corrected-v2 instances, whose excess-workload
+\outlineblock{Panel B tests whether the directional objective findings persist on
+the 48 corrected-benchmark instances, whose overtime
 pressure is stronger.  Panel C reports objective agreement only when all three
-backends prove optimum.  Do not compare commercial runtime with MaxSAT runtime.
+solvers prove optimum.  Do not compare commercial runtime with MaxSAT runtime.
 The compact campaign requires both validation branches; missing rows stop the
 freeze instead of silently reducing the scope.}
 
-On corrected-v2, \resultplaceholder{directional finding}.  Across the
-pre-specified commercial subset, all three exact backends prove optimum on
-\resultplaceholder{n} weighted and \resultplaceholder{n} LEX-COS groups, with
+On the corrected benchmark, \resultplaceholder{directional finding}.  Across
+the pre-specified commercial subset, all three exact solvers prove optimum on
+\resultplaceholder{n} weighted and \resultplaceholder{n} continuity-first
+groups, with
 \resultplaceholder{n} objective disagreements.
 
 \begin{table*}[t]
-  \caption{Objective-policy and validation summary.  Panel~A uses matched
-  original-benchmark pairs; deltas are right policy minus left policy, with
-  lower CONT/OT and higher SIM preferred.  Panel~B reports the independent
-  corrected-v2 evaluation-critical set.  Panel~C compares objective vectors
-  only for groups where EvalMaxSAT, Gurobi, and CPLEX all report OPTIMUM and the
-  assignments pass solution verification.  PAR-2 includes timeouts and is
-  lower-is-better.}
+  \caption{Objective-rule and cross-solver results.  Panels~A and B compare
+  objective rules on the original and corrected benchmarks; deltas are second
+  rule minus first, with lower CONT/OT and higher SIM preferred.  Panel~C
+  reports agreement where EvalMaxSAT, Gurobi, and CPLEX all prove optimality.
+  PAR-2 includes timeouts and is lower-is-better.}
   \label{tab:policy-validation}
   \centering
   \scriptsize
@@ -137,28 +136,28 @@ pre-specified commercial subset, all three exact backends prove optimum on
   \renewcommand{\arraystretch}{0.94}
   \begin{tabularx}{\textwidth}{@{}Xlrrrrrrr@{}}
     \toprule
-    \multicolumn{9}{@{}l}{\textit{Panel A: original benchmark, paired policy effects}} \\
-    Comparison & Config. & $n$ & Proved L/R & Both opt. & $\Delta$SIM & $\Delta$CONT & $\Delta$OT & PAR-2 L/R (s) \\
+    \multicolumn{9}{@{}l}{\textit{Panel A: paired objective-rule effects}} \\
+    Comparison & Encoding & $n$ & Proved 1/2 & Both optimal & $\Delta$SIM & $\Delta$CONT & $\Delta$OT & PAR-2 1/2 (s) \\
     \midrule
-    B0 $\to$ LEX-COS & R & 140 & \resultplaceholder{n/n} & \resultplaceholder{n} & \resultplaceholder{x} & \resultplaceholder{x} & \resultplaceholder{x} & \resultplaceholder{x/x} \\
-    LEX-COS $\to$ LEX-OCS & R & 70 & \resultplaceholder{n/n} & \resultplaceholder{n} & \resultplaceholder{x} & \resultplaceholder{x} & \resultplaceholder{x} & \resultplaceholder{x/x} \\
+    Weighted $\to$ continuity-first (original) & Enhanced & 42 & \resultplaceholder{n/n} & \resultplaceholder{n} & \resultplaceholder{x} & \resultplaceholder{x} & \resultplaceholder{x} & \resultplaceholder{x/x} \\
+    Continuity-first $\to$ overtime-first (corrected) & Enhanced & 48 & \resultplaceholder{n/n} & \resultplaceholder{n} & \resultplaceholder{x} & \resultplaceholder{x} & \resultplaceholder{x} & \resultplaceholder{x/x} \\
     \midrule
-    \multicolumn{9}{@{}l}{\textit{Panel B: corrected-v2 evaluation-critical benchmark, configuration R}} \\
-    Policy & Config. & Runs & \textsc{Opt} & TO & Median SIM & Median CONT & Median OT & PAR-2 (s) \\
+    \multicolumn{9}{@{}l}{\textit{Panel B: corrected-benchmark confirmatory set, enhanced encoding}} \\
+    Objective rule & Encoding & Runs & \textsc{Opt} & TO & Median SIM & Median CONT & Median OT & PAR-2 (s) \\
     \midrule
-    B0 & R & 80 & \resultplaceholder{n} & \resultplaceholder{n} & \resultplaceholder{x} & \resultplaceholder{x} & \resultplaceholder{x} & \resultplaceholder{x} \\
-    LEX-COS & R & 80 & \resultplaceholder{n} & \resultplaceholder{n} & \resultplaceholder{x} & \resultplaceholder{x} & \resultplaceholder{x} & \resultplaceholder{x} \\
+    Weighted & Enhanced & 48 & \resultplaceholder{n} & \resultplaceholder{n} & \resultplaceholder{x} & \resultplaceholder{x} & \resultplaceholder{x} & \resultplaceholder{x} \\
+    Continuity-first & Enhanced & 48 & \resultplaceholder{n} & \resultplaceholder{n} & \resultplaceholder{x} & \resultplaceholder{x} & \resultplaceholder{x} & \resultplaceholder{x} \\
     \midrule
-    \multicolumn{9}{@{}l}{\textit{Panel C: exact-objective agreement on the 20-instance commercial subset}} \\
-    Three-backend comparison & Policy & Groups & All exact & Agree & Disagree & \multicolumn{3}{c}{Compared objective} \\
+    \multicolumn{9}{@{}l}{\textit{Panel C: objective agreement on the 20-instance commercial subset}} \\
+    Three-solver comparison & Objective rule & Groups & All optimal & Agree & Disagree & \multicolumn{3}{c}{Compared measures} \\
     \midrule
-    EvalMaxSAT / Gurobi / CPLEX & B0 & 20 & \resultplaceholder{n} & \resultplaceholder{n} & \resultplaceholder{n} & \multicolumn{3}{c}{coverage, weighted score} \\
-    EvalMaxSAT / Gurobi / CPLEX & LEX-COS & 20 & \resultplaceholder{n} & \resultplaceholder{n} & \resultplaceholder{n} & \multicolumn{3}{c}{coverage, SIM, CONT, OT} \\
+    EvalMaxSAT / Gurobi / CPLEX & Weighted & 20 & \resultplaceholder{n} & \resultplaceholder{n} & \resultplaceholder{n} & \multicolumn{3}{c}{coverage, weighted score} \\
+    EvalMaxSAT / Gurobi / CPLEX & Continuity-first & 20 & \resultplaceholder{n} & \resultplaceholder{n} & \resultplaceholder{n} & \multicolumn{3}{c}{coverage, SIM, CONT, OT} \\
     \bottomrule
   \end{tabularx}
 \end{table*}
 
 \paragraph{Excluded extensions.}
-\outlineblock{State in one sentence that the $\varepsilon$-constraint, weight,
+\outlineblock{State in one sentence that other exploratory objective,
 uncertainty, and routing branches are outside the measured compact campaign.
 Do not use development or imported exploratory rows as publication evidence.}

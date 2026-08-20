@@ -4,7 +4,7 @@
 The compact design no longer spends measured runs on epsilon, weight, or
 lexicographic calibration screens.  The complete 8-cell factorial is run first;
 technical validity, weighted-objective agreement, and peak memory are hard
-stops.  A valid factorial releases the fixed 1,270-run publication matrix.
+stops.  A valid factorial releases the fixed 732-run publication matrix.
 """
 
 from __future__ import annotations
@@ -322,12 +322,12 @@ def evaluate(config_path: Path) -> dict[str, Any]:
         ),
         "original_lexicographic": _branch(
             result["hard_stop_pass"],
-            "run LEX-COS and LEX-OCS under the fixed reference configuration",
+            "run the original weighted/LEX-COS comparison under the fixed reference configuration",
             "stop the publication campaign and repair the factorial hard failure",
         ),
         "corrected_v2_lexicographic": _branch(
             result["hard_stop_pass"],
-            "run the 80-instance corrected-v2 paired validation",
+            "run the 48-instance corrected-v2 policy and priority-order validation",
             "stop the publication campaign and repair the factorial hard failure",
         ),
     }

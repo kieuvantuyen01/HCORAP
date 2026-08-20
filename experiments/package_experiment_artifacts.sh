@@ -67,10 +67,9 @@ if not corrected.exists() or not json.loads(corrected.read_text()).get("valid"):
     )
 
 selected = {
-    "gcp_original_ablation": 640,
-    "gcp_original_lex_primary": 280,
-    "gcp_original_lex_sensitivity": 70,
-    "gcp_corrected_primary": 160,
+    "gcp_original_ablation": 384,
+    "gcp_original_lex_primary": 84,
+    "gcp_corrected_primary": 144,
     "gcp_maxsat_commercial_validation": 40,
     "gcp_commercial_original": 80,
 }

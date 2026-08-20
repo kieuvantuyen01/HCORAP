@@ -4,14 +4,14 @@
   "result_dir": "../results/gcp_original_lex_primary",
   "instances": ["../../instances/paperInstances/**/*.txt"],
   "instance_filters": {
-    "seeds": [1,2,3,4,5,6,7,8,9,10],
+    "seeds": [1,2,3],
     "exclude_classes": [
       {"users": 30, "agents": 15, "visits": 4},
       {"users": 40, "agents": 25, "visits": 5}
     ]
   },
-  "expected_instances": 140,
-  "expected_runs": 280,
+  "expected_instances": 42,
+  "expected_runs": 84,
   "timeout_seconds": 300,
   "hard_grace_seconds": 60,
   "workers": 1,

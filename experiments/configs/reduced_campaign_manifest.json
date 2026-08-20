@@ -11,25 +11,19 @@
     {
       "name": "original_factorial_ablation",
       "config": "gcp_original_ablation.json",
-      "expected_runs": 640,
+      "expected_runs": 384,
       "timeout_seconds": 300
     },
     {
       "name": "original_lex_cos_primary",
       "config": "gcp_original_lex_primary.json",
-      "expected_runs": 280,
+      "expected_runs": 84,
       "timeout_seconds": 300
     },
     {
-      "name": "original_lex_ocs_sensitivity",
-      "config": "gcp_original_lex_sensitivity.json",
-      "expected_runs": 70,
-      "timeout_seconds": 300
-    },
-    {
-      "name": "corrected_v2_validation",
+      "name": "corrected_v2_policy_and_priority",
       "config": "gcp_corrected_primary.json",
-      "expected_runs": 160,
+      "expected_runs": 144,
       "timeout_seconds": 300
     },
     {
@@ -59,7 +53,7 @@
       "timeout_seconds": 30
     }
   ],
-  "expected_measured_runs": 1270,
-  "expected_worst_case_seconds": 381000,
-  "expected_worst_case_core_hours": 105.83333333333333
+  "expected_measured_runs": 732,
+  "expected_worst_case_seconds": 219600,
+  "expected_worst_case_core_hours": 61.0
 }

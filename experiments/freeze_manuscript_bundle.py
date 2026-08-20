@@ -129,7 +129,7 @@ def validate_and_render_marker(
 
     if not original_enabled or not corrected_enabled:
         errors.append("compact scope requires both policy-validation branches")
-    expected_measured = 1270
+    expected_measured = 732
     if screening.get("expected_measured_runs") != expected_measured:
         errors.append(
             "screening measured-run total is inconsistent with enabled branches: "

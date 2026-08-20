@@ -13,10 +13,10 @@ MANIFEST = Path("experiments/configs/reduced_campaign_manifest.json")
 def test_publication_campaign_contract_is_locked() -> None:
     report = validate(MANIFEST)
     assert report["valid"] is True
-    assert report["measured_runs"] == 1270
+    assert report["measured_runs"] == 732
     assert report["measured_timeout_seconds"] == 300
     assert report["maxsat_solver"]["name"] == "EvalMaxSAT"
-    assert report["worst_case_seconds"] == 381_000
+    assert report["worst_case_seconds"] == 219_600
 
 
 def test_publication_campaign_contract_rejects_timeout_drift(tmp_path: Path) -> None:

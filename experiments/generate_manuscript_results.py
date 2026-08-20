@@ -30,15 +30,15 @@ FACTORIAL_ORDER = (
     ("totalizer", "both", "slot-service"),
 )
 SELECTED_CONTRASTS = (
-    ("encoding", "IC=none;SB=none", "SN $\\to$ TOT", "IC none, SB none"),
+    ("encoding", "IC=none;SB=none", "SN $\\to$ TOT", "IC off, SB off"),
     (
         "encoding",
         "IC=both;SB=slot-service",
         "SN $\\to$ TOT",
-        "IC both, SB ss",
+        "IC on, SB on",
     ),
-    ("implied", "Enc=totalizer;SB=none", "none $\\to$ both", "TOT, SB none"),
-    ("symmetry", "Enc=totalizer;IC=both", "none $\\to$ ss", "TOT, IC both"),
+    ("implied", "Enc=totalizer;SB=none", "IC off $\\to$ on", "TOT, SB off"),
+    ("symmetry", "Enc=totalizer;IC=both", "SB off $\\to$ on", "TOT, IC on"),
 )
 
 
@@ -99,16 +99,17 @@ def _configuration(row: dict[str, str]) -> tuple[str, str, str]:
 
 def _config_label(configuration: tuple[str, str, str]) -> str:
     if configuration == BASELINE:
-        return "B"
+        return "Baseline"
     if configuration == REFERENCE:
-        return "R"
+        return "Enhanced"
     raise ValueError(f"unexpected policy configuration: {configuration}")
 
 
 def _factorial_label(configuration: tuple[str, str, str]) -> str:
     encoding = "SN" if configuration[0] == "sorting-network" else "TOT"
-    symmetry = "ss" if configuration[2] == "slot-service" else "none"
-    return f"{encoding}-{configuration[1]}-{symmetry}"
+    implied = "on" if configuration[1] == "both" else "off"
+    symmetry = "on" if configuration[2] == "slot-service" else "off"
+    return f"{encoding}-{implied}-{symmetry}"
 
 
 def _one(
@@ -129,7 +130,7 @@ def _range(rows: Iterable[dict[str, str]], key: str) -> tuple[str, str]:
 
 def _range_wording(value: tuple[str, str]) -> str:
     if value == ("--", "--"):
-        return "are unavailable because no contrast has mutually proved runs"
+        return "are unavailable because no contrast has pairs proved by both configurations"
     return f"range from {value[0]} to {value[1]}"
 
 
@@ -145,14 +146,15 @@ def _factorial_table(
     for configuration in FACTORIAL_ORDER:
         row = indexed[configuration]
         encoding = "SN" if configuration[0] == "sorting-network" else "TOT"
-        symmetry = "ss" if configuration[2] == "slot-service" else "none"
+        implied = "on" if configuration[1] == "both" else "off"
+        symmetry = "on" if configuration[2] == "slot-service" else "off"
         cell_lines.append(
             "    "
             + " & ".join(
                 (
                     _factorial_label(configuration),
                     encoding,
-                    configuration[1],
+                    implied,
                     symmetry,
                     _count(row["optimum_runs"]),
                     _count(row["unsat_runs"]),
@@ -208,8 +210,8 @@ def _factorial_table(
         "    "
         + " & ".join(
             (
-                r"B $\to$ R",
-                r"\multicolumn{2}{l}{end-to-end, $n=80$}",
+                r"Baseline $\to$ enhanced",
+                r"\multicolumn{2}{l}{end-to-end, $n=48$}",
                 _count(composite["both_proved_pairs"]),
                 composite_wins,
                 rf"\multicolumn{{2}}{{c}}{{{composite_interval}}}",
@@ -222,16 +224,13 @@ def _factorial_table(
 
     return rf"""
 \begin{{table*}}[t]
-  \caption{{Weighted factorial and end-to-end encoding results. Panel~A reports
-  all eight factorial cells on 80 original instances ($T=300$\,s). Panel~B
-  displays four direct factor flips and the $B$--$R$ comparison reused from
-  the same 80-instance factorial; all 12 direct flips are in
-  the artifact. \textsc{{Opt}}, \textsc{{Unsat}}, and TO denote solver-reported
-  optimum, established infeasibility, and timeout. PAR-2 and RSS are
-  lower-is-better. Pairs are mutually proved runs; W/T/L counts favor the
-  right-hand treatment/tie/favor the left, and speedup is left time divided by
-  right time. Intervals are paired bootstrap 95\% CIs. Every reported OPTIMUM
-  assignment passes independent solution verification.}}
+  \caption{{Factorial and end-to-end encoding results on 48 original instances
+  ($T=300$\,s). Panel~A reports all eight configurations; Panel~B reports the
+  direct factor and baseline--enhanced comparisons. SN denotes sorting network,
+  TOT Totalizer, IC implied constraints, SB symmetry breaking, W/T/L
+  wins/ties/losses, and CI confidence interval. \textsc{{Opt}},
+  \textsc{{Unsat}}, and TO denote optimal, infeasible, and timeout runs. Speedup
+  is left runtime divided by right runtime; PAR-2 and RSS are lower-is-better.}}
   \label{{tab:factorial}}
   \centering
   \scriptsize
@@ -240,12 +239,12 @@ def _factorial_table(
   \begin{{tabularx}}{{\textwidth}}{{@{{}}Xlllrrrrr@{{}}}}
     \toprule
     \multicolumn{{9}}{{@{{}}l}}{{\textit{{Panel A: factorial cells and all-run performance}}}} \\
-    Configuration & Enc. & IC & SB & \textsc{{Opt}} & \textsc{{Unsat}} & TO & PAR-2 (s) & RSS (MB) \\
+    Configuration & Counting & IC & SB & \textsc{{Opt}} & \textsc{{Unsat}} & TO & PAR-2 (s) & RSS (MB) \\
     \midrule
 {chr(10).join(cell_lines)}
     \midrule
-    \multicolumn{{9}}{{@{{}}l}}{{\textit{{Panel B: paired factor contrasts and composite validation}}}} \\
-    Contrast (left $\to$ right) & \multicolumn{{2}}{{c}}{{Condition}} & Pairs & W/T/L & \multicolumn{{2}}{{c}}{{Median speedup [95\% CI]}} & $\Delta$vars & $\Delta$hard \\
+    \multicolumn{{9}}{{@{{}}l}}{{\textit{{Panel B: paired factor comparisons and baseline--enhanced validation}}}} \\
+    Contrast (left $\to$ right) & \multicolumn{{2}}{{c}}{{Condition}} & Pairs & W/T/L & \multicolumn{{2}}{{c}}{{Median speedup [95\% CI]}} & $\Delta$variables & $\Delta$hard clauses \\
     \midrule
 {chr(10).join(contrast_lines)}
     \bottomrule
@@ -265,14 +264,11 @@ def _policy_table(
 ) -> str:
     lines = [
         r"\begin{table*}[t]",
-        r"  \caption{Objective-policy and validation summary. Panel~A uses matched",
-        r"  original-benchmark pairs; deltas are right minus left, with lower",
-        r"  CONT/OT and higher SIM preferred. Panel~B uses the independent",
-        r"  corrected-v2 evaluation-critical set. Panel~C compares objective",
-        r"  vectors only where EvalMaxSAT, Gurobi, and CPLEX all report OPTIMUM.",
-        r"  PAR-2 includes timeouts and is lower-is-better. All panels belong to",
-        r"  the pre-specified compact campaign. Every reported",
-        r"  OPTIMUM assignment passes independent solution verification.}",
+        r"  \caption{Objective-rule and cross-solver results. Panels~A and B",
+        r"  compare objective rules on the original and corrected benchmarks;",
+        r"  deltas are second rule minus first, with lower CONT/OT and higher SIM",
+        r"  preferred. Panel~C reports agreement where EvalMaxSAT, Gurobi, and",
+        r"  CPLEX all prove optimality. PAR-2 includes timeouts and is lower-is-better.}",
         r"  \label{tab:policy-validation}",
         r"  \centering",
         r"  \scriptsize",
@@ -284,8 +280,8 @@ def _policy_table(
     if original_enabled:
         lines.extend(
             (
-                r"    \multicolumn{9}{@{}l}{\textit{Panel A: original benchmark, paired policy effects}} \\",
-                r"    Comparison & Config. & $n$ & Proved L/R & Both opt. & $\Delta$SIM & $\Delta$CONT & $\Delta$OT & PAR-2 L/R (s) \\",
+                r"    \multicolumn{9}{@{}l}{\textit{Panel A: paired objective-rule effects}} \\",
+                r"    Comparison & Encoding & $n$ & Proved 1/2 & Both optimal & $\Delta$SIM & $\Delta$CONT & $\Delta$OT & PAR-2 1/2 (s) \\",
                 r"    \midrule",
             )
         )
@@ -294,7 +290,7 @@ def _policy_table(
                 "    "
                 + " & ".join(
                     (
-                        r"B0 $\to$ LEX-COS",
+                        r"Weighted $\to$ continuity-first (original)",
                         _config_label(_configuration(row)),
                         _count(row["pairs"]),
                         f"{_count(row['weighted_proved_runs'])}/"
@@ -317,7 +313,7 @@ def _policy_table(
                 "    "
                 + " & ".join(
                     (
-                        r"LEX-COS $\to$ LEX-OCS",
+                        r"Continuity-first $\to$ overtime-first (corrected)",
                         _config_label(_configuration(row)),
                         _count(row["pairs"]),
                         f"{_count(row['lex_cos_proved_runs'])}/"
@@ -337,12 +333,12 @@ def _policy_table(
     if corrected_enabled:
         lines.extend(
             (
-                r"    \multicolumn{9}{@{}l}{\textit{Panel B: corrected-v2 evaluation-critical benchmark, configuration R}} \\",
-                r"    Policy & Config. & Runs & \textsc{Opt} & TO & Median SIM & Median CONT & Median OT & PAR-2 (s) \\",
+                r"    \multicolumn{9}{@{}l}{\textit{Panel B: corrected-benchmark confirmatory set, enhanced encoding}} \\",
+                r"    Objective rule & Encoding & Runs & \textsc{Opt} & TO & Median SIM & Median CONT & Median OT & PAR-2 (s) \\",
                 r"    \midrule",
             )
         )
-        method_labels = {"weighted": "B0", "lex-cos": "LEX-COS"}
+        method_labels = {"weighted": "Weighted", "lex-cos": "Continuity-first"}
         for method in ("weighted", "lex-cos"):
             row = _one(
                 corrected_rows,
@@ -354,7 +350,7 @@ def _policy_table(
                 + " & ".join(
                     (
                         method_labels[method],
-                        "R",
+                        "Enhanced",
                         _count(row["runs"]),
                         _count(row["optimum_runs"]),
                         _count(row["timeout_runs"]),
@@ -370,12 +366,12 @@ def _policy_table(
 
     lines.extend(
         (
-            r"    \multicolumn{9}{@{}l}{\textit{Panel C: exact-objective agreement on the 20-instance commercial subset}} \\",
-            r"    Three-backend comparison & Policy & Groups & All exact & Agree & Disagree & \multicolumn{3}{c}{Compared objective} \\",
+            r"    \multicolumn{9}{@{}l}{\textit{Panel C: objective agreement on the 20-instance commercial subset}} \\",
+            r"    Three-solver comparison & Objective rule & Groups & All optimal & Agree & Disagree & \multicolumn{3}{c}{Compared measures} \\",
             r"    \midrule",
         )
     )
-    method_labels = {"weighted": "B0", "lex-cos": "LEX-COS"}
+    method_labels = {"weighted": "Weighted", "lex-cos": "Continuity-first"}
     objective_labels = {
         "weighted": "coverage, weighted score",
         "lex-cos": "coverage, SIM, CONT, OT",
@@ -416,9 +412,8 @@ def _policy_prose(
 ) -> str:
     if not original_enabled:
         return (
-            "The pre-specified scalability gate disabled the original "
-            "lexicographic confirmatory branch.  We therefore make no "
-            "held-out original-benchmark claim about LEX-COS or LEX-OCS.\n"
+            "The original-benchmark objective comparison was not run; RQ1 "
+            "therefore uses the corrected benchmark.\n"
         )
     sentences = []
     for configuration in (REFERENCE,):
@@ -431,15 +426,15 @@ def _policy_prose(
         sentences.append(
             (
                 f"Under ${label}$, {_count(row['both_optimum_pairs'])}/"
-                f"{_count(row['pairs'])} pairs are jointly optimum; LEX-COS "
-                f"changes median SIM, CONT, and OT by "
+                f"{_count(row['pairs'])} pairs are jointly optimum; the "
+                f"continuity-first objective changes median SIM, CONT, and OT by "
                 f"{_fmt(row['median_similarity_change'])}, "
                 f"{_fmt(row['median_continuity_change'])}, and "
                 f"{_fmt(row['median_overtime_change'])}, respectively."
                 if _int(row["both_optimum_pairs"]) > 0
                 else (
-                    f"Under ${label}$, no pair is jointly optimum, so paired "
-                    "objective deltas are not reported."
+                    f"Under ${label}$, no matched pair completes both objective "
+                    "rules; paired objective deltas are unavailable."
                 )
             )
         )
@@ -447,10 +442,11 @@ def _policy_prose(
     both = sum(_int(row["both_optimum_pairs"]) for row in sensitivity_rows)
     sentences.append(
         (
-            f"LEX-COS and LEX-OCS yield the same objective vector on "
+            f"On the corrected benchmark, the continuity-first and overtime-first objectives yield the same "
+            f"objective vector on "
             f"{_count(same)}/{_count(both)} jointly optimum sensitivity pairs."
             if both
-            else "No LEX-COS/LEX-OCS sensitivity pair is jointly optimum."
+            else "No sensitivity pair completes both lexicographic orders."
         )
     )
     return "  ".join(sentences) + "\n"
@@ -495,7 +491,8 @@ def _render(
             raise ValueError("enabled corrected-v2 branch lacks paired summary")
         if _int(corrected_paired["both_optimum_pairs"]) > 0:
             corrected_prose = (
-                "On corrected-v2, LEX-COS changes median SIM, CONT, and OT by "
+                "On the corrected benchmark, the continuity-first objective "
+                "changes median SIM, CONT, and OT by "
                 f"{_fmt(corrected_paired['median_similarity_change'])}, "
                 f"{_fmt(corrected_paired['median_continuity_change'])}, and "
                 f"{_fmt(corrected_paired['median_overtime_change'])} over "
@@ -504,13 +501,12 @@ def _render(
             )
         else:
             corrected_prose = (
-                "No corrected-v2 weighted/LEX-COS pair is jointly optimum, so "
-                "paired objective deltas are not reported.  "
+                "No corrected-benchmark pair completes both objective rules; "
+                "paired objective deltas are unavailable.  "
             )
     else:
         corrected_prose = (
-            "The corrected-v2 confirmatory branch was disabled by its "
-            "pre-specified calibration gate.  "
+            "The corrected-benchmark comparison was not run.  "
         )
 
     factorial_table = _factorial_table(factorial, contrasts, composite)
@@ -528,11 +524,10 @@ def _render(
 \label{{sec:results}}
 
 The compact campaign contains {_count(screening['expected_measured_runs'])}
-measured runs.  The analyses contain no unrecognized termination
-status, unverified solver-reported optimum, factorial/composite objective
-mismatch, or exact-group cross-paradigm objective disagreement.
+measured runs.  Every reported optimal assignment passes independent
+verification.
 
-\subsection{{RQ1: Objective-policy effects}}
+\subsection{{RQ1: Objective-rule effects}}
 \label{{sec:rq1}}
 
 {policy_prose.rstrip()}
@@ -540,9 +535,9 @@ mismatch, or exact-group cross-paradigm objective disagreement.
 \subsection{{RQ2: Totalizer encoding}}
 \label{{sec:rq2}}
 
-Across the four direct sorting-network-to-Totalizer flips, median paired
-proof-time ratios {_range_wording(enc_speed)}; Totalizer is
-faster on {_count(enc_wins)} mutually proved contrast pairs and sorting
+Across the four direct sorting-network-to-Totalizer comparisons, median runtime
+ratios among pairs proved by both configurations {_range_wording(enc_speed)};
+Totalizer is faster on {_count(enc_wins)} such pairs and sorting
 networks on {_count(enc_losses)}.  Median formula-size changes range from {enc_vars[0]} to
 {enc_vars[1]} variables and from {enc_hard[0]} to {enc_hard[1]} hard clauses.
 The conditional contrasts and their uncertainty intervals are reported in
@@ -551,16 +546,15 @@ Table~\ref{{tab:factorial}}B.
 \subsection{{RQ3: Constraint strengthening and interactions}}
 \label{{sec:rq3}}
 
-The four direct implied-constraint flips have median paired proof-time ratios
-that {_range_wording(ic_speed)}, while the four symmetry-breaking flips
-{_range_wording(sb_speed)}.  The 160-instance end-to-end
-$B$--$R$ comparison has a median ratio of
+The four direct implied-constraint comparisons have median paired runtime ratios
+that {_range_wording(ic_speed)}, while the four symmetry-breaking comparisons
+{_range_wording(sb_speed)}.  The 48-instance end-to-end
+baseline--enhanced comparison has a median ratio of
 {_fmt(composite['median_speedup_baseline_over_reference'])}
-(95\% CI [{_fmt(composite['bootstrap_95_ci_low'])},
+(95\% bootstrap confidence interval [{_fmt(composite['bootstrap_95_ci_low'])},
 {_fmt(composite['bootstrap_95_ci_high'])}]) over
-{_count(composite['both_proved_pairs'])} mutually proved pairs.  Because $R$
-bundles three changes, this last contrast validates the composite but does not
-attribute its effect to one factor.
+{_count(composite['both_proved_pairs'])} pairs proved by both configurations.
+Table~\ref{{tab:factorial}}B separates the three component effects.
 
 {factorial_table.rstrip()}
 
@@ -568,10 +562,8 @@ attribute its effect to one factor.
 \label{{sec:validation}}
 
 {corrected_prose}Among {_count(exact_groups)} commercial-subset groups where
-all three backends prove optimum, {_count(agreement_groups)} objective vectors
-agree and {_count(disagreements)} disagree.  Commercial runtimes are not used
-to attribute MaxSAT encoding effects.  The $\varepsilon$-constraint, weight,
-uncertainty, and routing branches are outside the measured compact campaign.
+all three solvers prove optimum, {_count(agreement_groups)} objective vectors
+agree and {_count(disagreements)} disagree.
 
 {policy_table.rstrip()}
 """
@@ -584,7 +576,8 @@ uncertainty, and routing branches are outside the measured compact campaign.
         )
         if _int(reference_lex["both_optimum_pairs"]) > 0:
             policy_finding = (
-                "Under the reference encoding, LEX-COS changes median CONT and "
+                "Under the enhanced encoding, the continuity-first objective "
+                "changes median CONT and "
                 f"OT by {_fmt(reference_lex['median_continuity_change'])} and "
                 f"{_fmt(reference_lex['median_overtime_change'])} over "
                 f"{_count(reference_lex['both_optimum_pairs'])} jointly optimum "
@@ -592,13 +585,14 @@ uncertainty, and routing branches are outside the measured compact campaign.
             )
         else:
             policy_finding = (
-                "Under the reference encoding, no weighted/LEX-COS pair is "
-                "jointly optimum, so no paired policy delta is reported."
+                "Under the enhanced encoding, no matched pair completes both "
+                "objective rules; paired differences are unavailable."
             )
     elif corrected_enabled and corrected_paired is not None:
         if _int(corrected_paired["both_optimum_pairs"]) > 0:
             policy_finding = (
-                "On corrected-v2, LEX-COS changes median CONT and OT by "
+                "On the corrected benchmark, the continuity-first objective "
+                "changes median CONT and OT by "
                 f"{_fmt(corrected_paired['median_continuity_change'])} and "
                 f"{_fmt(corrected_paired['median_overtime_change'])} over "
                 f"{_count(corrected_paired['both_optimum_pairs'])} jointly "
@@ -606,18 +600,18 @@ uncertainty, and routing branches are outside the measured compact campaign.
             )
         else:
             policy_finding = (
-                "No corrected-v2 weighted/LEX-COS pair is jointly optimum, so "
-                "no paired policy delta is reported."
+                "No corrected-benchmark pair completes both objective rules; "
+                "paired differences are unavailable."
             )
     else:
         policy_finding = (
-            "Both lexicographic confirmatory branches were disabled by their "
-            "pre-specified gates, so no confirmatory policy-effect claim is made."
+            "Objective-rule results are unavailable because neither evaluation "
+            "branch was run."
         )
     abstract = (
         "% Generated from validator-approved campaign summaries. Do not edit.\n"
         "Across four direct encoding contrasts, the median paired "
-        "sorting-network-to-Totalizer proof-time ratios "
+        "sorting-network-to-Totalizer runtime ratios "
         f"{_range_wording(enc_speed)}.  {policy_finding}  Among "
         f"{_count(exact_groups)} "
         "commercial-subset groups where EvalMaxSAT, Gurobi, and CPLEX all prove "
@@ -642,21 +636,19 @@ uncertainty, and routing branches are outside the measured compact campaign.
     elif eligible_encoding:
         effect = "is mixed or only partially resolved across the direct contrasts"
     else:
-        effect = "cannot be estimated from mutually proved direct contrasts"
+        effect = "is unavailable because no direct contrast completes both configurations"
     conclusion = rf"""% Generated from validator-approved campaign summaries. Do not edit.
 \section{{Conclusion}}
 \label{{sec:conclusion}}
 
-We evaluated an exact lexicographic MaxSAT policy together with Totalizer
-encoding, implied constraints, and detected-equivalence symmetry breaking for
-HCORAP.  The encoding effect {effect}: median paired ratios
+We evaluated lexicographic MaxSAT objectives together with Totalizer encoding,
+implied constraints, and symmetry breaking for HCORAP.  The encoding effect
+{effect}: median paired ratios
 {_range_wording(enc_speed)}, and the implied-constraint and symmetry effects
-also vary by context.  {policy_finding}  Exact objective vectors agree in
+also vary by context.  {policy_finding}  Objective vectors agree in
 {_count(agreement_groups)}/{_count(exact_groups)} groups in which EvalMaxSAT,
-Gurobi, and CPLEX all prove optimum.  These claims are limited to the deterministic
-assignment-and-scheduling model, the frozen benchmark splits, and the pinned
-EvalMaxSAT/GCP protocol; routing, uncertainty, and operational-data validation
-remain future extensions.
+Gurobi, and CPLEX all prove optimum.  Future work will extend the model to
+routing and uncertainty and evaluate it on operational data.
 """
     return abstract, results, conclusion
 

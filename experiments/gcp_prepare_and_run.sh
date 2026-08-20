@@ -20,14 +20,14 @@ Safe phases:
   preflight             Validate VM, EvalMaxSAT, build, tests, and benchmarks
   prepare               Generate and verify the corrected-v2 benchmark suite
   solver-calibration    Run four non-measured EvalMaxSAT LEX-COS gate rows
-  screen                Run the 640-row factorial primary/hard gate
+  screen                Run the 384-row factorial primary/hard gate
   commercial-preflight  Build and license-test Gurobi/CPLEX backends
 
 Full manuscript phases (require CONFIRM_FULL_CAMPAIGN=YES):
-  original-primary      Run 140 weighted + 140 LEX-COS + 70 LEX-OCS rows under R
-  corrected-primary     Run 160 corrected-v2 critical validation rows
+  original-primary      Run 42 weighted + 42 LEX-COS rows under R
+  corrected-primary     Run 48 weighted + 48 LEX-COS + 48 LEX-OCS rows
   commercial            Run 80 MIP + 40 MaxSAT commercial validation rows
-  all                   Run the complete 1,270-row compact ICIIT campaign
+  all                   Run the complete 732-row compact ICIIT campaign
 
 Deferred research phases (outside the publication manifest; not called by all):
   pareto, weight-confirmation, uncertainty
@@ -287,7 +287,6 @@ validate_maxsat_configs() {
     configs=(
         gcp_original_ablation
         gcp_original_lex_primary
-        gcp_original_lex_sensitivity
         gcp_corrected_primary
         gcp_maxsat_commercial_validation
         gcp_evalmaxsat_lex_calibration
@@ -494,9 +493,6 @@ run_original_primary() {
     if branch_enabled original_lexicographic; then
         run_maxsat experiments/configs/gcp_original_lex_primary.json \
             experiments/results/gcp_original_lex_primary
-        run_maxsat experiments/configs/gcp_original_lex_sensitivity.json \
-            experiments/results/gcp_original_lex_sensitivity
-        python3 experiments/analyze_primary_campaigns.py
     else
         echo "Compact scope cannot continue after a failed factorial hard gate." >&2
         exit 2
@@ -507,6 +503,7 @@ run_corrected_primary() {
     if branch_enabled corrected_v2_lexicographic; then
         run_maxsat experiments/configs/gcp_corrected_primary.json \
             experiments/results/gcp_corrected_primary
+        python3 experiments/analyze_primary_campaigns.py
         python3 experiments/analyze_corrected_validation.py
     else
         echo "Compact scope cannot continue after a failed factorial hard gate." >&2

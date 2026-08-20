@@ -30,7 +30,7 @@ def _inputs(tmp_path: Path) -> tuple[Path, Path, Path, Path, Path, Path]:
         json.dumps(
             {
                 "decision": "GO",
-                "expected_measured_runs": 1270,
+                "expected_measured_runs": 732,
                 "branches": {
                     "original_lexicographic": {"enabled": True},
                     "corrected_v2_lexicographic": {"enabled": True},
@@ -49,7 +49,7 @@ def _inputs(tmp_path: Path) -> tuple[Path, Path, Path, Path, Path, Path]:
                 "cross_scope": "full",
                 "original_lexicographic_enabled": True,
                 "corrected_v2_lexicographic_enabled": True,
-                "expected_measured_runs": 1270,
+                "expected_measured_runs": 732,
                 "source_sha256": {
                     str(path): hashlib.sha256(path.read_bytes()).hexdigest()
                     for path in sources
@@ -80,7 +80,7 @@ def test_valid_evidence_emits_valid_marker(tmp_path: Path) -> None:
     )
     assert r"\def\HCORAPFrozenValidationStatus{VALID}" in marker
     assert r"\def\HCORAPFrozenAnalysisScope{compact}" in marker
-    assert r"\def\HCORAPFrozenMeasuredRuns{1270}" in marker
+    assert r"\def\HCORAPFrozenMeasuredRuns{732}" in marker
 
 
 @pytest.mark.parametrize(
@@ -139,7 +139,7 @@ def test_freeze_rejects_disabled_compact_branches(tmp_path: Path) -> None:
         json.dumps(
             {
                 "decision": "GO",
-                "expected_measured_runs": 1270,
+                "expected_measured_runs": 732,
                 "branches": {
                     "original_lexicographic": {"enabled": False},
                     "corrected_v2_lexicographic": {"enabled": False},
@@ -157,7 +157,7 @@ def test_freeze_rejects_disabled_compact_branches(tmp_path: Path) -> None:
                 "cross_scope": "full",
                 "original_lexicographic_enabled": False,
                 "corrected_v2_lexicographic_enabled": False,
-                "expected_measured_runs": 1270,
+                "expected_measured_runs": 732,
                 "source_sha256": {
                     str(path): hashlib.sha256(path.read_bytes()).hexdigest()
                     for path in sources

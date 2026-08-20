@@ -16,7 +16,7 @@ if [ "$MODE" = "-h" ] || [ "$MODE" = "--help" ]; then
     cat <<'EOF'
 Usage: experiments/run_all_remaining_publication.sh [run|--check-only]
 
-  run           Run/resume all 1,270 measured publication rows (default).
+  run           Run/resume all 732 measured publication rows (default).
   --check-only  Validate the frozen campaign contract without running solvers.
 
 The measured timeout is locked to 300 seconds per top-level run.  Smoke tests
@@ -129,10 +129,10 @@ trap 'exit 143' TERM
     echo "UTC start: $(date -u '+%Y-%m-%dT%H:%M:%SZ')"
     echo "Source revision: $(git rev-parse HEAD)"
     echo "EvalMaxSAT SHA-256: $(sha256sum "$EVALMAXSAT_BIN" | awk '{print $1}')"
-    echo "Expected measured rows: 1270"
+    echo "Expected measured rows: 732"
     echo "Non-measured gates: 4 EvalMaxSAT LEX-COS calibration + 18 commercial smoke rows"
     echo "Measured timeout: 300 seconds per top-level run"
-    echo "Worst-case solver budget: 381000 seconds = 105.8333 core-hours = 4.4097 sequential days"
+    echo "Worst-case solver budget: 219600 seconds = 61 core-hours = 2.5417 sequential days"
     echo "Worker policy: one worker, one pinned vCPU, 12 GB peak-RSS gate"
     echo "Log: $LOG_PATH"
     python3 experiments/validate_publication_campaign.py
