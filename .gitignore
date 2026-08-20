@@ -80,3 +80,6 @@ experiments/results/*
 # Generated files for the research-plan document
 /Ke_hoach_nghien_cuu_HCORAP.*
 !/Ke_hoach_nghien_cuu_HCORAP.tex
+
+# Manuscript folder (keep local only, do not track in repository)
+/LaTeX-Templates/
