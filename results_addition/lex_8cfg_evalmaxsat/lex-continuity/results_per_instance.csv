@@ -1,0 +1,361 @@
+﻿cfg_id;label;instance_name;method;objective_mode;objective_policy;delta;similarity_reference_optimum;similarity_lower_bound;similarity_realized_loss_absolute;similarity_realized_loss_fraction;similarity_realized_loss_ratio;cardinality;ic;sb;status;elapsed_s;timeout_seconds;solve_s;solver_calls;variables;hard_clauses;soft_clauses;best_value;weighted_reference_score;similarity;continuity;overtime;coverage;stage_objectives;stage_optima
+1;ORIGINAL;instance_30_10_4_1;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;none;TIMEOUT;300.125841;300.0;62.826046192;3;75519;180261;847;;;;;;;continuity | similarity;0 | 404
+1;ORIGINAL;instance_30_10_4_10;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;none;TIMEOUT;300.1334883;300.0;55.339582584;3;74110;173735;825;;;;;;;continuity | similarity;0 | 389
+1;ORIGINAL;instance_30_10_4_11;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;none;TIMEOUT;300.1366455;300.0;42.470992304;3;77953;179510;858;;;;;;;continuity | similarity;0 | 371
+1;ORIGINAL;instance_30_10_4_12;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;none;TIMEOUT;300.1288235;300.0;53.707047999000004;3;67533;163091;781;;;;;;;continuity | similarity;0 | 374
+1;ORIGINAL;instance_30_10_4_13;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;none;UNSATISFIABLE;0.032020715;300.0;0;1;0;0;0;;;;;;;;
+1;ORIGINAL;instance_30_10_4_14;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;none;UNSATISFIABLE;0.046408662;300.0;0;1;0;0;0;;;;;;;;
+1;ORIGINAL;instance_30_10_4_15;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;none;UNSATISFIABLE;0.024600718;300.0;0;1;0;0;0;;;;;;;;
+1;ORIGINAL;instance_30_10_4_16;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;none;TIMEOUT;300.1352345;300.0;64.885059151;3;85738;203469;902;;;;;;;continuity | similarity;0 | 427
+1;ORIGINAL;instance_30_10_4_17;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;none;TIMEOUT;300.1293397;300.0;49.431892102;3;70709;158165;847;;;;;;;continuity | similarity;0 | 400
+1;ORIGINAL;instance_30_10_4_18;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;none;TIMEOUT;300.1320031;300.0;28.943947379;3;73055;164173;858;;;;;;;continuity | similarity;0 | 397
+1;ORIGINAL;instance_30_10_4_19;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;none;UNSATISFIABLE;0.055363982;300.0;0;1;0;0;0;;;;;;;;
+1;ORIGINAL;instance_30_10_4_2;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;none;UNSATISFIABLE;0.063836087;300.0;0;1;0;0;0;;;;;;;;
+1;ORIGINAL;instance_30_10_4_20;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;none;UNSATISFIABLE;0.046470435;300.0;0;1;0;0;0;;;;;;;;
+1;ORIGINAL;instance_30_10_4_21;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;none;UNSATISFIABLE;0.053170299;300.0;0;1;0;0;0;;;;;;;;
+1;ORIGINAL;instance_30_10_4_22;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;none;UNSATISFIABLE;0.048396864;300.0;0;1;0;0;0;;;;;;;;
+1;ORIGINAL;instance_30_10_4_23;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;none;TIMEOUT;300.1286239;300.0;42.544694902;3;84165;195710;891;;;;;;;continuity | similarity;0 | 378
+1;ORIGINAL;instance_30_10_4_24;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;none;TIMEOUT;300.1277015;300.0;60.431134243;3;74154;170974;847;;;;;;;continuity | similarity;1 | 385
+1;ORIGINAL;instance_30_10_4_25;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;none;TIMEOUT;300.1401139;300.0;54.854312927;3;64625;162295;748;;;;;;;continuity | similarity;0 | 443
+1;ORIGINAL;instance_30_10_4_26;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;none;UNSATISFIABLE;0.057717222;300.0;0;1;0;0;0;;;;;;;;
+1;ORIGINAL;instance_30_10_4_27;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;none;TIMEOUT;300.1309249;300.0;49.889967927;3;79864;176758;869;;;;;;;continuity | similarity;4 | 368
+1;ORIGINAL;instance_30_10_4_28;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;none;UNSATISFIABLE;0.026290311;300.0;0;1;0;0;0;;;;;;;;
+1;ORIGINAL;instance_30_10_4_29;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;none;UNSATISFIABLE;0.04947865;300.0;0;1;0;0;0;;;;;;;;
+1;ORIGINAL;instance_30_10_4_3;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;none;UNSATISFIABLE;0.047667134;300.0;0;1;0;0;0;;;;;;;;
+1;ORIGINAL;instance_30_10_4_30;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;none;TIMEOUT;300.1356739;300.0;40.048031784;3;77911;181606;836;;;;;;;continuity | similarity;1 | 362
+1;ORIGINAL;instance_30_10_4_31;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;none;TIMEOUT;300.1316385;300.0;55.649579558999996;3;72364;166374;803;;;;;;;continuity | similarity;6 | 375
+1;ORIGINAL;instance_30_10_4_32;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;none;TIMEOUT;300.1325893;300.0;55.715817548;3;82138;191211;891;;;;;;;continuity | similarity;0 | 419
+1;ORIGINAL;instance_30_10_4_33;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;none;TIMEOUT;300.1277137;300.0;68.05030405;3;70163;167323;814;;;;;;;continuity | similarity;0 | 433
+1;ORIGINAL;instance_30_10_4_34;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;none;UNSATISFIABLE;0.048499014;300.0;0;1;0;0;0;;;;;;;;
+1;ORIGINAL;instance_30_10_4_35;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;none;UNSATISFIABLE;0.043472933;300.0;0;1;0;0;0;;;;;;;;
+1;ORIGINAL;instance_30_10_4_36;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;none;TIMEOUT;300.1415891;300.0;52.259126025;3;71974;172132;803;;;;;;;continuity | similarity;0 | 385
+1;ORIGINAL;instance_30_10_4_37;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;none;TIMEOUT;300.1327347;300.0;64.380803675;3;73650;176731;836;;;;;;;continuity | similarity;0 | 433
+1;ORIGINAL;instance_30_10_4_38;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;none;UNSATISFIABLE;0.052180215;300.0;0;1;0;0;0;;;;;;;;
+1;ORIGINAL;instance_30_10_4_39;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;none;UNSATISFIABLE;0.045959693;300.0;0;1;0;0;0;;;;;;;;
+1;ORIGINAL;instance_30_10_4_4;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;none;TIMEOUT;300.1343847;300.0;66.731861083;3;77796;183149;869;;;;;;;continuity | similarity;0 | 426
+1;ORIGINAL;instance_30_10_4_40;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;none;UNSATISFIABLE;0.058608103;300.0;0;1;0;0;0;;;;;;;;
+1;ORIGINAL;instance_30_10_4_41;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;none;TIMEOUT;300.1282257;300.0;20.861542168;3;68385;147470;836;;;;;;;continuity | similarity;2 | 343
+1;ORIGINAL;instance_30_10_4_42;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;none;UNSATISFIABLE;0.047266351;300.0;0;1;0;0;0;;;;;;;;
+1;ORIGINAL;instance_30_10_4_43;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;none;TIMEOUT;300.1335449;300.0;63.185083987;3;71629;168314;792;;;;;;;continuity | similarity;1 | 404
+1;ORIGINAL;instance_30_10_4_44;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;none;UNSATISFIABLE;0.077745239;300.0;0;1;0;0;0;;;;;;;;
+1;ORIGINAL;instance_30_10_4_45;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;none;TIMEOUT;300.1255196;300.0;32.860715223;3;72924;170467;836;;;;;;;continuity | similarity;0 | 357
+1;ORIGINAL;instance_30_10_4_46;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;none;UNSATISFIABLE;0.027219274;300.0;0;1;0;0;0;;;;;;;;
+1;ORIGINAL;instance_30_10_4_47;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;none;TIMEOUT;300.1308789;300.0;50.42832585;3;81433;180390;913;;;;;;;continuity | similarity;0 | 387
+1;ORIGINAL;instance_30_10_4_48;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;none;TIMEOUT;300.1266185;300.0;3.467343385;3;76596;165786;891;;;;;;;continuity | similarity;0 | 373
+1;ORIGINAL;instance_30_10_4_49;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;none;UNSATISFIABLE;0.066444432;300.0;0;1;0;0;0;;;;;;;;
+1;ORIGINAL;instance_30_10_4_5;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;none;TIMEOUT;300.1337337;300.0;42.573409600000005;3;80482;183640;891;;;;;;;continuity | similarity;1 | 415
+2;SN-none-ss;instance_30_10_4_1;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;slot-service;TIMEOUT;300.1372772;300.0;60.774479133;3;75525;180287;847;;;;;;;continuity | similarity;0 | 404
+2;SN-none-ss;instance_30_10_4_10;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;slot-service;TIMEOUT;300.1360013;300.0;54.419699767999994;3;74516;175405;825;;;;;;;continuity | similarity;0 | 389
+2;SN-none-ss;instance_30_10_4_11;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;slot-service;TIMEOUT;300.129208;300.0;42.070449629;3;78362;181043;858;;;;;;;continuity | similarity;0 | 371
+2;SN-none-ss;instance_30_10_4_12;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;slot-service;TIMEOUT;300.1320965;300.0;53.852487749000005;3;67954;164900;781;;;;;;;continuity | similarity;0 | 374
+2;SN-none-ss;instance_30_10_4_13;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;slot-service;UNSATISFIABLE;0.034679434;300.0;0;1;0;0;0;;;;;;;;
+2;SN-none-ss;instance_30_10_4_14;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;slot-service;UNSATISFIABLE;0.047000698;300.0;0;1;0;0;0;;;;;;;;
+2;SN-none-ss;instance_30_10_4_15;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;slot-service;UNSATISFIABLE;0.027425801;300.0;0;1;0;0;0;;;;;;;;
+2;SN-none-ss;instance_30_10_4_16;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;slot-service;TIMEOUT;300.132847;300.0;64.933203885;3;86154;205460;902;;;;;;;continuity | similarity;0 | 427
+2;SN-none-ss;instance_30_10_4_17;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;slot-service;TIMEOUT;300.1253957;300.0;49.621412615000004;3;71147;159782;847;;;;;;;continuity | similarity;0 | 400
+2;SN-none-ss;instance_30_10_4_18;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;slot-service;TIMEOUT;300.1322305;300.0;28.967628496000003;3;73055;164173;858;;;;;;;continuity | similarity;0 | 397
+2;SN-none-ss;instance_30_10_4_19;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;slot-service;UNSATISFIABLE;0.056846496;300.0;0;1;0;0;0;;;;;;;;
+2;SN-none-ss;instance_30_10_4_2;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;slot-service;UNSATISFIABLE;0.058395322;300.0;0;1;0;0;0;;;;;;;;
+2;SN-none-ss;instance_30_10_4_20;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;slot-service;UNSATISFIABLE;0.046836166;300.0;0;1;0;0;0;;;;;;;;
+2;SN-none-ss;instance_30_10_4_21;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;slot-service;UNSATISFIABLE;0.057312008;300.0;0;1;0;0;0;;;;;;;;
+2;SN-none-ss;instance_30_10_4_22;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;slot-service;UNSATISFIABLE;0.052109555;300.0;0;1;0;0;0;;;;;;;;
+2;SN-none-ss;instance_30_10_4_23;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;slot-service;TIMEOUT;300.1363923;300.0;40.489853464;3;84584;197397;891;;;;;;;continuity | similarity;0 | 378
+2;SN-none-ss;instance_30_10_4_24;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;slot-service;TIMEOUT;300.1370913;300.0;59.077664391;3;74574;172682;847;;;;;;;continuity | similarity;1 | 385
+2;SN-none-ss;instance_30_10_4_25;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;slot-service;TIMEOUT;300.1349241;300.0;54.852767134;3;65053;164319;748;;;;;;;continuity | similarity;0 | 443
+2;SN-none-ss;instance_30_10_4_26;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;slot-service;UNSATISFIABLE;0.059045357;300.0;0;1;0;0;0;;;;;;;;
+2;SN-none-ss;instance_30_10_4_27;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;slot-service;TIMEOUT;300.1311111;300.0;51.104995408;3;80291;178130;869;;;;;;;continuity | similarity;4 | 368
+2;SN-none-ss;instance_30_10_4_28;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;slot-service;UNSATISFIABLE;0.029692786;300.0;0;1;0;0;0;;;;;;;;
+2;SN-none-ss;instance_30_10_4_29;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;slot-service;UNSATISFIABLE;0.050330723;300.0;0;1;0;0;0;;;;;;;;
+2;SN-none-ss;instance_30_10_4_3;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;slot-service;UNSATISFIABLE;0.049218446;300.0;0;1;0;0;0;;;;;;;;
+2;SN-none-ss;instance_30_10_4_30;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;slot-service;TIMEOUT;300.1340488;300.0;39.096502093;3;78323;183143;836;;;;;;;continuity | similarity;1 | 362
+2;SN-none-ss;instance_30_10_4_31;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;slot-service;TIMEOUT;300.1330353;300.0;53.727993825;3;72814;168014;803;;;;;;;continuity | similarity;6 | 375
+2;SN-none-ss;instance_30_10_4_32;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;slot-service;TIMEOUT;300.1299973;300.0;55.713789779;3;82154;191277;891;;;;;;;continuity | similarity;0 | 419
+2;SN-none-ss;instance_30_10_4_33;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;slot-service;TIMEOUT;300.1345311;300.0;68.075969288;3;70604;169211;814;;;;;;;continuity | similarity;0 | 433
+2;SN-none-ss;instance_30_10_4_34;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;slot-service;UNSATISFIABLE;0.052572438;300.0;0;1;0;0;0;;;;;;;;
+2;SN-none-ss;instance_30_10_4_35;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;slot-service;UNSATISFIABLE;0.047381414;300.0;0;1;0;0;0;;;;;;;;
+2;SN-none-ss;instance_30_10_4_36;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;slot-service;TIMEOUT;300.1320456;300.0;52.250055872000004;3;72366;173850;803;;;;;;;continuity | similarity;0 | 385
+2;SN-none-ss;instance_30_10_4_37;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;slot-service;TIMEOUT;300.1316491;300.0;64.42628370599999;3;74071;178630;836;;;;;;;continuity | similarity;0 | 433
+2;SN-none-ss;instance_30_10_4_38;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;slot-service;UNSATISFIABLE;0.052179376;300.0;0;1;0;0;0;;;;;;;;
+2;SN-none-ss;instance_30_10_4_39;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;slot-service;UNSATISFIABLE;0.046719065;300.0;0;1;0;0;0;;;;;;;;
+2;SN-none-ss;instance_30_10_4_4;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;slot-service;TIMEOUT;300.1347298;300.0;67.802311242;3;78233;185113;869;;;;;;;continuity | similarity;0 | 426
+2;SN-none-ss;instance_30_10_4_40;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;slot-service;UNSATISFIABLE;0.049001961;300.0;0;1;0;0;0;;;;;;;;
+2;SN-none-ss;instance_30_10_4_41;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;slot-service;TIMEOUT;300.1273178;300.0;20.108631654;3;68811;148798;836;;;;;;;continuity | similarity;2 | 343
+2;SN-none-ss;instance_30_10_4_42;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;slot-service;UNSATISFIABLE;0.048824741;300.0;0;1;0;0;0;;;;;;;;
+2;SN-none-ss;instance_30_10_4_43;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;slot-service;TIMEOUT;300.1357757;300.0;59.856494563;3;72029;169869;792;;;;;;;continuity | similarity;1 | 404
+2;SN-none-ss;instance_30_10_4_44;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;slot-service;UNSATISFIABLE;0.070310802;300.0;0;1;0;0;0;;;;;;;;
+2;SN-none-ss;instance_30_10_4_45;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;slot-service;TIMEOUT;300.12837;300.0;29.349495071;3;73354;172157;836;;;;;;;continuity | similarity;0 | 357
+2;SN-none-ss;instance_30_10_4_46;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;slot-service;UNSATISFIABLE;0.0300357;300.0;0;1;0;0;0;;;;;;;;
+2;SN-none-ss;instance_30_10_4_47;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;slot-service;TIMEOUT;300.1322116;300.0;51.414876645;3;81875;182005;913;;;;;;;continuity | similarity;0 | 387
+2;SN-none-ss;instance_30_10_4_48;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;slot-service;TIMEOUT;300.1296928;300.0;3.474091875;3;77010;167067;891;;;;;;;continuity | similarity;0 | 373
+2;SN-none-ss;instance_30_10_4_49;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;slot-service;UNSATISFIABLE;0.056777408;300.0;0;1;0;0;0;;;;;;;;
+2;SN-none-ss;instance_30_10_4_5;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;none;slot-service;TIMEOUT;300.1295643;300.0;41.576032446;3;80869;185226;891;;;;;;;continuity | similarity;1 | 415
+3;SN-both-none;instance_30_10_4_1;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;none;TIMEOUT;300.1292916;300.0;63.286925715;3;82462;201523;847;;;;;;;continuity | similarity;0 | 404
+3;SN-both-none;instance_30_10_4_10;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;none;TIMEOUT;300.1330142;300.0;55.666644825000006;3;80902;194339;825;;;;;;;continuity | similarity;0 | 389
+3;SN-both-none;instance_30_10_4_11;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;none;TIMEOUT;300.1342396;300.0;43.664577952;3;84614;199564;858;;;;;;;continuity | similarity;0 | 371
+3;SN-both-none;instance_30_10_4_12;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;none;TIMEOUT;300.1296893;300.0;52.919461532;3;75018;185860;781;;;;;;;continuity | similarity;0 | 374
+3;SN-both-none;instance_30_10_4_13;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;none;UNSATISFIABLE;0.054552601;300.0;0;1;0;0;0;;;;;;;;
+3;SN-both-none;instance_30_10_4_14;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;none;UNSATISFIABLE;0.051058691;300.0;0;1;0;0;0;;;;;;;;
+3;SN-both-none;instance_30_10_4_15;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;none;UNSATISFIABLE;0.035754751;300.0;0;1;0;0;0;;;;;;;;
+3;SN-both-none;instance_30_10_4_16;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;none;TIMEOUT;300.1346004;300.0;64.860675708;3;92599;224543;902;;;;;;;continuity | similarity;0 | 427
+3;SN-both-none;instance_30_10_4_17;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;none;TIMEOUT;300.1257529;300.0;49.722791037;3;77984;180023;847;;;;;;;continuity | similarity;0 | 400
+3;SN-both-none;instance_30_10_4_18;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;none;TIMEOUT;300.1381575;300.0;29.263368313;3;79848;184628;858;;;;;;;continuity | similarity;0 | 397
+3;SN-both-none;instance_30_10_4_19;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;none;UNSATISFIABLE;0.061801124;300.0;0;1;0;0;0;;;;;;;;
+3;SN-both-none;instance_30_10_4_2;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;none;UNSATISFIABLE;0.073594302;300.0;0;1;0;0;0;;;;;;;;
+3;SN-both-none;instance_30_10_4_20;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;none;UNSATISFIABLE;0.05258845;300.0;0;1;0;0;0;;;;;;;;
+3;SN-both-none;instance_30_10_4_21;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;none;UNSATISFIABLE;0.072947113;300.0;0;1;0;0;0;;;;;;;;
+3;SN-both-none;instance_30_10_4_22;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;none;UNSATISFIABLE;0.065643106;300.0;0;1;0;0;0;;;;;;;;
+3;SN-both-none;instance_30_10_4_23;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;none;TIMEOUT;300.1341141;300.0;42.751120807;3;91556;218084;891;;;;;;;continuity | similarity;0 | 378
+3;SN-both-none;instance_30_10_4_24;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;none;TIMEOUT;300.1356625;300.0;59.683548234;3;81682;193788;847;;;;;;;continuity | similarity;1 | 385
+3;SN-both-none;instance_30_10_4_25;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;none;TIMEOUT;300.1338264;300.0;55.286478051;3;71939;184690;748;;;;;;;continuity | similarity;0 | 443
+3;SN-both-none;instance_30_10_4_26;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;none;UNSATISFIABLE;0.083902539;300.0;0;1;0;0;0;;;;;;;;
+3;SN-both-none;instance_30_10_4_27;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;none;TIMEOUT;300.1346742;300.0;53.135008703;3;86887;197689;869;;;;;;;continuity | similarity;4 | 368
+3;SN-both-none;instance_30_10_4_28;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;none;UNSATISFIABLE;0.035156681;300.0;0;1;0;0;0;;;;;;;;
+3;SN-both-none;instance_30_10_4_29;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;none;UNSATISFIABLE;0.063393441;300.0;0;1;0;0;0;;;;;;;;
+3;SN-both-none;instance_30_10_4_3;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;none;UNSATISFIABLE;0.064263367;300.0;0;1;0;0;0;;;;;;;;
+3;SN-both-none;instance_30_10_4_30;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;none;TIMEOUT;300.134675;300.0;40.390963704;3;84678;201997;836;;;;;;;continuity | similarity;1 | 362
+3;SN-both-none;instance_30_10_4_31;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;none;TIMEOUT;300.1268252;300.0;56.071685382;3;80221;189982;803;;;;;;;continuity | similarity;6 | 375
+3;SN-both-none;instance_30_10_4_32;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;none;TIMEOUT;300.1304387;300.0;57.561152743;3;89216;212738;891;;;;;;;continuity | similarity;0 | 419
+3;SN-both-none;instance_30_10_4_33;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;none;TIMEOUT;300.1325613;300.0;68.35201239999999;3;78410;192375;814;;;;;;;continuity | similarity;0 | 433
+3;SN-both-none;instance_30_10_4_34;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;none;UNSATISFIABLE;0.060730705;300.0;0;1;0;0;0;;;;;;;;
+3;SN-both-none;instance_30_10_4_35;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;none;UNSATISFIABLE;0.053597859;300.0;0;1;0;0;0;;;;;;;;
+3;SN-both-none;instance_30_10_4_36;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;none;TIMEOUT;300.1364833;300.0;52.564238449;3;78149;190986;803;;;;;;;continuity | similarity;0 | 385
+3;SN-both-none;instance_30_10_4_37;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;none;TIMEOUT;300.1318755;300.0;63.791696177999995;3;80887;198830;836;;;;;;;continuity | similarity;0 | 433
+3;SN-both-none;instance_30_10_4_38;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;none;UNSATISFIABLE;0.061915873;300.0;0;1;0;0;0;;;;;;;;
+3;SN-both-none;instance_30_10_4_39;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;none;UNSATISFIABLE;0.054950743;300.0;0;1;0;0;0;;;;;;;;
+3;SN-both-none;instance_30_10_4_4;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;none;TIMEOUT;300.1378221;300.0;66.946684374;3;84971;205070;869;;;;;;;continuity | similarity;0 | 426
+3;SN-both-none;instance_30_10_4_40;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;none;UNSATISFIABLE;0.081381226;300.0;0;1;0;0;0;;;;;;;;
+3;SN-both-none;instance_30_10_4_41;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;none;TIMEOUT;300.1249465;300.0;21.306087926;3;75493;168602;836;;;;;;;continuity | similarity;2 | 343
+3;SN-both-none;instance_30_10_4_42;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;none;UNSATISFIABLE;0.065244246;300.0;0;1;0;0;0;;;;;;;;
+3;SN-both-none;instance_30_10_4_43;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;none;TIMEOUT;300.135577;300.0;60.553873532000004;3;78172;188067;792;;;;;;;continuity | similarity;1 | 404
+3;SN-both-none;instance_30_10_4_44;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;none;UNSATISFIABLE;0.093703887;300.0;0;1;0;0;0;;;;;;;;
+3;SN-both-none;instance_30_10_4_45;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;none;TIMEOUT;300.1291525;300.0;38.606975313;3;80324;192814;836;;;;;;;continuity | similarity;0 | 357
+3;SN-both-none;instance_30_10_4_46;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;none;UNSATISFIABLE;0.050619419;300.0;0;1;0;0;0;;;;;;;;
+3;SN-both-none;instance_30_10_4_47;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;none;TIMEOUT;300.1291924;300.0;50.834687827;3;88690;202191;913;;;;;;;continuity | similarity;0 | 387
+3;SN-both-none;instance_30_10_4_48;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;none;TIMEOUT;300.1302885;300.0;3.616268882;3;83554;186468;891;;;;;;;continuity | similarity;0 | 373
+3;SN-both-none;instance_30_10_4_49;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;none;UNSATISFIABLE;0.077533434;300.0;0;1;0;0;0;;;;;;;;
+3;SN-both-none;instance_30_10_4_5;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;none;TIMEOUT;300.1284616;300.0;42.905829043000004;3;86718;202539;891;;;;;;;continuity | similarity;1 | 415
+4;SN-both-ss;instance_30_10_4_1;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;slot-service;TIMEOUT;300.1332073;300.0;62.569434586;3;82468;201549;847;;;;;;;continuity | similarity;0 | 404
+4;SN-both-ss;instance_30_10_4_10;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;slot-service;TIMEOUT;300.1424912;300.0;55.751245276;3;80903;194346;825;;;;;;;continuity | similarity;0 | 389
+4;SN-both-ss;instance_30_10_4_11;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;slot-service;TIMEOUT;300.1299158;300.0;42.857185489;3;84614;199567;858;;;;;;;continuity | similarity;0 | 371
+4;SN-both-ss;instance_30_10_4_12;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;slot-service;TIMEOUT;300.1352704;300.0;52.947193596;3;75018;185861;781;;;;;;;continuity | similarity;0 | 374
+4;SN-both-ss;instance_30_10_4_13;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;slot-service;UNSATISFIABLE;0.056438068;300.0;0;1;0;0;0;;;;;;;;
+4;SN-both-ss;instance_30_10_4_14;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;slot-service;UNSATISFIABLE;0.055163979;300.0;0;1;0;0;0;;;;;;;;
+4;SN-both-ss;instance_30_10_4_15;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;slot-service;UNSATISFIABLE;0.037644061;300.0;0;1;0;0;0;;;;;;;;
+4;SN-both-ss;instance_30_10_4_16;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;slot-service;TIMEOUT;300.1316761;300.0;64.631268646;3;92605;224569;902;;;;;;;continuity | similarity;0 | 427
+4;SN-both-ss;instance_30_10_4_17;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;slot-service;TIMEOUT;300.1245988;300.0;50.943507566;3;77993;180062;847;;;;;;;continuity | similarity;0 | 400
+4;SN-both-ss;instance_30_10_4_18;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;slot-service;TIMEOUT;300.132206;300.0;29.263707263;3;79848;184628;858;;;;;;;continuity | similarity;0 | 397
+4;SN-both-ss;instance_30_10_4_19;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;slot-service;UNSATISFIABLE;0.062343174;300.0;0;1;0;0;0;;;;;;;;
+4;SN-both-ss;instance_30_10_4_2;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;slot-service;UNSATISFIABLE;0.072313112;300.0;0;1;0;0;0;;;;;;;;
+4;SN-both-ss;instance_30_10_4_20;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;slot-service;UNSATISFIABLE;0.056846916;300.0;0;1;0;0;0;;;;;;;;
+4;SN-both-ss;instance_30_10_4_21;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;slot-service;UNSATISFIABLE;0.075060666;300.0;0;1;0;0;0;;;;;;;;
+4;SN-both-ss;instance_30_10_4_22;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;slot-service;UNSATISFIABLE;0.065671965;300.0;0;1;0;0;0;;;;;;;;
+4;SN-both-ss;instance_30_10_4_23;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;slot-service;TIMEOUT;300.135514;300.0;40.779156099999994;3;91557;218090;891;;;;;;;continuity | similarity;0 | 378
+4;SN-both-ss;instance_30_10_4_24;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;slot-service;TIMEOUT;300.1296907;300.0;60.651096402;3;81685;193804;847;;;;;;;continuity | similarity;1 | 385
+4;SN-both-ss;instance_30_10_4_25;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;slot-service;TIMEOUT;300.1357523;300.0;55.207605772;3;71942;184710;748;;;;;;;continuity | similarity;0 | 443
+4;SN-both-ss;instance_30_10_4_26;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;slot-service;UNSATISFIABLE;0.086286003;300.0;0;1;0;0;0;;;;;;;;
+4;SN-both-ss;instance_30_10_4_27;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;slot-service;TIMEOUT;300.1333842;300.0;53.124248523000006;3;86892;197714;869;;;;;;;continuity | similarity;4 | 368
+4;SN-both-ss;instance_30_10_4_28;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;slot-service;UNSATISFIABLE;0.036965717;300.0;0;1;0;0;0;;;;;;;;
+4;SN-both-ss;instance_30_10_4_29;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;slot-service;UNSATISFIABLE;0.062051317;300.0;0;1;0;0;0;;;;;;;;
+4;SN-both-ss;instance_30_10_4_3;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;slot-service;UNSATISFIABLE;0.065077262;300.0;0;1;0;0;0;;;;;;;;
+4;SN-both-ss;instance_30_10_4_30;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;slot-service;TIMEOUT;300.1390196;300.0;40.321297189;3;84678;201999;836;;;;;;;continuity | similarity;1 | 362
+4;SN-both-ss;instance_30_10_4_31;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;slot-service;TIMEOUT;300.131723;300.0;53.999857793000004;3;80233;190037;803;;;;;;;continuity | similarity;6 | 375
+4;SN-both-ss;instance_30_10_4_32;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;slot-service;TIMEOUT;300.1313375;300.0;56.133032094;3;89232;212804;891;;;;;;;continuity | similarity;0 | 419
+4;SN-both-ss;instance_30_10_4_33;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;slot-service;TIMEOUT;300.1385457;300.0;68.339328346;3;78410;192377;814;;;;;;;continuity | similarity;0 | 433
+4;SN-both-ss;instance_30_10_4_34;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;slot-service;UNSATISFIABLE;0.064879144;300.0;0;1;0;0;0;;;;;;;;
+4;SN-both-ss;instance_30_10_4_35;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;slot-service;UNSATISFIABLE;0.054108203;300.0;0;1;0;0;0;;;;;;;;
+4;SN-both-ss;instance_30_10_4_36;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;slot-service;TIMEOUT;300.1333816;300.0;52.439174825;3;78160;191036;803;;;;;;;continuity | similarity;0 | 385
+4;SN-both-ss;instance_30_10_4_37;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;slot-service;TIMEOUT;300.1331053;300.0;63.757024740000006;3;80887;198831;836;;;;;;;continuity | similarity;0 | 433
+4;SN-both-ss;instance_30_10_4_38;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;slot-service;UNSATISFIABLE;0.063335037;300.0;0;1;0;0;0;;;;;;;;
+4;SN-both-ss;instance_30_10_4_39;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;slot-service;UNSATISFIABLE;0.051330257;300.0;0;1;0;0;0;;;;;;;;
+4;SN-both-ss;instance_30_10_4_4;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;slot-service;TIMEOUT;300.1345093;300.0;68.415573709;3;84991;205158;869;;;;;;;continuity | similarity;0 | 426
+4;SN-both-ss;instance_30_10_4_40;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;slot-service;UNSATISFIABLE;0.072080055;300.0;0;1;0;0;0;;;;;;;;
+4;SN-both-ss;instance_30_10_4_41;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;slot-service;TIMEOUT;300.1218351;300.0;21.271432910999998;3;75517;168709;836;;;;;;;continuity | similarity;2 | 343
+4;SN-both-ss;instance_30_10_4_42;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;slot-service;UNSATISFIABLE;0.06568438;300.0;0;1;0;0;0;;;;;;;;
+4;SN-both-ss;instance_30_10_4_43;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;slot-service;TIMEOUT;300.1366876;300.0;61.081042737999994;3;78178;188095;792;;;;;;;continuity | similarity;1 | 404
+4;SN-both-ss;instance_30_10_4_44;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;slot-service;UNSATISFIABLE;0.091998363;300.0;0;1;0;0;0;;;;;;;;
+4;SN-both-ss;instance_30_10_4_45;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;slot-service;TIMEOUT;300.1303615;300.0;37.404602643;3;80332;192853;836;;;;;;;continuity | similarity;0 | 357
+4;SN-both-ss;instance_30_10_4_46;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;slot-service;UNSATISFIABLE;0.038614619;300.0;0;1;0;0;0;;;;;;;;
+4;SN-both-ss;instance_30_10_4_47;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;slot-service;TIMEOUT;300.1301696;300.0;51.775591678999994;3;88707;202267;913;;;;;;;continuity | similarity;0 | 387
+4;SN-both-ss;instance_30_10_4_48;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;slot-service;TIMEOUT;300.1270281;300.0;3.604843533;3;83554;186470;891;;;;;;;continuity | similarity;0 | 373
+4;SN-both-ss;instance_30_10_4_49;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;slot-service;UNSATISFIABLE;0.074547169;300.0;0;1;0;0;0;;;;;;;;
+4;SN-both-ss;instance_30_10_4_5;lex-continuity;lexicographic;continuity-priority;-;;;;;;sorting-network;both;slot-service;TIMEOUT;300.1300011;300.0;43.740278875;3;86722;202559;891;;;;;;;continuity | similarity;1 | 415
+5;TOT-none-none;instance_30_10_4_1;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;none;TIMEOUT;300.1282332;300.0;60.484966934999996;3;66222;182439;847;;;;;;;continuity | similarity;0 | 404
+5;TOT-none-none;instance_30_10_4_10;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;none;TIMEOUT;300.1328028;300.0;54.991342960000004;3;62937;171799;825;;;;;;;continuity | similarity;0 | 389
+5;TOT-none-none;instance_30_10_4_11;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;none;TIMEOUT;300.1291681;300.0;40.818992139;3;67347;178180;858;;;;;;;continuity | similarity;0 | 371
+5;TOT-none-none;instance_30_10_4_12;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;none;TIMEOUT;300.1321133;300.0;52.389431551;3;57169;164849;781;;;;;;;continuity | similarity;0 | 374
+5;TOT-none-none;instance_30_10_4_13;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;none;UNSATISFIABLE;0.032255541;300.0;0;1;0;0;0;;;;;;;;
+5;TOT-none-none;instance_30_10_4_14;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;none;UNSATISFIABLE;0.033388167;300.0;0;1;0;0;0;;;;;;;;
+5;TOT-none-none;instance_30_10_4_15;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;none;UNSATISFIABLE;0.025021062;300.0;0;1;0;0;0;;;;;;;;
+5;TOT-none-none;instance_30_10_4_16;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;none;TIMEOUT;300.1322327;300.0;63.442008811;3;74616;204213;902;;;;;;;continuity | similarity;0 | 427
+5;TOT-none-none;instance_30_10_4_17;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;none;TIMEOUT;300.1311195;300.0;42.452705582;3;64831;160089;847;;;;;;;continuity | similarity;0 | 400
+5;TOT-none-none;instance_30_10_4_18;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;none;TIMEOUT;300.1275291;300.0;28.239574383;3;67051;172019;858;;;;;;;continuity | similarity;0 | 397
+5;TOT-none-none;instance_30_10_4_19;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;none;UNSATISFIABLE;0.042559528;300.0;0;1;0;0;0;;;;;;;;
+5;TOT-none-none;instance_30_10_4_2;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;none;UNSATISFIABLE;0.043577516;300.0;0;1;0;0;0;;;;;;;;
+5;TOT-none-none;instance_30_10_4_20;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;none;UNSATISFIABLE;0.049399659;300.0;0;1;0;0;0;;;;;;;;
+5;TOT-none-none;instance_30_10_4_21;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;none;UNSATISFIABLE;0.046692811;300.0;0;1;0;0;0;;;;;;;;
+5;TOT-none-none;instance_30_10_4_22;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;none;UNSATISFIABLE;0.039607501;300.0;0;1;0;0;0;;;;;;;;
+5;TOT-none-none;instance_30_10_4_23;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;none;TIMEOUT;300.1345579;300.0;41.099680912000004;3;72678;196286;891;;;;;;;continuity | similarity;0 | 378
+5;TOT-none-none;instance_30_10_4_24;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;none;TIMEOUT;300.1335292;300.0;58.231796458;3;66122;169728;847;;;;;;;continuity | similarity;1 | 385
+5;TOT-none-none;instance_30_10_4_25;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;none;TIMEOUT;300.1376006;300.0;54.304549738;3;53730;167399;748;;;;;;;continuity | similarity;0 | 443
+5;TOT-none-none;instance_30_10_4_26;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;none;UNSATISFIABLE;0.05687596;300.0;0;1;0;0;0;;;;;;;;
+5;TOT-none-none;instance_30_10_4_27;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;none;TIMEOUT;300.132187;300.0;40.297333363;3;71214;175830;869;;;;;;;continuity | similarity;4 | 368
+5;TOT-none-none;instance_30_10_4_28;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;none;UNSATISFIABLE;0.026030376;300.0;0;1;0;0;0;;;;;;;;
+5;TOT-none-none;instance_30_10_4_29;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;none;UNSATISFIABLE;0.047256372;300.0;0;1;0;0;0;;;;;;;;
+5;TOT-none-none;instance_30_10_4_3;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;none;UNSATISFIABLE;0.033549487;300.0;0;1;0;0;0;;;;;;;;
+5;TOT-none-none;instance_30_10_4_30;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;none;TIMEOUT;300.1347947;300.0;39.390662608;3;65623;184652;836;;;;;;;continuity | similarity;1 | 362
+5;TOT-none-none;instance_30_10_4_31;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;none;TIMEOUT;300.1302593;300.0;48.482953611999996;3;63431;168464;803;;;;;;;continuity | similarity;6 | 375
+5;TOT-none-none;instance_30_10_4_32;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;none;TIMEOUT;300.1288828;300.0;55.27142169;3;72511;194741;891;;;;;;;continuity | similarity;0 | 419
+5;TOT-none-none;instance_30_10_4_33;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;none;TIMEOUT;300.129336;300.0;67.756732218;3;61660;174613;814;;;;;;;continuity | similarity;0 | 433
+5;TOT-none-none;instance_30_10_4_34;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;none;UNSATISFIABLE;0.049722334;300.0;0;1;0;0;0;;;;;;;;
+5;TOT-none-none;instance_30_10_4_35;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;none;UNSATISFIABLE;0.032767778;300.0;0;1;0;0;0;;;;;;;;
+5;TOT-none-none;instance_30_10_4_36;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;none;TIMEOUT;300.1348617;300.0;51.802274815;3;60914;184714;803;;;;;;;continuity | similarity;0 | 385
+5;TOT-none-none;instance_30_10_4_37;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;none;TIMEOUT;300.1292998;300.0;64.07741507200001;3;64839;183223;836;;;;;;;continuity | similarity;0 | 433
+5;TOT-none-none;instance_30_10_4_38;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;none;UNSATISFIABLE;0.039488439;300.0;0;1;0;0;0;;;;;;;;
+5;TOT-none-none;instance_30_10_4_39;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;none;UNSATISFIABLE;0.035266383;300.0;0;1;0;0;0;;;;;;;;
+5;TOT-none-none;instance_30_10_4_4;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;none;TIMEOUT;300.1377684;300.0;66.216321843;3;69115;185953;869;;;;;;;continuity | similarity;0 | 426
+5;TOT-none-none;instance_30_10_4_40;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;none;UNSATISFIABLE;0.046942942;300.0;0;1;0;0;0;;;;;;;;
+5;TOT-none-none;instance_30_10_4_41;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;none;TIMEOUT;300.1258271;300.0;12.817344426999998;3;64153;150992;836;;;;;;;continuity | similarity;2 | 343
+5;TOT-none-none;instance_30_10_4_42;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;none;UNSATISFIABLE;0.047125662;300.0;0;1;0;0;0;;;;;;;;
+5;TOT-none-none;instance_30_10_4_43;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;none;TIMEOUT;300.1343349;300.0;58.944894436;3;59526;172326;792;;;;;;;continuity | similarity;1 | 404
+5;TOT-none-none;instance_30_10_4_44;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;none;UNSATISFIABLE;0.057164842;300.0;0;1;0;0;0;;;;;;;;
+5;TOT-none-none;instance_30_10_4_45;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;none;TIMEOUT;300.1289162;300.0;32.83951882;3;64001;169023;836;;;;;;;continuity | similarity;0 | 357
+5;TOT-none-none;instance_30_10_4_46;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;none;UNSATISFIABLE;0.024678131;300.0;0;1;0;0;0;;;;;;;;
+5;TOT-none-none;instance_30_10_4_47;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;none;TIMEOUT;300.1272178;300.0;42.183390800999994;3;74714;180828;913;;;;;;;continuity | similarity;0 | 387
+5;TOT-none-none;instance_30_10_4_48;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;none;TIMEOUT;300.1254489;300.0;3.394083557;3;70789;165764;891;;;;;;;continuity | similarity;0 | 373
+5;TOT-none-none;instance_30_10_4_49;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;none;UNSATISFIABLE;0.058292317;300.0;0;1;0;0;0;;;;;;;;
+5;TOT-none-none;instance_30_10_4_5;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;none;TIMEOUT;300.1385858;300.0;42.217434917;3;72676;186032;891;;;;;;;continuity | similarity;1 | 415
+6;TOT-none-ss;instance_30_10_4_1;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;slot-service;TIMEOUT;300.1354718;300.0;60.474174094;3;66228;182465;847;;;;;;;continuity | similarity;0 | 404
+6;TOT-none-ss;instance_30_10_4_10;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;slot-service;TIMEOUT;300.1317317;300.0;54.000764672;3;63343;173469;825;;;;;;;continuity | similarity;0 | 389
+6;TOT-none-ss;instance_30_10_4_11;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;slot-service;TIMEOUT;300.1324715;300.0;41.305822771;3;67756;179713;858;;;;;;;continuity | similarity;0 | 371
+6;TOT-none-ss;instance_30_10_4_12;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;slot-service;TIMEOUT;300.1334129;300.0;52.389946323000004;3;57590;166658;781;;;;;;;continuity | similarity;0 | 374
+6;TOT-none-ss;instance_30_10_4_13;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;slot-service;UNSATISFIABLE;0.034340351;300.0;0;1;0;0;0;;;;;;;;
+6;TOT-none-ss;instance_30_10_4_14;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;slot-service;UNSATISFIABLE;0.034756492;300.0;0;1;0;0;0;;;;;;;;
+6;TOT-none-ss;instance_30_10_4_15;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;slot-service;UNSATISFIABLE;0.025163768;300.0;0;1;0;0;0;;;;;;;;
+6;TOT-none-ss;instance_30_10_4_16;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;slot-service;TIMEOUT;300.1411575;300.0;64.480971016;3;75032;206204;902;;;;;;;continuity | similarity;0 | 427
+6;TOT-none-ss;instance_30_10_4_17;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;slot-service;TIMEOUT;300.1291236;300.0;47.362901803;3;65269;161706;847;;;;;;;continuity | similarity;0 | 400
+6;TOT-none-ss;instance_30_10_4_18;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;slot-service;TIMEOUT;300.131024;300.0;28.237834943;3;67051;172019;858;;;;;;;continuity | similarity;0 | 397
+6;TOT-none-ss;instance_30_10_4_19;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;slot-service;UNSATISFIABLE;0.044571554;300.0;0;1;0;0;0;;;;;;;;
+6;TOT-none-ss;instance_30_10_4_2;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;slot-service;UNSATISFIABLE;0.04629401;300.0;0;1;0;0;0;;;;;;;;
+6;TOT-none-ss;instance_30_10_4_20;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;slot-service;UNSATISFIABLE;0.047516151;300.0;0;1;0;0;0;;;;;;;;
+6;TOT-none-ss;instance_30_10_4_21;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;slot-service;UNSATISFIABLE;0.059749925;300.0;0;1;0;0;0;;;;;;;;
+6;TOT-none-ss;instance_30_10_4_22;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;slot-service;UNSATISFIABLE;0.050203993;300.0;0;1;0;0;0;;;;;;;;
+6;TOT-none-ss;instance_30_10_4_23;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;slot-service;TIMEOUT;300.1306996;300.0;41.159750019;3;73097;197973;891;;;;;;;continuity | similarity;0 | 378
+6;TOT-none-ss;instance_30_10_4_24;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;slot-service;TIMEOUT;300.1322988;300.0;58.779845478999995;3;66542;171436;847;;;;;;;continuity | similarity;1 | 385
+6;TOT-none-ss;instance_30_10_4_25;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;slot-service;TIMEOUT;300.1411134;300.0;54.413686309;3;54158;169423;748;;;;;;;continuity | similarity;0 | 443
+6;TOT-none-ss;instance_30_10_4_26;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;slot-service;UNSATISFIABLE;0.058655115;300.0;0;1;0;0;0;;;;;;;;
+6;TOT-none-ss;instance_30_10_4_27;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;slot-service;TIMEOUT;300.1269692;300.0;44.173364459;3;71641;177202;869;;;;;;;continuity | similarity;4 | 368
+6;TOT-none-ss;instance_30_10_4_28;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;slot-service;UNSATISFIABLE;0.028908028;300.0;0;1;0;0;0;;;;;;;;
+6;TOT-none-ss;instance_30_10_4_29;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;slot-service;UNSATISFIABLE;0.037970872;300.0;0;1;0;0;0;;;;;;;;
+6;TOT-none-ss;instance_30_10_4_3;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;slot-service;UNSATISFIABLE;0.048454164;300.0;0;1;0;0;0;;;;;;;;
+6;TOT-none-ss;instance_30_10_4_30;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;slot-service;TIMEOUT;300.1313778;300.0;39.75001873;3;66035;186189;836;;;;;;;continuity | similarity;1 | 362
+6;TOT-none-ss;instance_30_10_4_31;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;slot-service;TIMEOUT;300.132373;300.0;51.931883017;3;63881;170104;803;;;;;;;continuity | similarity;6 | 375
+6;TOT-none-ss;instance_30_10_4_32;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;slot-service;TIMEOUT;300.1312455;300.0;55.298603783;3;72527;194807;891;;;;;;;continuity | similarity;0 | 419
+6;TOT-none-ss;instance_30_10_4_33;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;slot-service;TIMEOUT;300.1285519;300.0;67.787689415;3;62101;176501;814;;;;;;;continuity | similarity;0 | 433
+6;TOT-none-ss;instance_30_10_4_34;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;slot-service;UNSATISFIABLE;0.049869918;300.0;0;1;0;0;0;;;;;;;;
+6;TOT-none-ss;instance_30_10_4_35;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;slot-service;UNSATISFIABLE;0.036724411;300.0;0;1;0;0;0;;;;;;;;
+6;TOT-none-ss;instance_30_10_4_36;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;slot-service;TIMEOUT;300.138203;300.0;51.861241653;3;61306;186432;803;;;;;;;continuity | similarity;0 | 385
+6;TOT-none-ss;instance_30_10_4_37;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;slot-service;TIMEOUT;300.1382598;300.0;63.087168029;3;65260;185122;836;;;;;;;continuity | similarity;0 | 433
+6;TOT-none-ss;instance_30_10_4_38;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;slot-service;UNSATISFIABLE;0.051358749;300.0;0;1;0;0;0;;;;;;;;
+6;TOT-none-ss;instance_30_10_4_39;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;slot-service;UNSATISFIABLE;0.049380144;300.0;0;1;0;0;0;;;;;;;;
+6;TOT-none-ss;instance_30_10_4_4;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;slot-service;TIMEOUT;300.1345119;300.0;67.333146717;3;69552;187917;869;;;;;;;continuity | similarity;0 | 426
+6;TOT-none-ss;instance_30_10_4_40;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;slot-service;UNSATISFIABLE;0.037922659;300.0;0;1;0;0;0;;;;;;;;
+6;TOT-none-ss;instance_30_10_4_41;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;slot-service;TIMEOUT;300.1289117;300.0;14.292083860000002;3;64579;152320;836;;;;;;;continuity | similarity;2 | 343
+6;TOT-none-ss;instance_30_10_4_42;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;slot-service;UNSATISFIABLE;0.050457265;300.0;0;1;0;0;0;;;;;;;;
+6;TOT-none-ss;instance_30_10_4_43;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;slot-service;TIMEOUT;300.1362555;300.0;60.550839768;3;59926;173881;792;;;;;;;continuity | similarity;1 | 404
+6;TOT-none-ss;instance_30_10_4_44;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;slot-service;UNSATISFIABLE;0.056975904;300.0;0;1;0;0;0;;;;;;;;
+6;TOT-none-ss;instance_30_10_4_45;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;slot-service;TIMEOUT;300.1283122;300.0;32.176756698;3;64431;170713;836;;;;;;;continuity | similarity;0 | 357
+6;TOT-none-ss;instance_30_10_4_46;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;slot-service;UNSATISFIABLE;0.027977474;300.0;0;1;0;0;0;;;;;;;;
+6;TOT-none-ss;instance_30_10_4_47;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;slot-service;TIMEOUT;300.1298555;300.0;48.059965049;3;75156;182443;913;;;;;;;continuity | similarity;0 | 387
+6;TOT-none-ss;instance_30_10_4_48;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;slot-service;TIMEOUT;300.1220209;300.0;3.403375139;3;71203;167045;891;;;;;;;continuity | similarity;0 | 373
+6;TOT-none-ss;instance_30_10_4_49;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;slot-service;UNSATISFIABLE;0.061317002;300.0;0;1;0;0;0;;;;;;;;
+6;TOT-none-ss;instance_30_10_4_5;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;none;slot-service;TIMEOUT;300.1267531;300.0;43.225625162;3;73063;187618;891;;;;;;;continuity | similarity;1 | 415
+7;TOT-both-none;instance_30_10_4_1;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;none;TIMEOUT;300.1407984;300.0;61.673485181000004;3;69637;199009;847;;;;;;;continuity | similarity;0 | 404
+7;TOT-both-none;instance_30_10_4_10;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;none;TIMEOUT;300.1380348;300.0;55.191709531;3;66292;187763;825;;;;;;;continuity | similarity;0 | 389
+7;TOT-both-none;instance_30_10_4_11;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;none;TIMEOUT;300.1353414;300.0;42.680294089;3;70659;193716;858;;;;;;;continuity | similarity;0 | 371
+7;TOT-both-none;instance_30_10_4_12;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;none;TIMEOUT;300.1367592;300.0;52.581979388;3;60699;182002;781;;;;;;;continuity | similarity;0 | 374
+7;TOT-both-none;instance_30_10_4_13;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;none;UNSATISFIABLE;0.048406242;300.0;0;1;0;0;0;;;;;;;;
+7;TOT-both-none;instance_30_10_4_14;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;none;UNSATISFIABLE;0.051071658;300.0;0;1;0;0;0;;;;;;;;
+7;TOT-both-none;instance_30_10_4_15;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;none;UNSATISFIABLE;0.031813217;300.0;0;1;0;0;0;;;;;;;;
+7;TOT-both-none;instance_30_10_4_16;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;none;TIMEOUT;300.1330571;300.0;63.572158714;3;77964;220205;902;;;;;;;continuity | similarity;0 | 427
+7;TOT-both-none;instance_30_10_4_17;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;none;TIMEOUT;300.1276931;300.0;49.418153464;3;68379;177107;847;;;;;;;continuity | similarity;0 | 400
+7;TOT-both-none;instance_30_10_4_18;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;none;TIMEOUT;300.1317406;300.0;28.949759100999998;3;70469;188326;858;;;;;;;continuity | similarity;0 | 397
+7;TOT-both-none;instance_30_10_4_19;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;none;UNSATISFIABLE;0.061895641;300.0;0;1;0;0;0;;;;;;;;
+7;TOT-both-none;instance_30_10_4_2;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;none;UNSATISFIABLE;0.059819906;300.0;0;1;0;0;0;;;;;;;;
+7;TOT-both-none;instance_30_10_4_20;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;none;UNSATISFIABLE;0.053200864;300.0;0;1;0;0;0;;;;;;;;
+7;TOT-both-none;instance_30_10_4_21;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;none;UNSATISFIABLE;0.060750257;300.0;0;1;0;0;0;;;;;;;;
+7;TOT-both-none;instance_30_10_4_22;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;none;UNSATISFIABLE;0.06201022;300.0;0;1;0;0;0;;;;;;;;
+7;TOT-both-none;instance_30_10_4_23;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;none;TIMEOUT;300.1358305;300.0;41.276010964;3;76172;213132;891;;;;;;;continuity | similarity;0 | 378
+7;TOT-both-none;instance_30_10_4_24;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;none;TIMEOUT;300.1268387;300.0;59.231976457;3;69564;186618;847;;;;;;;continuity | similarity;1 | 385
+7;TOT-both-none;instance_30_10_4_25;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;none;TIMEOUT;300.1311427;300.0;54.615070933000005;3;57326;185160;748;;;;;;;continuity | similarity;0 | 443
+7;TOT-both-none;instance_30_10_4_26;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;none;UNSATISFIABLE;0.071538542;300.0;0;1;0;0;0;;;;;;;;
+7;TOT-both-none;instance_30_10_4_27;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;none;TIMEOUT;300.1271786;300.0;52.721322821;3;74664;191799;869;;;;;;;continuity | similarity;4 | 368
+7;TOT-both-none;instance_30_10_4_28;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;none;UNSATISFIABLE;0.034155309;300.0;0;1;0;0;0;;;;;;;;
+7;TOT-both-none;instance_30_10_4_29;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;none;UNSATISFIABLE;0.051089685;300.0;0;1;0;0;0;;;;;;;;
+7;TOT-both-none;instance_30_10_4_3;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;none;UNSATISFIABLE;0.052085788;300.0;0;1;0;0;0;;;;;;;;
+7;TOT-both-none;instance_30_10_4_30;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;none;TIMEOUT;300.1315694;300.0;39.940866711000005;3;68954;200343;836;;;;;;;continuity | similarity;1 | 362
+7;TOT-both-none;instance_30_10_4_31;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;none;TIMEOUT;300.1314098;300.0;54.603472314;3;67104;186108;803;;;;;;;continuity | similarity;6 | 375
+7;TOT-both-none;instance_30_10_4_32;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;none;TIMEOUT;300.1404982;300.0;55.567914864;3;75930;211192;891;;;;;;;continuity | similarity;0 | 419
+7;TOT-both-none;instance_30_10_4_33;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;none;TIMEOUT;300.139827;300.0;67.986668052;3;65406;193011;814;;;;;;;continuity | similarity;0 | 433
+7;TOT-both-none;instance_30_10_4_34;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;none;UNSATISFIABLE;0.06420877;300.0;0;1;0;0;0;;;;;;;;
+7;TOT-both-none;instance_30_10_4_35;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;none;UNSATISFIABLE;0.049831409;300.0;0;1;0;0;0;;;;;;;;
+7;TOT-both-none;instance_30_10_4_36;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;none;TIMEOUT;300.1386896;300.0;51.999561474000004;3;63933;198758;803;;;;;;;continuity | similarity;0 | 385
+7;TOT-both-none;instance_30_10_4_37;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;none;TIMEOUT;300.1429736;300.0;63.338408635;3;68334;200402;836;;;;;;;continuity | similarity;0 | 433
+7;TOT-both-none;instance_30_10_4_38;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;none;UNSATISFIABLE;0.057647208;300.0;0;1;0;0;0;;;;;;;;
+7;TOT-both-none;instance_30_10_4_39;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;none;UNSATISFIABLE;0.05384908;300.0;0;1;0;0;0;;;;;;;;
+7;TOT-both-none;instance_30_10_4_4;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;none;TIMEOUT;300.1331312;300.0;66.422343354;3;72589;202774;869;;;;;;;continuity | similarity;0 | 426
+7;TOT-both-none;instance_30_10_4_40;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;none;UNSATISFIABLE;0.057513757;300.0;0;1;0;0;0;;;;;;;;
+7;TOT-both-none;instance_30_10_4_41;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;none;TIMEOUT;300.1226417;300.0;21.088215493;3;67500;166320;836;;;;;;;continuity | similarity;2 | 343
+7;TOT-both-none;instance_30_10_4_42;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;none;UNSATISFIABLE;0.06105765;300.0;0;1;0;0;0;;;;;;;;
+7;TOT-both-none;instance_30_10_4_43;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;none;TIMEOUT;300.1368794;300.0;61.128307809999995;3;62716;187189;792;;;;;;;continuity | similarity;1 | 404
+7;TOT-both-none;instance_30_10_4_44;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;none;UNSATISFIABLE;0.075543824;300.0;0;1;0;0;0;;;;;;;;
+7;TOT-both-none;instance_30_10_4_45;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;none;TIMEOUT;300.1329165;300.0;38.329756674;3;67552;185888;836;;;;;;;continuity | similarity;0 | 357
+7;TOT-both-none;instance_30_10_4_46;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;none;UNSATISFIABLE;0.034155008;300.0;0;1;0;0;0;;;;;;;;
+7;TOT-both-none;instance_30_10_4_47;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;none;TIMEOUT;300.1284689;300.0;50.338469460000006;3;78249;197355;913;;;;;;;continuity | similarity;0 | 387
+7;TOT-both-none;instance_30_10_4_48;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;none;TIMEOUT;300.122185;300.0;3.494071706;3;74266;182190;891;;;;;;;continuity | similarity;0 | 373
+7;TOT-both-none;instance_30_10_4_49;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;none;UNSATISFIABLE;0.072267954;300.0;0;1;0;0;0;;;;;;;;
+7;TOT-both-none;instance_30_10_4_5;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;none;TIMEOUT;300.1406207;300.0;42.429157416;3;75808;200591;891;;;;;;;continuity | similarity;1 | 415
+8;TOT-both-ss;instance_30_10_4_1;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;slot-service;TIMEOUT;300.1376316;300.0;60.672128664;3;69643;199035;847;;;;;;;continuity | similarity;0 | 404
+8;TOT-both-ss;instance_30_10_4_10;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;slot-service;TIMEOUT;300.1389083;300.0;55.164371093999996;3;66293;187770;825;;;;;;;continuity | similarity;0 | 389
+8;TOT-both-ss;instance_30_10_4_11;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;slot-service;TIMEOUT;300.1346566;300.0;42.644586424;3;70659;193719;858;;;;;;;continuity | similarity;0 | 371
+8;TOT-both-ss;instance_30_10_4_12;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;slot-service;TIMEOUT;300.1337396;300.0;52.585163494;3;60699;182003;781;;;;;;;continuity | similarity;0 | 374
+8;TOT-both-ss;instance_30_10_4_13;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;slot-service;UNSATISFIABLE;0.048721837;300.0;0;1;0;0;0;;;;;;;;
+8;TOT-both-ss;instance_30_10_4_14;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;slot-service;UNSATISFIABLE;0.051924771;300.0;0;1;0;0;0;;;;;;;;
+8;TOT-both-ss;instance_30_10_4_15;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;slot-service;UNSATISFIABLE;0.033885465;300.0;0;1;0;0;0;;;;;;;;
+8;TOT-both-ss;instance_30_10_4_16;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;slot-service;TIMEOUT;300.1377999;300.0;63.707072822;3;77970;220231;902;;;;;;;continuity | similarity;0 | 427
+8;TOT-both-ss;instance_30_10_4_17;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;slot-service;TIMEOUT;300.1325388;300.0;49.553770910000004;3;68388;177146;847;;;;;;;continuity | similarity;0 | 400
+8;TOT-both-ss;instance_30_10_4_18;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;slot-service;TIMEOUT;300.1320297;300.0;28.964573132;3;70469;188326;858;;;;;;;continuity | similarity;0 | 397
+8;TOT-both-ss;instance_30_10_4_19;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;slot-service;UNSATISFIABLE;0.0600712;300.0;0;1;0;0;0;;;;;;;;
+8;TOT-both-ss;instance_30_10_4_2;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;slot-service;UNSATISFIABLE;0.061666527;300.0;0;1;0;0;0;;;;;;;;
+8;TOT-both-ss;instance_30_10_4_20;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;slot-service;UNSATISFIABLE;0.050728502;300.0;0;1;0;0;0;;;;;;;;
+8;TOT-both-ss;instance_30_10_4_21;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;slot-service;UNSATISFIABLE;0.063912292;300.0;0;1;0;0;0;;;;;;;;
+8;TOT-both-ss;instance_30_10_4_22;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;slot-service;UNSATISFIABLE;0.063055781;300.0;0;1;0;0;0;;;;;;;;
+8;TOT-both-ss;instance_30_10_4_23;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;slot-service;TIMEOUT;300.1333717;300.0;42.265191627;3;76173;213138;891;;;;;;;continuity | similarity;0 | 378
+8;TOT-both-ss;instance_30_10_4_24;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;slot-service;TIMEOUT;300.1310371;300.0;59.118939398;3;69567;186634;847;;;;;;;continuity | similarity;1 | 385
+8;TOT-both-ss;instance_30_10_4_25;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;slot-service;TIMEOUT;300.1393507;300.0;54.615699944;3;57329;185180;748;;;;;;;continuity | similarity;0 | 443
+8;TOT-both-ss;instance_30_10_4_26;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;slot-service;UNSATISFIABLE;0.073807024;300.0;0;1;0;0;0;;;;;;;;
+8;TOT-both-ss;instance_30_10_4_27;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;slot-service;TIMEOUT;300.1296238;300.0;52.761587718;3;74669;191824;869;;;;;;;continuity | similarity;4 | 368
+8;TOT-both-ss;instance_30_10_4_28;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;slot-service;UNSATISFIABLE;0.033798017;300.0;0;1;0;0;0;;;;;;;;
+8;TOT-both-ss;instance_30_10_4_29;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;slot-service;UNSATISFIABLE;0.052673932;300.0;0;1;0;0;0;;;;;;;;
+8;TOT-both-ss;instance_30_10_4_3;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;slot-service;UNSATISFIABLE;0.053317171;300.0;0;1;0;0;0;;;;;;;;
+8;TOT-both-ss;instance_30_10_4_30;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;slot-service;TIMEOUT;300.1415995;300.0;39.709642075999994;3;68954;200345;836;;;;;;;continuity | similarity;1 | 362
+8;TOT-both-ss;instance_30_10_4_31;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;slot-service;TIMEOUT;300.1372516;300.0;53.528677441;3;67116;186163;803;;;;;;;continuity | similarity;6 | 375
+8;TOT-both-ss;instance_30_10_4_32;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;slot-service;TIMEOUT;300.1399251;300.0;55.559276811000004;3;75946;211258;891;;;;;;;continuity | similarity;0 | 419
+8;TOT-both-ss;instance_30_10_4_33;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;slot-service;TIMEOUT;300.1361675;300.0;67.944906936;3;65406;193013;814;;;;;;;continuity | similarity;0 | 433
+8;TOT-both-ss;instance_30_10_4_34;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;slot-service;UNSATISFIABLE;0.060472542;300.0;0;1;0;0;0;;;;;;;;
+8;TOT-both-ss;instance_30_10_4_35;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;slot-service;UNSATISFIABLE;0.041544347;300.0;0;1;0;0;0;;;;;;;;
+8;TOT-both-ss;instance_30_10_4_36;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;slot-service;TIMEOUT;300.1349909;300.0;52.023363333;3;63944;198808;803;;;;;;;continuity | similarity;0 | 385
+8;TOT-both-ss;instance_30_10_4_37;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;slot-service;TIMEOUT;300.1356288;300.0;63.370538118;3;68334;200403;836;;;;;;;continuity | similarity;0 | 433
+8;TOT-both-ss;instance_30_10_4_38;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;slot-service;UNSATISFIABLE;0.063110864;300.0;0;1;0;0;0;;;;;;;;
+8;TOT-both-ss;instance_30_10_4_39;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;slot-service;UNSATISFIABLE;0.050290797;300.0;0;1;0;0;0;;;;;;;;
+8;TOT-both-ss;instance_30_10_4_4;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;slot-service;TIMEOUT;300.1321808;300.0;67.547467608;3;72609;202862;869;;;;;;;continuity | similarity;0 | 426
+8;TOT-both-ss;instance_30_10_4_40;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;slot-service;UNSATISFIABLE;0.059223516;300.0;0;1;0;0;0;;;;;;;;
+8;TOT-both-ss;instance_30_10_4_41;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;slot-service;TIMEOUT;300.1306412;300.0;21.119421773;3;67524;166427;836;;;;;;;continuity | similarity;2 | 343
+8;TOT-both-ss;instance_30_10_4_42;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;slot-service;UNSATISFIABLE;0.064128603;300.0;0;1;0;0;0;;;;;;;;
+8;TOT-both-ss;instance_30_10_4_43;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;slot-service;TIMEOUT;300.1352533;300.0;59.736309661;3;62722;187217;792;;;;;;;continuity | similarity;1 | 404
+8;TOT-both-ss;instance_30_10_4_44;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;slot-service;UNSATISFIABLE;0.076595768;300.0;0;1;0;0;0;;;;;;;;
+8;TOT-both-ss;instance_30_10_4_45;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;slot-service;TIMEOUT;300.1261878;300.0;39.157358627;3;67560;185927;836;;;;;;;continuity | similarity;0 | 357
+8;TOT-both-ss;instance_30_10_4_46;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;slot-service;UNSATISFIABLE;0.035577703;300.0;0;1;0;0;0;;;;;;;;
+8;TOT-both-ss;instance_30_10_4_47;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;slot-service;TIMEOUT;300.1315673;300.0;51.313051019;3;78266;197431;913;;;;;;;continuity | similarity;0 | 387
+8;TOT-both-ss;instance_30_10_4_48;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;slot-service;TIMEOUT;300.1261225;300.0;3.476019415;3;74266;182192;891;;;;;;;continuity | similarity;0 | 373
+8;TOT-both-ss;instance_30_10_4_49;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;slot-service;UNSATISFIABLE;0.070870453;300.0;0;1;0;0;0;;;;;;;;
+8;TOT-both-ss;instance_30_10_4_5;lex-continuity;lexicographic;continuity-priority;-;;;;;;totalizer;both;slot-service;TIMEOUT;300.1276123;300.0;43.409715049999996;3;75812;200611;891;;;;;;;continuity | similarity;1 | 415

@@ -1,0 +1,9 @@
+﻿cfg_id;label;method;objective_mode;objective_policy;delta;cardinality;ic;sb;total_runs;optimum_n;timeout_n;unsat_n;error_n;optimum_pct;mean_elapsed_s;median_elapsed_s;par2_s;mean_solve_s;mean_solver_calls;mean_variables;mean_hard_clauses;mean_soft_clauses;mean_similarity_reference;mean_similarity_lower_bound;mean_similarity_realized_loss;mean_similarity_realized_loss_ratio;mean_best_value;mean_similarity;mean_continuity;mean_overtime;std_best_value
+1;ORIGINAL;lex-continuity;lexicographic;continuity-priority;-;sorting-network;none;none;45;0;24;21;0;0.0;;;320.0226;;2.0667;75202.9167;174280.5833;845.1667;;;;;;;;;
+2;SN-none-ss;lex-continuity;lexicographic;continuity-priority;-;sorting-network;none;slot-service;45;0;24;21;0;0.0;;;320.0227;;2.0667;75572.0;175747.4167;845.1667;;;;;;;;;
+3;SN-both-none;lex-continuity;lexicographic;continuity-priority;-;sorting-network;both;none;45;0;24;21;0;0.0;;;320.0292;;2.0667;82290.5833;195724.5833;845.1667;;;;;;;;;
+4;SN-both-ss;lex-continuity;lexicographic;continuity-priority;-;sorting-network;both;slot-service;45;0;24;21;0;0.0;;;320.0291;;2.0667;82296.9167;195753.9583;845.1667;;;;;;;;;
+5;TOT-none-none;lex-continuity;lexicographic;continuity-priority;-;totalizer;none;none;45;0;24;21;0;0.0;;;320.0193;;2.0667;66161.2083;176839.8333;845.1667;;;;;;;;;
+6;TOT-none-ss;lex-continuity;lexicographic;continuity-priority;-;totalizer;none;slot-service;45;0;24;21;0;0.0;;;320.0209;;2.0667;66530.2917;178306.6667;845.1667;;;;;;;;;
+7;TOT-both-none;lex-continuity;lexicographic;continuity-priority;-;totalizer;both;none;45;0;24;21;0;0.0;;;320.0259;;2.0667;69590.25;193206.5833;845.1667;;;;;;;;;
+8;TOT-both-ss;lex-continuity;lexicographic;continuity-priority;-;totalizer;both;slot-service;45;0;24;21;0;0.0;;;320.026;;2.0667;69596.5833;193235.9583;845.1667;;;;;;;;;

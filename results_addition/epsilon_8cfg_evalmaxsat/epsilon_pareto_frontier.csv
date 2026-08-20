@@ -1,0 +1,20 @@
+﻿instance_name;cfg_id;label;cardinality;ic;sb;coverage;similarity;continuity;overtime;similarity_reference_optimum;similarity_realized_loss_absolute;delta_count;deltas;minimum_delta;maximum_delta;mean_elapsed_s;pareto_nondominated;dominated_by_points
+instance_30_10_4_23;2;TOT-none-ss;totalizer;none;slot-service;120.0;378.0;0.0;0.0;382;4;1;0.10;0.10;0.10;245.943646;True;
+instance_30_10_4_31;2;TOT-none-ss;totalizer;none;slot-service;120.0;375.0;6.0;0.0;381;6;1;0.10;0.10;0.10;242.527258;True;
+instance_30_10_4_31;3;TOT-both-none;totalizer;both;none;120.0;375.0;6.0;0.0;381;6;1;0.10;0.10;0.10;286.620856;True;
+instance_30_10_4_41;1;TOT-none-none;totalizer;none;none;120.0;340.0;2.0;0.0;358;18;1;0.10;0.10;0.10;186.875659;True;
+instance_30_10_4_41;2;TOT-none-ss;totalizer;none;slot-service;120.0;340.0;2.0;0.0;358;18;1;0.10;0.10;0.10;197.14132;True;
+instance_30_10_4_41;3;TOT-both-none;totalizer;both;none;120.0;340.0;2.0;0.0;358;18;1;0.10;0.10;0.10;157.147538;True;
+instance_30_10_4_41;4;TOT-both-ss;totalizer;both;slot-service;120.0;340.0;2.0;0.0;358;18;1;0.10;0.10;0.10;227.611168;True;
+instance_30_10_4_41;5;ORIGINAL;sorting-network;none;none;120.0;340.0;2.0;0.0;358;18;1;0.10;0.10;0.10;166.895414;True;
+instance_30_10_4_41;6;SN-none-ss;sorting-network;none;slot-service;120.0;340.0;2.0;0.0;358;18;1;0.10;0.10;0.10;153.165569;True;
+instance_30_10_4_41;7;SN-both-none;sorting-network;both;none;120.0;340.0;2.0;0.0;358;18;1;0.10;0.10;0.10;222.000176;True;
+instance_30_10_4_41;8;SN-both-ss;sorting-network;both;slot-service;120.0;340.0;2.0;0.0;358;18;1;0.10;0.10;0.10;184.082995;True;
+instance_30_10_4_48;1;TOT-none-none;totalizer;none;none;120.0;373.0;0.0;0.0;377;4;2;0.05 | 0.10;0.05;0.10;154.638209;True;
+instance_30_10_4_48;2;TOT-none-ss;totalizer;none;slot-service;120.0;373.0;0.0;0.0;377;4;2;0.05 | 0.10;0.05;0.10;148.726941;True;
+instance_30_10_4_48;3;TOT-both-none;totalizer;both;none;120.0;373.0;0.0;0.0;377;4;2;0.05 | 0.10;0.05;0.10;175.886016;True;
+instance_30_10_4_48;4;TOT-both-ss;totalizer;both;slot-service;120.0;373.0;0.0;0.0;377;4;2;0.05 | 0.10;0.05;0.10;179.315768;True;
+instance_30_10_4_48;5;ORIGINAL;sorting-network;none;none;120.0;373.0;0.0;0.0;377;4;2;0.05 | 0.10;0.05;0.10;121.310403;True;
+instance_30_10_4_48;6;SN-none-ss;sorting-network;none;slot-service;120.0;373.0;0.0;0.0;377;4;2;0.05 | 0.10;0.05;0.10;115.30495;True;
+instance_30_10_4_48;7;SN-both-none;sorting-network;both;none;120.0;373.0;0.0;0.0;377;4;2;0.05 | 0.10;0.05;0.10;116.552533;True;
+instance_30_10_4_48;8;SN-both-ss;sorting-network;both;slot-service;120.0;373.0;0.0;0.0;377;4;2;0.05 | 0.10;0.05;0.10;175.445699;True;

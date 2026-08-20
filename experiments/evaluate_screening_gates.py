@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
-"""Apply predeclared GO/NO-GO gates to the four reduced screening campaigns."""
+"""Validate the compact campaign's factorial hard gate and freeze its scope.
+
+The compact design no longer spends measured runs on epsilon, weight, or
+lexicographic calibration screens.  The complete 8-cell factorial is run first;
+technical validity, weighted-objective agreement, and peak memory are hard
+stops.  A valid factorial releases the fixed 1,270-run publication matrix.
+"""
 
 from __future__ import annotations
 
@@ -47,25 +53,31 @@ def _encoding_metrics(
     rows: list[dict[str, str]], gate: dict[str, Any]
 ) -> dict[str, Any]:
     baseline = [row for row in rows if _matches(row, gate["baseline"])]
-    proposed = [row for row in rows if _matches(row, gate["proposed"])]
-    if not baseline or not proposed:
+    reference = [
+        row for row in rows if _matches(row, gate["reference_composite"])
+    ]
+    if not baseline or not reference:
         raise ValueError("could not identify both encoding configurations")
 
     identity = ("instance_sha256", "method", "delta", "wc", "wo")
     indexed: dict[str, dict[tuple[str, ...], dict[str, str]]] = {
         "baseline": {tuple(row[key] for key in identity): row for row in baseline},
-        "proposed": {tuple(row[key] for key in identity): row for row in proposed},
+        "reference_composite": {
+            tuple(row[key] for key in identity): row for row in reference
+        },
     }
-    common = sorted(set(indexed["baseline"]) & set(indexed["proposed"]))
+    common = sorted(
+        set(indexed["baseline"]) & set(indexed["reference_composite"])
+    )
     paired_optimum = []
     mismatches = []
     for key in common:
         left = indexed["baseline"][key]
-        right = indexed["proposed"][key]
+        right = indexed["reference_composite"][key]
         if left["status"] == right["status"] == "OPTIMUM":
             paired_optimum.append(key)
             # Different assignments/objective vectors may be legitimate weighted
-            # ties.  Coverage and the scalar weighted objective must still agree.
+            # ties. Coverage and the scalar weighted objective must still agree.
             if (left["coverage"], left["weighted_reference_score"]) != (
                 right["coverage"], right["weighted_reference_score"]
             ):
@@ -74,40 +86,48 @@ def _encoding_metrics(
                         "identity": list(key),
                         "baseline": {
                             "coverage": left["coverage"],
-                            "weighted_reference_score": left["weighted_reference_score"],
+                            "weighted_reference_score": left[
+                                "weighted_reference_score"
+                            ],
                         },
-                        "proposed": {
+                        "reference_composite": {
                             "coverage": right["coverage"],
-                            "weighted_reference_score": right["weighted_reference_score"],
+                            "weighted_reference_score": right[
+                                "weighted_reference_score"
+                            ],
                         },
                     }
                 )
 
     baseline_optimum = sum(row["status"] == "OPTIMUM" for row in baseline)
-    proposed_optimum = sum(row["status"] == "OPTIMUM" for row in proposed)
+    reference_optimum = sum(row["status"] == "OPTIMUM" for row in reference)
     optimum_ratio = (
-        proposed_optimum / baseline_optimum
+        reference_optimum / baseline_optimum
         if baseline_optimum
-        else (1.0 if proposed_optimum == 0 else float("inf"))
+        else (1.0 if reference_optimum == 0 else float("inf"))
     )
-    checks = {
+    hard_checks = {
         "objective_mismatches": len(mismatches)
         <= int(gate["maximum_objective_mismatches"]),
+    }
+    evidence_checks = {
         "paired_optimum_runs": len(paired_optimum)
         >= int(gate["minimum_paired_optimum_runs"]),
-        "proposed_to_baseline_optimum_ratio": optimum_ratio
-        >= float(gate["minimum_proposed_to_baseline_optimum_ratio"]),
+        "reference_to_baseline_optimum_ratio": optimum_ratio
+        >= float(gate["minimum_reference_to_baseline_optimum_ratio"]),
     }
     return {
         "baseline_runs": len(baseline),
-        "proposed_runs": len(proposed),
+        "reference_composite_runs": len(reference),
         "baseline_optimum_runs": baseline_optimum,
-        "proposed_optimum_runs": proposed_optimum,
-        "proposed_to_baseline_optimum_ratio": optimum_ratio,
+        "reference_composite_optimum_runs": reference_optimum,
+        "reference_to_baseline_optimum_ratio": optimum_ratio,
         "paired_optimum_runs": len(paired_optimum),
         "objective_mismatches": mismatches,
-        "checks": checks,
-        "pass": all(checks.values()),
+        "hard_checks": hard_checks,
+        "evidence_checks": evidence_checks,
+        "hard_pass": all(hard_checks.values()),
+        "evidence_pass": all(evidence_checks.values()),
     }
 
 
@@ -120,9 +140,11 @@ def _multiobjective_metrics(
     epsilon_optimum = sum(row["status"] == "OPTIMUM" for row in epsilon)
     lex_rate = _rate(lex_optimum, len(lex))
     epsilon_rate = _rate(epsilon_optimum, len(epsilon))
-    checks = {
+    lex_checks = {
         "lex_cos_optimum_rate": lex_rate
         >= float(gate["minimum_lex_cos_optimum_rate"]),
+    }
+    epsilon_checks = {
         "epsilon_optimum_rate": epsilon_rate
         >= float(gate["minimum_epsilon_optimum_rate"]),
     }
@@ -133,8 +155,10 @@ def _multiobjective_metrics(
         "epsilon_runs": len(epsilon),
         "epsilon_optimum_runs": epsilon_optimum,
         "epsilon_optimum_rate": epsilon_rate,
-        "checks": checks,
-        "pass": all(checks.values()),
+        "lex_evidence_checks": lex_checks,
+        "epsilon_evidence_checks": epsilon_checks,
+        "lex_evidence_pass": all(lex_checks.values()),
+        "epsilon_evidence_pass": all(epsilon_checks.values()),
     }
 
 
@@ -146,7 +170,10 @@ def _weight_metrics(
     vectors_by_instance: dict[str, set[tuple[str, ...]]] = defaultdict(set)
     for row in optimum:
         vectors_by_instance[row["instance_sha256"]].add(
-            tuple(row[key] for key in ("coverage", "similarity", "continuity", "overtime"))
+            tuple(
+                row[key]
+                for key in ("coverage", "similarity", "continuity", "overtime")
+            )
         )
     unique_vectors = {
         vector for vectors in vectors_by_instance.values() for vector in vectors
@@ -155,7 +182,7 @@ def _weight_metrics(
         len(vectors) >= 2 for vectors in vectors_by_instance.values()
     )
     optimum_rate = _rate(len(optimum), len(weighted))
-    checks = {
+    evidence_checks = {
         "optimum_rate": optimum_rate >= float(gate["minimum_optimum_rate"]),
         "instances_with_multiple_vectors": instances_with_multiple_vectors
         >= int(gate["minimum_instances_with_multiple_vectors"]),
@@ -166,8 +193,8 @@ def _weight_metrics(
         "optimum_rate": optimum_rate,
         "instances_with_multiple_vectors": instances_with_multiple_vectors,
         "unique_objective_vectors": len(unique_vectors),
-        "checks": checks,
-        "pass": all(checks.values()),
+        "evidence_checks": evidence_checks,
+        "evidence_pass": all(evidence_checks.values()),
     }
 
 
@@ -180,9 +207,7 @@ def _lex_scalability_metrics(
     for row in rows:
         if row["method"] not in {"weighted", "lex-cos"}:
             continue
-        configuration = (
-            row["cardinality"], row["implied"], row["symmetry"]
-        )
+        configuration = (row["cardinality"], row["implied"], row["symmetry"])
         configurations[configuration][
             f"{row['instance_sha256']}:{row['method']}"
         ] = row
@@ -218,11 +243,13 @@ def _lex_scalability_metrics(
         if row.get("peak_rss_mb") not in (None, "")
     ]
     maximum_memory = max(memory_values) if memory_values else None
-    checks = {
+    evidence_checks = {
         "b0_optimum_runs": b0_optimum_total
         >= int(gate["minimum_b0_optimum_runs"]),
         "best_configuration_completion_rate": best_rate
         >= float(gate["minimum_best_configuration_completion_rate"]),
+    }
+    hard_checks = {
         "peak_rss_mb": maximum_memory is not None
         and maximum_memory <= float(gate["maximum_peak_rss_mb"]),
     }
@@ -231,8 +258,19 @@ def _lex_scalability_metrics(
         "b0_optimum_runs": b0_optimum_total,
         "best_configuration_completion_rate": best_rate,
         "maximum_peak_rss_mb": maximum_memory,
-        "checks": checks,
-        "pass": all(checks.values()),
+        "hard_checks": hard_checks,
+        "evidence_checks": evidence_checks,
+        "hard_pass": all(hard_checks.values()),
+        "evidence_pass": all(evidence_checks.values()),
+    }
+
+
+def _branch(passed: bool, pass_action: str, fail_action: str) -> dict[str, Any]:
+    """Return a machine-readable, auditable decision for one claim branch."""
+    return {
+        "enabled": passed,
+        "decision": "GO" if passed else "DROP_OR_REFRAME",
+        "action": pass_action if passed else fail_action,
     }
 
 
@@ -240,48 +278,67 @@ def evaluate(config_path: Path) -> dict[str, Any]:
     config_path = config_path.resolve()
     config = json.loads(config_path.read_text(encoding="utf-8"))
     base = config_path.parent
-    directories = {
-        name: _resolve(base, config[f"{name}_result_dir"])
-        for name in ("encoding", "multiobjective", "weight", "lex_scalability")
-    }
-    rows = {name: _read_rows(path) for name, path in directories.items()}
+    directories = {"encoding": _resolve(base, config["encoding_result_dir"])}
+    rows = {"encoding": _read_rows(directories["encoding"])}
     maximum_errors = int(config["maximum_hard_errors_per_campaign"])
     hard_errors = {name: _hard_errors(value) for name, value in rows.items()}
+    encoding = _encoding_metrics(rows["encoding"], config["encoding"])
+    memory_values = [
+        float(row["peak_rss_mb"])
+        for row in rows["encoding"]
+        if row.get("peak_rss_mb") not in (None, "")
+    ]
+    maximum_memory = max(memory_values) if memory_values else None
+    memory_pass = maximum_memory is not None and maximum_memory <= float(
+        config["maximum_peak_rss_mb"]
+    )
     result = {
         "config": str(config_path),
         "thresholds": {
             key: value
             for key, value in config.items()
-            if key not in {
-                "encoding_result_dir", "multiobjective_result_dir",
-                "weight_result_dir", "lex_scalability_result_dir", "output",
+            if key
+            not in {
+                "encoding_result_dir",
+                "output",
             }
         },
         "hard_errors": hard_errors,
-        "encoding": _encoding_metrics(rows["encoding"], config["encoding"]),
-        "multiobjective": _multiobjective_metrics(
-            rows["multiobjective"], config["multiobjective"]
+        "encoding": encoding,
+        "maximum_peak_rss_mb": maximum_memory,
+    }
+    technical_pass = all(count <= maximum_errors for count in hard_errors.values())
+    result["hard_checks"] = {
+        "technical_and_validation_errors": technical_pass,
+        "encoding_objective_equivalence": encoding["hard_pass"],
+        "memory_limit": memory_pass,
+    }
+    result["hard_stop_pass"] = all(result["hard_checks"].values())
+    result["branches"] = {
+        "reference_composite": _branch(
+            encoding["evidence_pass"],
+            "retain the reference composite for the predeclared paired study",
+            "retain factorial evidence but do not call the composite preferred or superior",
         ),
-        "weights": _weight_metrics(rows["weight"], config["weights"]),
-        "lex_scalability": _lex_scalability_metrics(
-            rows["lex_scalability"], config["lex_scalability"]
+        "original_lexicographic": _branch(
+            result["hard_stop_pass"],
+            "run LEX-COS and LEX-OCS under the fixed reference configuration",
+            "stop the publication campaign and repair the factorial hard failure",
+        ),
+        "corrected_v2_lexicographic": _branch(
+            result["hard_stop_pass"],
+            "run the 80-instance corrected-v2 paired validation",
+            "stop the publication campaign and repair the factorial hard failure",
         ),
     }
-    result["hard_error_gate"] = all(
-        count <= maximum_errors for count in hard_errors.values()
-    )
-    result["decision"] = (
-        "GO"
-        if result["hard_error_gate"]
-        and result["encoding"]["pass"]
-        and result["multiobjective"]["pass"]
-        and result["weights"]["pass"]
-        and result["lex_scalability"]["pass"]
-        else "NO-GO"
-    )
+    result["publication_scope"] = "COMPACT" if result["hard_stop_pass"] else "STOP"
+    result["expected_measured_runs"] = int(config["expected_measured_runs"])
+    result["decision"] = "GO" if result["hard_stop_pass"] else "NO-GO"
     output = _resolve(base, config["output"])
     output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    output.write_text(
+        json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
     result["output"] = str(output)
     return result
 

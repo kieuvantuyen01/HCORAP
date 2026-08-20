@@ -284,12 +284,27 @@ def _build_tasks(
 def _sample_rss(process: subprocess.Popen[Any]) -> int | None:
     try:
         import psutil  # type: ignore
-
-        root = psutil.Process(process.pid)
-        processes = [root, *root.children(recursive=True)]
-        return sum(item.memory_info().rss for item in processes if item.is_running())
-    except (ImportError, OSError, ProcessLookupError):
-        pass
+    except ImportError:
+        psutil = None
+    if psutil is not None:
+        try:
+            root = psutil.Process(process.pid)
+            processes = [root, *root.children(recursive=True)]
+            total = 0
+            observed = False
+            for item in processes:
+                try:
+                    if item.is_running():
+                        total += item.memory_info().rss
+                        observed = True
+                except psutil.Error:
+                    # The process can exit or become a zombie between the two
+                    # calls.  That is a normal end-of-run sampling race, not a
+                    # campaign failure.
+                    continue
+            return total if observed else None
+        except (OSError, ProcessLookupError, psutil.Error):
+            pass
     # Dependency-free fallback for the GCP/Linux and macOS execution hosts.
     try:
         completed = subprocess.run(

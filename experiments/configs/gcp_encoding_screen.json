@@ -1,6 +1,6 @@
 {
   "binary": "../../bin/release/hcorap_multi",
-  "solver": "${OPEN_WBO_BIN}",
+  "solver": "${EVALMAXSAT_BIN}",
   "result_dir": "../results/gcp_encoding_screen",
   "instances": [
     "../../instances/corrected_v2_reduced_suite/calibration/calibration/critical/*.txt"

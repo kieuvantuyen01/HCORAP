@@ -1,6 +1,6 @@
 {
   "binary": "../../bin/release/hcorap_multi",
-  "solver": "${OPEN_WBO_BIN}",
+  "solver": "${EVALMAXSAT_BIN}",
   "result_dir": "../results/gcp_original_weighted_primary",
   "instances": ["../../instances/paperInstances/**/*.txt"],
   "expected_instances": 800,

@@ -9,7 +9,7 @@
 - `hcorap_multi --method lex-cos`: `CONT -> OT -> SIM`, policy chính;
 - `hcorap_multi --method lex-overtime`: ưu tiên overtime;
 - `hcorap_multi --method epsilon`: similarity-budget epsilon-constraint;
-- một binary Open-WBO C++ đã khóa commit cho tất cả các phương pháp.
+- một binary EvalMaxSAT Linux x86-64 đã khóa SHA-256 cho tất cả các phương pháp.
 
 Python trong `src/proposed/hcorap/` chỉ là oracle, generator, verifier thứ hai và công
 cụ phân tích. Không lấy runtime Python để đưa vào bảng so sánh hiệu năng chính.
@@ -39,20 +39,19 @@ baseline audit nguyên vẹn, mã mới không sửa helper cũ mà mã hóa c�
 `sum(q_i*x_i) >= K` thành `sum(q_i*(not x_i)) <= sum(q_i)-K`. Các tầng cố định
 coverage/similarity và các test lexicographic/epsilon đều đi qua đường này.
 
-B2 đầy đủ ban đầu dùng grid delta `0, 0.01, 0.025, 0.05, 0.10`. Trong campaign
-ICIIT rút gọn, full confirmation đã hoãn và exploratory screen chỉ khóa ba mức
-`0, 0.05, 0.10`. JSON phải lưu similarity reference optimum, ceiling lower
-bound, realized loss và bốn stage full-coverage. Sau campaign, các delta dẫn
-đến cùng `(coverage, similarity, continuity, overtime)` được gộp trong bảng
-unique points nhưng raw rows không bị xóa. Không trình bày screen ba mức như một
-Pareto-front confirmation.
+B2 đầy đủ ban đầu dùng grid delta `0, 0.01, 0.025, 0.05, 0.10`. Cả full
+confirmation và exploratory screen hiện nằm ngoài compact ICIIT campaign. Code
+vẫn phải lưu similarity reference optimum, ceiling lower bound, realized loss
+và bốn stage full-coverage nếu nhánh này được chạy trong nghiên cứu sau; không
+được nhập các pilot epsilon lịch sử vào publication tables.
 
 ## Hai phép so sánh phải tách riêng
 
 1. **So sánh phương pháp tối ưu (bảng chính):** mọi phương pháp dùng cùng parser,
-   hard model, WCNF writer, compiler flags, Open-WBO binary và verifier C++.
-   B0 là weighted `(wc, wo)=(1,1)`. Thiết kế này cô lập ảnh hưởng của weighted,
-   lexicographic và epsilon-constraint.
+   hard model, WCNF writer, compiler flags, EvalMaxSAT binary và verifier C++.
+   B0 là weighted `(wc, wo)=(1,1)`. Compact campaign so B0 với LEX-COS và
+   LEX-OCS dưới cùng cấu hình/thời hạn; epsilon-constraint không nằm trong
+   measured matrix.
 2. **Tái lập mã tác giả (bảng audit):** chạy `hcorap2sat` nguyên gốc để đối chiếu
    feasibility và optimum. Không trộn runtime này vào bảng chính khi encoding,
    WCNF format hoặc backend khác nhau. Chỉ so runtime trực tiếp sau khi cả hai
@@ -60,29 +59,25 @@ Pareto-front confirmation.
 
 ## Backend đã kiểm thử
 
-Open-WBO 2.1, commit `80f3073e41028b219b0b0ad7c61fba28351f88e6`,
-được dùng làm backend tham chiếu. Công thức được xuất ở WCNF legacy có header
-và top weight để solver này đọc trực tiếp. Lệnh build tổng quát:
+EvalMaxSAT Linux x86-64 được dùng làm backend tham chiếu, nhất quán với solver
+family được nghiên cứu gốc chọn sau preliminary comparison. Binary publication
+được khóa bằng SHA-256:
 
 ```sh
-git clone https://github.com/sat-group/open-wbo.git
-cd open-wbo
-git checkout 80f3073e41028b219b0b0ad7c61fba28351f88e6
-git submodule update --init --recursive
-make -j4
+97614c996e1173ca0672ec46da153656046db1d84b9362a8561161ee750779f7
 ```
 
-Open-WBO cần GMP. Trên macOS/Homebrew, nếu compiler không tìm thấy GMP:
+Đặt binary đã lưu trữ lên GCP và kiểm tra trước khi chạy:
 
 ```sh
-CPLUS_INCLUDE_PATH="$(brew --prefix gmp)/include" \
-LIBRARY_PATH="$(brew --prefix gmp)/lib" make -j4
+install -m 0755 /path/to/archived/EvalMaxSAT_bin /opt/evalmaxsat/EvalMaxSAT_bin
+sha256sum /opt/evalmaxsat/EvalMaxSAT_bin
 ```
 
-Không thay solver giữa các phương pháp trong cùng một campaign. EvalMaxSAT chỉ
-được dùng lại sau khi phiên bản đã khóa vượt qua smoke test trên cùng hệ điều
-hành; các binary EvalMaxSAT thử trên macOS ARM trong giai đoạn triển khai đã
-segmentation fault trên WCNF chính thức nên không được dùng cho số liệu cuối.
+Không thay solver giữa các phương pháp trong cùng một campaign. File Mach-O
+ARM64 ở máy phát triển không phải publication binary. Preflight trên Linux phải
+chứng minh được weighted optimum và cả ba stage LEX-COS trên WCNF do encoder
+hiện hành sinh ra trước khi bất kỳ measured row nào được chạy.
 
 ## Phạm vi đo thời gian
 
@@ -106,7 +101,7 @@ MaxSAT độc lập.
 
 - cùng máy, một CPU core, governor/power mode và giới hạn RAM;
 - cùng compiler, cờ `-O3 -DNDEBUG -std=c++11` và cùng commit mã nguồn;
-- cùng Open-WBO binary/commit và tham số solver;
+- cùng EvalMaxSAT binary SHA-256 và tham số solver;
 - cùng thứ tự instance ngẫu nhiên đã lưu seed;
 - chạy blocked-instance: xáo thứ tự instance và xáo cấu hình trong từng block;
 - publication run dùng một worker được pin vào một vCPU;
@@ -130,9 +125,9 @@ continuity, overtime và overtime cost do verifier C++ tính lại.
 ```sh
 make -j4 YICES=0
 chmod +x experiments/run_cpp_experiments.sh
-SOLVER_ID=open-wbo-2.1-80f3073 TIMEOUT=300 \
+SOLVER_ID=evalmaxsat-97614c996e11 TIMEOUT=300 \
 experiments/run_cpp_experiments.sh \
-  /absolute/path/to/open-wbo \
+  /opt/evalmaxsat/EvalMaxSAT_bin \
   experiments/results/cpp_pilot \
   tests/instances/tradeoff.txt \
   instances/paperInstances/TXT_10-25_4-5_U30/instance_30_15_4_47.txt
@@ -153,7 +148,7 @@ Tương tự, `implied_constraints` và `symmetry_breaking` được ghi vào c�
 ## Kiểm tra bắt buộc trước full experiment
 
 ```sh
-OPEN_WBO_BIN=/absolute/path/to/open-wbo \
+EVALMAXSAT_BIN=/opt/evalmaxsat/EvalMaxSAT_bin \
 PYTHONPATH=src/proposed python3 -m pytest -q
 ```
 

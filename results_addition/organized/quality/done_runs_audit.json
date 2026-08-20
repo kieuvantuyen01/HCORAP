@@ -1,0 +1,68 @@
+[
+  {
+    "duplicate_rows": 0,
+    "path": "commercial_30_15_4_40_25_5/.done_runs",
+    "rows": 400,
+    "unique_rows": 400
+  },
+  {
+    "duplicate_rows": 3027,
+    "path": "commercial_all_modes_30_15_4_40_25_5/.done_runs",
+    "rows": 6227,
+    "unique_rows": 3200
+  },
+  {
+    "duplicate_rows": 88,
+    "path": "epsilon_8cfg_evalmaxsat/delta_0/.done_runs",
+    "rows": 450,
+    "unique_rows": 362
+  },
+  {
+    "duplicate_rows": 0,
+    "path": "epsilon_8cfg_evalmaxsat/delta_0p01/.done_runs",
+    "rows": 360,
+    "unique_rows": 360
+  },
+  {
+    "duplicate_rows": 0,
+    "path": "epsilon_8cfg_evalmaxsat/delta_0p025/.done_runs",
+    "rows": 360,
+    "unique_rows": 360
+  },
+  {
+    "duplicate_rows": 0,
+    "path": "epsilon_8cfg_evalmaxsat/delta_0p05/.done_runs",
+    "rows": 376,
+    "unique_rows": 376
+  },
+  {
+    "duplicate_rows": 0,
+    "path": "epsilon_8cfg_evalmaxsat/delta_0p10/.done_runs",
+    "rows": 390,
+    "unique_rows": 390
+  },
+  {
+    "duplicate_rows": 0,
+    "path": "iciit2027_all_solvers/.done_runs",
+    "rows": 20,
+    "unique_rows": 20
+  },
+  {
+    "duplicate_rows": 0,
+    "path": "lex_8cfg_evalmaxsat/lex-continuity/.done_runs",
+    "rows": 360,
+    "unique_rows": 360
+  },
+  {
+    "duplicate_rows": 0,
+    "path": "lex_8cfg_evalmaxsat/lex-overtime/.done_runs",
+    "rows": 1329,
+    "unique_rows": 1329
+  },
+  {
+    "duplicate_rows": 137,
+    "path": "main_8cfg_evalmaxsat/.done_runs",
+    "rows": 2133,
+    "unique_rows": 1996
+  }
+]

@@ -1,0 +1,51 @@
+from __future__ import annotations
+
+import csv
+import json
+from pathlib import Path
+
+from experiments.analyze_corrected_validation import analyze
+
+
+def test_corrected_validation_builds_policy_and_paired_tables(tmp_path: Path) -> None:
+    source = tmp_path / "source"
+    source.mkdir()
+    (source / "validation.json").write_text(
+        json.dumps({"complete": True}), encoding="utf-8"
+    )
+    rows = []
+    for index in range(80):
+        for method in ("weighted", "lex-cos"):
+            rows.append(
+                {
+                    "instance_sha256": f"sha-{index}",
+                    "instance": f"instance-{index}.txt",
+                    "method": method,
+                    "cardinality": "totalizer",
+                    "implied": "both",
+                    "symmetry": "slot-service",
+                    "load_profile": "critical",
+                    "status": "OPTIMUM",
+                    "verified": "True",
+                    "elapsed_seconds": "2",
+                    "timeout_seconds": "300",
+                    "peak_rss_mb": "100",
+                    "similarity": "90" if method == "lex-cos" else "100",
+                    "continuity": "1" if method == "lex-cos" else "3",
+                    "overtime": "0" if method == "lex-cos" else "1",
+                }
+            )
+    with (source / "runs.csv").open("w", newline="", encoding="utf-8") as stream:
+        writer = csv.DictWriter(stream, fieldnames=list(rows[0]))
+        writer.writeheader()
+        writer.writerows(rows)
+
+    result = analyze(source, tmp_path / "analysis")
+    assert result["valid"]
+    with (tmp_path / "analysis" / "corrected_paired_summary.csv").open(
+        newline="", encoding="utf-8"
+    ) as stream:
+        summary = next(csv.DictReader(stream))
+    assert summary["both_optimum_pairs"] == "80"
+    assert summary["median_continuity_change"] == "-2.0"
+    assert summary["median_overtime_change"] == "-1.0"

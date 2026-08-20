@@ -7,66 +7,61 @@ PROJECT_ROOT=$(cd "$(dirname "$0")/.." && pwd)
 cd "$PROJECT_ROOT"
 export PYTHONPATH="$PROJECT_ROOT/src/proposed${PYTHONPATH:+:$PYTHONPATH}"
 
-PINNED_OPEN_WBO_COMMIT=80f3073e41028b219b0b0ad7c61fba28351f88e6
+PINNED_EVALMAXSAT_SHA256=$(python3 -c \
+    'import json; print(json.load(open("experiments/configs/reduced_campaign_manifest.json"))["maxsat_solver"]["sha256"])')
 RUNNER_PREFIX=()
+SCREEN_DECISION=experiments/results/screening_decision.json
 
 usage() {
     cat <<'EOF'
 Usage: experiments/gcp_prepare_and_run.sh PHASE
 
 Safe phases:
-  preflight             Validate VM, solver, build, tests, and benchmark files
+  preflight             Validate VM, EvalMaxSAT, build, tests, and benchmarks
   prepare               Generate and verify the corrected-v2 benchmark suite
-  screen                 Factorial, lex, small epsilon, and 4-weight screens
+  solver-calibration    Run four non-measured EvalMaxSAT LEX-COS gate rows
+  screen                Run the 640-row factorial primary/hard gate
   commercial-preflight  Build and license-test Gurobi/CPLEX backends
 
 Full manuscript phases (require CONFIRM_FULL_CAMPAIGN=YES):
-  original-primary      Full weighted pair + held-out LEX-COS + LEX-OCS
-  corrected-primary     Reduced corrected-v2 critical evaluation campaign
-  commercial            Gurobi/CPLEX weighted + LEX-COS on original subset
-  all                   Run the complete reduced ICIIT campaign
+  original-primary      Run 140 weighted + 140 LEX-COS + 70 LEX-OCS rows under R
+  corrected-primary     Run 160 corrected-v2 critical validation rows
+  commercial            Run 80 MIP + 40 MaxSAT commercial validation rows
+  all                   Run the complete 1,270-row compact ICIIT campaign
 
-Deferred (not called by all):
+Deferred research phases (outside the publication manifest; not called by all):
   pareto, weight-confirmation, uncertainty
 
 Post-processing:
-  analyze               Rebuild confirmatory factorial/lex manuscript tables
+  analyze               Rebuild compact factorial/policy/validation tables
   package               Create a checksummed reproducibility archive
 EOF
 }
 
 require_maxsat_environment() {
-    if [ -z "${OPEN_WBO_BIN:-}" ] || [ ! -x "$OPEN_WBO_BIN" ]; then
-        echo "Set OPEN_WBO_BIN to the pinned Linux Open-WBO executable." >&2
+    if [ -z "${EVALMAXSAT_BIN:-}" ] || [ ! -x "$EVALMAXSAT_BIN" ]; then
+        echo "Set EVALMAXSAT_BIN to the pinned Linux x86-64 EvalMaxSAT executable." >&2
         exit 2
     fi
-    if [ "${OPEN_WBO_COMMIT:-}" != "$PINNED_OPEN_WBO_COMMIT" ]; then
-        echo "Set OPEN_WBO_COMMIT=$PINNED_OPEN_WBO_COMMIT after checking the solver source." >&2
+    if ! command -v sha256sum >/dev/null 2>&1; then
+        echo "sha256sum is required to verify the EvalMaxSAT binary." >&2
         exit 2
     fi
-    if [ -z "${OPEN_WBO_SOURCE_DIR:-}" ] || [ ! -d "$OPEN_WBO_SOURCE_DIR/.git" ]; then
-        echo "Set OPEN_WBO_SOURCE_DIR to the pinned Open-WBO source checkout." >&2
+    observed_solver_hash=$(sha256sum "$EVALMAXSAT_BIN" | awk '{print $1}')
+    if [ "$observed_solver_hash" != "$PINNED_EVALMAXSAT_SHA256" ]; then
+        echo "EvalMaxSAT SHA-256 is $observed_solver_hash, not the pinned Linux binary." >&2
+        echo "Expected: $PINNED_EVALMAXSAT_SHA256" >&2
         exit 2
     fi
-    observed_commit=$(git -C "$OPEN_WBO_SOURCE_DIR" rev-parse HEAD)
-    if [ "$observed_commit" != "$PINNED_OPEN_WBO_COMMIT" ]; then
-        echo "Open-WBO checkout is at $observed_commit, not the pinned commit." >&2
-        exit 2
-    fi
-    solver_path=$(realpath "$OPEN_WBO_BIN")
-    solver_root=$(realpath "$OPEN_WBO_SOURCE_DIR")
-    case "$solver_path" in
-        "$solver_root"/*) ;;
-        *)
-            echo "OPEN_WBO_BIN must be built inside OPEN_WBO_SOURCE_DIR." >&2
-            exit 2
-            ;;
-    esac
 }
 
 check_machine() {
     if [ "$(uname -s)" != "Linux" ]; then
         echo "The manuscript campaign must run on Linux; found $(uname -s)." >&2
+        exit 2
+    fi
+    if [ "$(uname -m)" != "x86_64" ]; then
+        echo "The pinned EvalMaxSAT binary requires Linux x86-64; found $(uname -m)." >&2
         exit 2
     fi
     cpu_count=$(getconf _NPROCESSORS_ONLN)
@@ -117,15 +112,120 @@ check_clean_for_full() {
         echo "Full publication phases require WORKERS=1 for uncontended timing." >&2
         exit 2
     fi
-    if [ -n "$(git status --porcelain)" ] && [ "${ALLOW_DIRTY_WORKTREE:-0}" != "1" ]; then
-        echo "Refusing a full campaign from a dirty worktree. Commit/tag it first." >&2
+    check_frozen_revision
+}
+
+check_frozen_revision() {
+    if [ -z "${HCORAP_EXPECTED_COMMIT:-}" ]; then
+        echo "Set HCORAP_EXPECTED_COMMIT to the clean publication commit or tag." >&2
         exit 2
     fi
+    if ! expected_commit=$(git rev-parse --verify "${HCORAP_EXPECTED_COMMIT}^{commit}" 2>/dev/null); then
+        echo "HCORAP_EXPECTED_COMMIT does not resolve to a commit: $HCORAP_EXPECTED_COMMIT" >&2
+        exit 2
+    fi
+    observed_commit=$(git rev-parse HEAD)
+    if [ "$observed_commit" != "$expected_commit" ]; then
+        echo "Repository is at $observed_commit, not expected $expected_commit." >&2
+        exit 2
+    fi
+    if [ -n "$(git status --porcelain)" ]; then
+        echo "Refusing a measured campaign from a dirty worktree. Commit/tag it first." >&2
+        exit 2
+    fi
+    validate_backup_destination
+}
+
+validate_backup_destination() {
+    if [ -z "${HCORAP_BACKUP_DIR:-}" ]; then
+        echo "Set HCORAP_BACKUP_DIR to a persistent mounted backup directory." >&2
+        exit 2
+    fi
+    if ! command -v rsync >/dev/null 2>&1; then
+        echo "rsync is required for phase checkpoints." >&2
+        exit 2
+    fi
+    backup_root=$(realpath -m "$HCORAP_BACKUP_DIR")
+    project_root=$(realpath "$PROJECT_ROOT")
+    if [ "$backup_root" = "/" ] || [ "$backup_root" = "$project_root" ]; then
+        echo "HCORAP_BACKUP_DIR must not be / or the project root." >&2
+        exit 2
+    fi
+    case "$backup_root" in
+        "$project_root"/*)
+            echo "HCORAP_BACKUP_DIR must be outside the project worktree." >&2
+            exit 2
+            ;;
+    esac
+    mkdir -p "$backup_root"
+}
+
+checkpoint_results() {
+    label=$1
+    if [ -z "${HCORAP_BACKUP_DIR:-}" ]; then
+        return
+    fi
+    validate_backup_destination
+    backup_root=$(realpath -m "$HCORAP_BACKUP_DIR")
+    checkpoint_root="$backup_root/hcorap_iciit2027_checkpoint"
+    mkdir -p "$checkpoint_root/results" "$checkpoint_root/vm-logs"
+    rsync -a experiments/results/ "$checkpoint_root/results/"
+    if [ -d vm-logs ]; then
+        rsync -a vm-logs/ "$checkpoint_root/vm-logs/"
+    fi
+    if [ -d artifacts ]; then
+        mkdir -p "$checkpoint_root/artifacts"
+        rsync -a artifacts/ "$checkpoint_root/artifacts/"
+    fi
+    {
+        date -u '+checkpoint_utc=%Y-%m-%dT%H:%M:%SZ'
+        echo "phase=$label"
+        echo "source_commit=$(git rev-parse HEAD)"
+    } > "$checkpoint_root/checkpoint.txt"
+    sync
+    echo "Checkpointed phase '$label' to $checkpoint_root."
 }
 
 build_and_test() {
     make -j8 YICES=0 hcorap_multi hcorap_commercial
     python3 -m pytest -q
+}
+
+validate_evalmaxsat_backend() {
+    smoke_dir=$(mktemp -d)
+    trap 'rm -r "$smoke_dir"' EXIT
+    methods=(weighted lex-cos)
+    for method in "${methods[@]}"; do
+        "${RUNNER_PREFIX[@]}" timeout --signal=TERM --kill-after=5 45 \
+            bin/release/hcorap_multi tests/instances/lex_cos_tie.txt \
+            --solver "$EVALMAXSAT_BIN" --timeout 30 --method "$method" \
+            --cardinality-encoding totalizer --implied-constraints both \
+            --symmetry-breaking slot-service \
+            > "$smoke_dir/$method.json"
+    done
+    python3 - "$smoke_dir" <<'PY'
+import json, sys
+from pathlib import Path
+
+root = Path(sys.argv[1])
+expected_calls = {"weighted": 1, "lex-cos": 3}
+for method, calls in expected_calls.items():
+    path = root / f"{method}.json"
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    if payload.get("status") != "OPTIMUM":
+        raise SystemExit(f"EvalMaxSAT smoke did not prove {method}: {payload}")
+    if payload.get("solver_calls") != calls:
+        raise SystemExit(f"EvalMaxSAT smoke stage mismatch for {method}: {payload}")
+    if payload.get("metrics", {}).get("verified") is not True:
+        raise SystemExit(f"EvalMaxSAT smoke verifier failure for {method}: {payload}")
+    if method == "lex-cos":
+        objectives = [stage.get("objective") for stage in payload.get("stages", [])]
+        if objectives != ["continuity", "overtime", "similarity"]:
+            raise SystemExit(f"EvalMaxSAT LEX-COS order mismatch: {objectives}")
+PY
+    rm -r "$smoke_dir"
+    trap - EXIT
+    echo "Pinned EvalMaxSAT passed weighted and three-stage LEX-COS smoke tests."
 }
 
 prepare_suite() {
@@ -149,7 +249,7 @@ run_warmup() {
     for index in "${!warmup_instances[@]}"; do
         if "${RUNNER_PREFIX[@]}" timeout --signal=TERM --kill-after=5 45 \
                 bin/release/hcorap_multi "${warmup_instances[$index]}" \
-                --solver "$OPEN_WBO_BIN" --timeout 30 --method weighted \
+                --solver "$EVALMAXSAT_BIN" --timeout 30 --method weighted \
                 --cardinality-encoding totalizer --implied-constraints both \
                 --symmetry-breaking slot-service \
                 --output "$warmup_dir/$index.json" >/dev/null; then
@@ -183,20 +283,43 @@ PY
 
 validate_maxsat_configs() {
     python3 experiments/validate_campaign_manifest.py
+    python3 experiments/validate_publication_campaign.py
     configs=(
         gcp_original_ablation
-        gcp_multiobjective_screen
-        gcp_weight_screen
-        gcp_lex_scalability_screen
-        gcp_original_weighted_primary
         gcp_original_lex_primary
         gcp_original_lex_sensitivity
         gcp_corrected_primary
+        gcp_maxsat_commercial_validation
+        gcp_evalmaxsat_lex_calibration
     )
     for name in "${configs[@]}"; do
         python3 experiments/run_reproducible_campaign.py \
             "experiments/configs/$name.json" --dry-run
     done
+    validate_evalmaxsat_backend
+}
+
+run_evalmaxsat_calibration() {
+    result_dir=experiments/results/gcp_evalmaxsat_lex_calibration
+    run_maxsat experiments/configs/gcp_evalmaxsat_lex_calibration.json "$result_dir"
+    python3 - "$result_dir/runs.csv" <<'PY'
+import csv, sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+with path.open(newline="", encoding="utf-8") as stream:
+    rows = list(csv.DictReader(stream))
+optimum = sum(row["status"] == "OPTIMUM" for row in rows)
+unexpected = [row["run_id"] for row in rows if row["status"] not in {"OPTIMUM", "TIMEOUT", "TIMEOUT_FEASIBLE"}]
+if len(rows) != 4 or unexpected or optimum < 2:
+    raise SystemExit(
+        "EvalMaxSAT scalability calibration failed: "
+        f"rows={len(rows)}/4, optimum={optimum}/4, unexpected={len(unexpected)}. "
+        "Do not start the measured campaign; review timeout/solver suitability "
+        "on a new publication commit."
+    )
+print(f"EvalMaxSAT scalability calibration passed: {optimum}/4 LEX-COS optima.")
+PY
 }
 
 run_maxsat() {
@@ -206,6 +329,31 @@ run_maxsat() {
         --resume --workers "$WORKERS"
     python3 experiments/collect_reproducible_campaign.py "$result_dir"
     validate_result_integrity "$result_dir"
+    validate_peak_rss_limit "$result_dir"
+}
+
+validate_peak_rss_limit() {
+    result_dir=$1
+    maximum_mb=${HCORAP_MAX_PEAK_RSS_MB:-12288}
+    python3 - "$result_dir/runs.csv" "$maximum_mb" <<'PY'
+import csv, sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+limit = float(sys.argv[2])
+with path.open(newline="", encoding="utf-8") as stream:
+    rows = list(csv.DictReader(stream))
+missing = [row.get("run_id", "?") for row in rows if not row.get("peak_rss_mb")]
+over = [
+    (row.get("run_id", "?"), float(row["peak_rss_mb"]))
+    for row in rows if row.get("peak_rss_mb") and float(row["peak_rss_mb"]) > limit
+]
+if missing or over:
+    raise SystemExit(
+        f"peak-RSS gate failed for {path}: missing={len(missing)}, "
+        f"over_{limit:g}MB={len(over)}"
+    )
+PY
 }
 
 validate_result_integrity() {
@@ -239,6 +387,7 @@ run_commercial() {
         --resume --workers "$WORKERS"
     python3 experiments/collect_commercial_campaign.py "$result_dir"
     validate_result_integrity "$result_dir"
+    validate_peak_rss_limit "$result_dir"
     validate_commercial_agreement "$result_dir"
 }
 
@@ -277,14 +426,14 @@ with (root / "backend_agreement.csv").open(newline="", encoding="utf-8") as stre
 
 expected_backends = {"gurobi-mip", "cplex-mip", "reference-enumerator"}
 problems = []
-if len(runs) != 36:
-    problems.append(f"runs={len(runs)}/36")
+if len(runs) != 18:
+    problems.append(f"runs={len(runs)}/18")
 if any(row["status"] != "OPTIMUM" for row in runs):
     problems.append("not every smoke run reached OPTIMUM")
 if any(row["verified"] != "True" for row in runs):
     problems.append("not every smoke optimum was verified")
-if len(agreements) != 12:
-    problems.append(f"agreement_groups={len(agreements)}/12")
+if len(agreements) != 6:
+    problems.append(f"agreement_groups={len(agreements)}/6")
 for row in agreements:
     observed = {item.strip() for item in row["backends"].split("|")}
     if observed != expected_backends:
@@ -299,37 +448,70 @@ PY
 }
 
 run_screen() {
+    # The compact campaign spends its screening budget only on the complete
+    # factorial, which is itself primary evidence.  All later phases are fixed
+    # and run only after this hard correctness/memory gate passes.
     run_maxsat experiments/configs/gcp_original_ablation.json \
         experiments/results/gcp_original_ablation
-    run_maxsat experiments/configs/gcp_multiobjective_screen.json \
-        experiments/results/gcp_multiobjective_screen
-    python3 experiments/analyze_pareto_results.py \
-        --results experiments/results/gcp_multiobjective_screen \
-        --output-dir experiments/results/gcp_multiobjective_screen_analysis
-    run_maxsat experiments/configs/gcp_weight_screen.json \
-        experiments/results/gcp_weight_screen
-    python3 experiments/analyze_weight_sensitivity.py \
-        --results experiments/results/gcp_weight_screen \
-        --output-dir experiments/results/gcp_weight_screen_analysis
-    run_maxsat experiments/configs/gcp_lex_scalability_screen.json \
-        experiments/results/gcp_lex_scalability_screen
     python3 experiments/evaluate_screening_gates.py \
         experiments/configs/screening_gates.json
+    python3 - "$SCREEN_DECISION" <<'PY'
+import json, sys
+from pathlib import Path
+
+decision = json.loads(Path(sys.argv[1]).read_text())
+print(f"Screening: {decision['decision']} ({decision['publication_scope']})")
+for name, branch in decision["branches"].items():
+    print(f"  {name}: {branch['decision']} -- {branch['action']}")
+print(f"Expected measured rows for selected scope: {decision['expected_measured_runs']}")
+PY
+}
+
+branch_enabled() {
+    branch=$1
+    if [ ! -f "$SCREEN_DECISION" ]; then
+        echo "Missing screening decision: $SCREEN_DECISION" >&2
+        exit 2
+    fi
+    if ! enabled=$(python3 - "$SCREEN_DECISION" "$branch" <<'PY'
+import json, sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+decision = json.loads(path.read_text())
+if decision.get("decision") != "GO":
+    raise SystemExit(f"hard screening decision is {decision.get('decision')}")
+print("true" if decision["branches"][sys.argv[2]]["enabled"] else "false")
+PY
+    ); then
+        echo "Cannot read branch '$branch' from $SCREEN_DECISION." >&2
+        exit 2
+    fi
+    [ "$enabled" = "true" ]
 }
 
 run_original_primary() {
-    run_maxsat experiments/configs/gcp_original_weighted_primary.json \
-        experiments/results/gcp_original_weighted_primary
-    run_maxsat experiments/configs/gcp_original_lex_primary.json \
-        experiments/results/gcp_original_lex_primary
-    run_maxsat experiments/configs/gcp_original_lex_sensitivity.json \
-        experiments/results/gcp_original_lex_sensitivity
-    python3 experiments/analyze_primary_campaigns.py
+    if branch_enabled original_lexicographic; then
+        run_maxsat experiments/configs/gcp_original_lex_primary.json \
+            experiments/results/gcp_original_lex_primary
+        run_maxsat experiments/configs/gcp_original_lex_sensitivity.json \
+            experiments/results/gcp_original_lex_sensitivity
+        python3 experiments/analyze_primary_campaigns.py
+    else
+        echo "Compact scope cannot continue after a failed factorial hard gate." >&2
+        exit 2
+    fi
 }
 
 run_corrected_primary() {
-    run_maxsat experiments/configs/gcp_corrected_primary.json \
-        experiments/results/gcp_corrected_primary
+    if branch_enabled corrected_v2_lexicographic; then
+        run_maxsat experiments/configs/gcp_corrected_primary.json \
+            experiments/results/gcp_corrected_primary
+        python3 experiments/analyze_corrected_validation.py
+    else
+        echo "Compact scope cannot continue after a failed factorial hard gate." >&2
+        exit 2
+    fi
 }
 
 run_uncertainty() {
@@ -361,8 +543,21 @@ commercial_preflight() {
 
 run_all_commercial() {
     commercial_preflight
+    run_commercial_primary
+}
+
+run_commercial_primary() {
+    if branch_enabled original_lexicographic; then
+        run_maxsat experiments/configs/gcp_maxsat_commercial_validation.json \
+            experiments/results/gcp_maxsat_commercial_validation
+    else
+        echo "Compact scope cannot continue after a failed factorial hard gate." >&2
+        exit 2
+    fi
     run_commercial experiments/configs/gcp_commercial_original.json \
         experiments/results/gcp_commercial_original
+    python3 experiments/analyze_cross_paradigm_validation.py \
+        --scope full
 }
 
 if [ "$PHASE" = "help" ] || [ "$PHASE" = "--help" ] || [ "$PHASE" = "-h" ]; then
@@ -383,12 +578,22 @@ case "$PHASE" in
     prepare)
         prepare_suite
         ;;
+    solver-calibration)
+        check_frozen_revision
+        build_and_test
+        prepare_suite
+        validate_maxsat_configs
+        run_evalmaxsat_calibration
+        checkpoint_results solver-calibration
+        ;;
     screen)
+        check_frozen_revision
         build_and_test
         prepare_suite
         validate_maxsat_configs
         run_warmup
         run_screen
+        checkpoint_results screen
         ;;
     original-primary)
         check_clean_for_full
@@ -396,6 +601,7 @@ case "$PHASE" in
         prepare_suite
         run_warmup
         run_original_primary
+        checkpoint_results original-primary
         ;;
     corrected-primary)
         check_clean_for_full
@@ -403,6 +609,7 @@ case "$PHASE" in
         prepare_suite
         run_warmup
         run_corrected_primary
+        checkpoint_results corrected-primary
         ;;
     pareto)
         check_clean_for_full
@@ -434,29 +641,46 @@ case "$PHASE" in
         ;;
     commercial-preflight)
         commercial_preflight
+        checkpoint_results commercial-preflight
         ;;
     commercial)
         check_clean_for_full
         prepare_suite
         run_all_commercial
+        checkpoint_results commercial
         ;;
     analyze)
+        branch_enabled original_lexicographic
         python3 experiments/analyze_primary_campaigns.py
+        if branch_enabled corrected_v2_lexicographic; then
+            python3 experiments/analyze_corrected_validation.py
+        fi
+        python3 experiments/analyze_cross_paradigm_validation.py --scope full
         ;;
     package)
         bash experiments/package_experiment_artifacts.sh
+        checkpoint_results package
         ;;
     all)
         check_clean_for_full
         build_and_test
         prepare_suite
         validate_maxsat_configs
+        commercial_preflight
+        checkpoint_results commercial-preflight
         run_warmup
+        run_evalmaxsat_calibration
+        checkpoint_results solver-calibration
         run_screen
+        checkpoint_results screen
         run_original_primary
+        checkpoint_results original-primary
         run_corrected_primary
-        run_all_commercial
+        checkpoint_results corrected-primary
+        run_commercial_primary
+        checkpoint_results commercial
         bash experiments/package_experiment_artifacts.sh
+        checkpoint_results package
         ;;
     *)
         usage >&2

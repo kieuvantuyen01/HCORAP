@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "status": "UNSATISFIABLE",
+  "method": "weighted",
+  "language": "C++",
+  "instance": "instances/paperInstances/TXT_10-25_4-5_U40/instance_40_10_5_46.txt",
+  "solver": "./solver/EvalMaxSAT_bin",
+  "wcnf_format": "legacy-top-weight",
+  "timing_scope": "parse+encode+serialize+solve+verify",
+  "timeout_seconds": 300,
+  "elapsed_seconds": 0.084218612,
+  "full_coverage": true,
+  "continuity_weight": 1,
+  "overtime_weight": 1,
+  "cardinality_encoding": "totalizer",
+  "implied_constraints": "none",
+  "symmetry_breaking": "none",
+  "delta": "0.05",
+  "stages": [  ],
+  "metrics": null
+}

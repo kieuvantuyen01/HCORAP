@@ -22,6 +22,7 @@ SYMMETRY_PARTIAL_INSTANCE = (
 )
 LEX_COS_TIE_INSTANCE = ROOT / "tests" / "instances" / "lex_cos_tie.txt"
 RC2_STUB = ROOT / "tests" / "rc2_open_wbo.py"
+EVALMAXSAT_STUB = ROOT / "tests" / "rc2_evalmaxsat.py"
 
 MAIN_8_CONFIGS = (
     ("sorting-network", "none", "none"),
@@ -38,11 +39,11 @@ OFFICIAL_EPSILON_DELTAS = ("0", "0.01", "0.025", "0.05", "0.10")
 
 
 def _solver() -> str:
-    configured = os.environ.get("OPEN_WBO_BIN")
-    discovered = shutil.which("open-wbo")
+    configured = os.environ.get("EVALMAXSAT_BIN") or os.environ.get("OPEN_WBO_BIN")
+    discovered = shutil.which("EvalMaxSAT_bin") or shutil.which("open-wbo")
     solver = configured or discovered or str(RC2_STUB)
     if not solver or not Path(solver).is_file():
-        pytest.skip("set OPEN_WBO_BIN to run C++ end-to-end solver tests")
+        pytest.skip("set EVALMAXSAT_BIN to run C++ end-to-end solver tests")
     return solver
 
 
@@ -227,6 +228,40 @@ def test_cpp_default_method_remains_weighted_b0() -> None:
         "weighted_score"
     ]
     assert result["metrics"]["weighted_reference_score"] == 8
+
+
+def test_cpp_parser_accepts_evalmaxsat_bit_string_model() -> None:
+    completed = subprocess.run(
+        [
+            str(BINARY),
+            str(LEX_COS_TIE_INSTANCE),
+            "--solver",
+            str(EVALMAXSAT_STUB),
+            "--timeout",
+            "30",
+            "--method",
+            "lex-cos",
+            "--cardinality-encoding",
+            "totalizer",
+            "--implied-constraints",
+            "both",
+            "--symmetry-breaking",
+            "slot-service",
+        ],
+        check=True,
+        text=True,
+        capture_output=True,
+        timeout=35,
+    )
+    result = json.loads(completed.stdout)
+    assert result["status"] == "OPTIMUM"
+    assert result["solver_calls"] == 3
+    assert result["metrics"]["verified"] is True
+    assert [stage["objective"] for stage in result["stages"]] == [
+        "continuity",
+        "overtime",
+        "similarity",
+    ]
 
 
 @pytest.mark.parametrize(

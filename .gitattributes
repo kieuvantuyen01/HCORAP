@@ -1,0 +1,3 @@
+# Preserve imported experimental evidence byte-for-byte.  In particular, do
+# not let platform-specific Git settings rewrite historical CSV/log line ends.
+results_addition/** -text

@@ -3,11 +3,42 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
 from experiments.collect_commercial_campaign import collect
-from experiments.run_commercial_campaign import run_campaign
+from experiments.run_commercial_campaign import _build_tasks, run_campaign
 
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+@pytest.mark.parametrize(
+    ("name", "expected_instances", "expected_tasks"),
+    [
+        ("gcp_commercial_original.json", 20, 80),
+        ("gcp_commercial_correctness_smoke.json", 3, 18),
+    ],
+)
+def test_publication_commercial_configs_expand_to_locked_task_counts(
+    name: str, expected_instances: int, expected_tasks: int
+) -> None:
+    config_path = ROOT / "experiments" / "configs" / name
+    config = json.loads(config_path.read_text(encoding="utf-8"))
+    commercial_configs = [
+        {
+            **item,
+            "resolved_parameter_file": item.get("parameter_file"),
+        }
+        for item in config["commercial_configurations"]
+    ]
+    tasks = _build_tasks(
+        config,
+        base=config_path.parent,
+        binary_hash="publication-test-binary",
+        commercial_configs=commercial_configs,
+    )
+    assert len({task["instance_sha256"] for task in tasks}) == expected_instances
+    assert len(tasks) == expected_tasks
 
 
 def test_commercial_campaign_preflights_runs_collects_and_resumes(tmp_path: Path) -> None:

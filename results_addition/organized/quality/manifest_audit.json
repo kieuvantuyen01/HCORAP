@@ -1,0 +1,42 @@
+[
+  {
+    "columns": [
+      "run_id",
+      "instance_sha256",
+      "instance",
+      "backend",
+      "formulation",
+      "method",
+      "delta",
+      "result",
+      "exit_code"
+    ],
+    "duplicate_result_path_rows": 160,
+    "duplicate_run_id_rows": 160,
+    "path": "commercial_main/manifest.tsv",
+    "rows": 320,
+    "unique_result_basenames_present": 160,
+    "unique_result_paths": 160,
+    "unique_run_ids": 160
+  },
+  {
+    "columns": [
+      "run_id",
+      "instance_sha256",
+      "instance",
+      "backend",
+      "formulation",
+      "method",
+      "delta",
+      "result",
+      "exit_code"
+    ],
+    "duplicate_result_path_rows": 0,
+    "duplicate_run_id_rows": 0,
+    "path": "paper_test/manifest.tsv",
+    "rows": 17,
+    "unique_result_basenames_present": 17,
+    "unique_result_paths": 17,
+    "unique_run_ids": 17
+  }
+]

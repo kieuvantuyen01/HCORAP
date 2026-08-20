@@ -1,6 +1,6 @@
 {
   "binary": "../../bin/release/hcorap_multi",
-  "solver": "${OPEN_WBO_BIN}",
+  "solver": "${EVALMAXSAT_BIN}",
   "result_dir": "../results/gcp_corrected_load_stress",
   "instances": [
     "../../instances/corrected_v2_suite/evaluation_stress/evaluation/**/*.txt"

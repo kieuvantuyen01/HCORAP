@@ -1,0 +1,391 @@
+﻿cfg_id;label;instance_name;method;objective_mode;objective_policy;delta;similarity_reference_optimum;similarity_lower_bound;similarity_realized_loss_absolute;similarity_realized_loss_fraction;similarity_realized_loss_ratio;cardinality;ic;sb;status;elapsed_s;timeout_seconds;solve_s;solver_calls;variables;hard_clauses;soft_clauses;best_value;weighted_reference_score;similarity;continuity;overtime;coverage;stage_objectives;stage_optima
+1;TOT-none-none;instance_30_10_4_1;epsilon;epsilon-constraint;similarity-budget;0.10;421;379;;;;totalizer;none;none;TIMEOUT;300.1263435;300.0;8.360140158;2;6161;62317;532;;;;;;;similarity_reference;421
+1;TOT-none-none;instance_30_10_4_10;epsilon;epsilon-constraint;similarity-budget;0.10;414;373;;;;totalizer;none;none;TIMEOUT;300.1198239;300.0;8.236731538;2;5936;57797;533;;;;;;;similarity_reference;414
+1;TOT-none-none;instance_30_10_4_11;epsilon;epsilon-constraint;similarity-budget;0.10;402;362;;;;totalizer;none;none;TIMEOUT;300.1240246;300.0;10.94608977;2;5726;54938;520;;;;;;;similarity_reference;402
+1;TOT-none-none;instance_30_10_4_12;epsilon;epsilon-constraint;similarity-budget;0.10;397;358;;;;totalizer;none;none;TIMEOUT;300.1237713;300.0;5.408757424;2;6048;62607;535;;;;;;;similarity_reference;397
+1;TOT-none-none;instance_30_10_4_13;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;none;none;UNSATISFIABLE;0.034252624;300.0;0;1;0;0;0;;;;;;;;
+1;TOT-none-none;instance_30_10_4_14;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;none;none;UNSATISFIABLE;0.033555586;300.0;0;1;0;0;0;;;;;;;;
+1;TOT-none-none;instance_30_10_4_15;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;none;none;UNSATISFIABLE;0.025616081;300.0;0;1;0;0;0;;;;;;;;
+1;TOT-none-none;instance_30_10_4_16;epsilon;epsilon-constraint;similarity-budget;0.10;436;393;;;;totalizer;none;none;TIMEOUT;300.1254154;300.0;6.3744837;2;6555;68091;565;;;;;;;similarity_reference;436
+1;TOT-none-none;instance_30_10_4_17;epsilon;epsilon-constraint;similarity-budget;0.10;402;362;;;;totalizer;none;none;TIMEOUT;300.1276336;300.0;264.397840454;4;129451;289330;847;;;;;;;similarity_reference | continuity | overtime;402 | 0 | 0
+1;TOT-none-none;instance_30_10_4_18;epsilon;epsilon-constraint;similarity-budget;0.10;414;373;;;;totalizer;none;none;TIMEOUT;300.1346833;300.0;227.887352655;3;92307;222531;858;;;;;;;similarity_reference | continuity;414 | 0
+1;TOT-none-none;instance_30_10_4_19;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;none;none;UNSATISFIABLE;0.052855713;300.0;0;1;0;0;0;;;;;;;;
+1;TOT-none-none;instance_30_10_4_2;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;none;none;UNSATISFIABLE;0.042165529;300.0;0;1;0;0;0;;;;;;;;
+1;TOT-none-none;instance_30_10_4_20;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;none;none;UNSATISFIABLE;0.038716727;300.0;0;1;0;0;0;;;;;;;;
+1;TOT-none-none;instance_30_10_4_21;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;none;none;UNSATISFIABLE;0.043746065;300.0;0;1;0;0;0;;;;;;;;
+1;TOT-none-none;instance_30_10_4_22;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;none;none;UNSATISFIABLE;0.040238843;300.0;0;1;0;0;0;;;;;;;;
+1;TOT-none-none;instance_30_10_4_23;epsilon;epsilon-constraint;similarity-budget;0.10;382;344;;;;totalizer;none;none;TIMEOUT;300.1375349;300.0;260.00805299;4;173335;397601;891;;;;;;;similarity_reference | continuity | overtime;382 | 0 | 0
+1;TOT-none-none;instance_30_10_4_24;epsilon;epsilon-constraint;similarity-budget;0.10;396;357;;;;totalizer;none;none;TIMEOUT;300.1211064;300.0;16.08218479;2;5370;48224;463;;;;;;;similarity_reference;396
+1;TOT-none-none;instance_30_10_4_25;epsilon;epsilon-constraint;similarity-budget;0.10;446;402;;;;totalizer;none;none;TIMEOUT;300.1368885;300.0;3.472769474;2;6809;73557;614;;;;;;;similarity_reference;446
+1;TOT-none-none;instance_30_10_4_26;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;none;none;UNSATISFIABLE;0.046073041;300.0;0;1;0;0;0;;;;;;;;
+1;TOT-none-none;instance_30_10_4_27;epsilon;epsilon-constraint;similarity-budget;0.10;405;365;;;;totalizer;none;none;TIMEOUT;300.1211734;300.0;9.364658981;2;5189;43780;480;;;;;;;similarity_reference;405
+1;TOT-none-none;instance_30_10_4_28;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;none;none;UNSATISFIABLE;0.026534551;300.0;0;1;0;0;0;;;;;;;;
+1;TOT-none-none;instance_30_10_4_29;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;none;none;UNSATISFIABLE;0.034707072;300.0;0;1;0;0;0;;;;;;;;
+1;TOT-none-none;instance_30_10_4_3;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;none;none;UNSATISFIABLE;0.036162419;300.0;0;1;0;0;0;;;;;;;;
+1;TOT-none-none;instance_30_10_4_30;epsilon;epsilon-constraint;similarity-budget;0.10;407;367;;;;totalizer;none;none;TIMEOUT;300.13341;300.0;12.62780325;2;6420;66246;606;;;;;;;similarity_reference;407
+1;TOT-none-none;instance_30_10_4_31;epsilon;epsilon-constraint;similarity-budget;0.10;381;343;;;;totalizer;none;none;TIMEOUT;300.1283567;300.0;247.254758595;4;150650;342903;803;;;;;;;similarity_reference | continuity | overtime;381 | 6 | 0
+1;TOT-none-none;instance_30_10_4_32;epsilon;epsilon-constraint;similarity-budget;0.10;424;382;;;;totalizer;none;none;TIMEOUT;300.1222621;300.0;6.373363337;2;6090;61899;527;;;;;;;similarity_reference;424
+1;TOT-none-none;instance_30_10_4_33;epsilon;epsilon-constraint;similarity-budget;0.10;436;393;;;;totalizer;none;none;TIMEOUT;300.121234;300.0;11.69697566;2;6159;63611;538;;;;;;;similarity_reference;436
+1;TOT-none-none;instance_30_10_4_34;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;none;none;UNSATISFIABLE;0.052077;300.0;0;1;0;0;0;;;;;;;;
+1;TOT-none-none;instance_30_10_4_35;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;none;none;UNSATISFIABLE;0.03244819;300.0;0;1;0;0;0;;;;;;;;
+1;TOT-none-none;instance_30_10_4_36;epsilon;epsilon-constraint;similarity-budget;0.10;410;369;;;;totalizer;none;none;TIMEOUT;300.1362329;300.0;14.26426527;2;6893;76672;644;;;;;;;similarity_reference;410
+1;TOT-none-none;instance_30_10_4_37;epsilon;epsilon-constraint;similarity-budget;0.10;444;400;;;;totalizer;none;none;TIMEOUT;300.1226676;300.0;5.416907045;2;6318;66181;555;;;;;;;similarity_reference;444
+1;TOT-none-none;instance_30_10_4_38;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;none;none;UNSATISFIABLE;0.051131605;300.0;0;1;0;0;0;;;;;;;;
+1;TOT-none-none;instance_30_10_4_39;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;none;none;UNSATISFIABLE;0.036651479;300.0;0;1;0;0;0;;;;;;;;
+1;TOT-none-none;instance_30_10_4_4;epsilon;epsilon-constraint;similarity-budget;0.10;431;388;;;;totalizer;none;none;TIMEOUT;300.1240832;300.0;6.433211161;2;5914;59551;500;;;;;;;similarity_reference;431
+1;TOT-none-none;instance_30_10_4_40;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;none;none;UNSATISFIABLE;0.038020472;300.0;0;1;0;0;0;;;;;;;;
+1;TOT-none-none;instance_30_10_4_41;epsilon;epsilon-constraint;similarity-budget;0.10;358;323;18;9/179;0.05027932960893855;totalizer;none;none;OPTIMUM;186.875659;300.0;186.347749865;4;122023;266749;836;338.0;338.0;340.0;2.0;0.0;120.0;similarity_reference | continuity | overtime | similarity_tiebreak;358 | 2 | 0 | 340
+1;TOT-none-none;instance_30_10_4_42;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;none;none;UNSATISFIABLE;0.049432962;300.0;0;1;0;0;0;;;;;;;;
+1;TOT-none-none;instance_30_10_4_43;epsilon;epsilon-constraint;similarity-budget;0.10;419;378;;;;totalizer;none;none;TIMEOUT;300.131967;300.0;12.61006668;2;6319;65912;596;;;;;;;similarity_reference;419
+1;TOT-none-none;instance_30_10_4_44;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;none;none;UNSATISFIABLE;0.046566548;300.0;0;1;0;0;0;;;;;;;;
+1;TOT-none-none;instance_30_10_4_45;epsilon;epsilon-constraint;similarity-budget;0.10;371;334;;;;totalizer;none;none;TIMEOUT;300.1273725;300.0;290.885499705;4;146025;333072;836;;;;;;;similarity_reference | continuity | overtime;371 | 0 | 0
+1;TOT-none-none;instance_30_10_4_46;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;none;none;UNSATISFIABLE;0.024601209;300.0;0;1;0;0;0;;;;;;;;
+1;TOT-none-none;instance_30_10_4_47;epsilon;epsilon-constraint;similarity-budget;0.10;399;360;;;;totalizer;none;none;TIMEOUT;300.1159732;300.0;4.984699517;2;4993;41386;426;;;;;;;similarity_reference;399
+1;TOT-none-none;instance_30_10_4_48;epsilon;epsilon-constraint;similarity-budget;0.10;377;340;4;4/377;0.010610079575596816;totalizer;none;none;OPTIMUM;73.60318874;300.0;73.049586622;4;127290;278807;891;373.0;373.0;373.0;0.0;0.0;120.0;similarity_reference | continuity | overtime | similarity_tiebreak;377 | 0 | 0 | 373
+1;TOT-none-none;instance_30_10_4_49;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;none;none;UNSATISFIABLE;0.04801849;300.0;0;1;0;0;0;;;;;;;;
+1;TOT-none-none;instance_30_10_4_5;epsilon;epsilon-constraint;similarity-budget;0.10;424;382;;;;totalizer;none;none;TIMEOUT;300.1195809;300.0;12.24210769;2;5528;51736;487;;;;;;;similarity_reference;424
+1;TOT-none-none;instance_30_10_4_50;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;none;none;UNSATISFIABLE;0.049610449;300.0;0;1;0;0;0;;;;;;;;
+1;TOT-none-none;instance_30_10_4_6;epsilon;epsilon-constraint;similarity-budget;0.10;391;352;;;;totalizer;none;none;TIMEOUT;300.1205652;300.0;8.223799438;2;6119;65338;528;;;;;;;similarity_reference;391
+1;TOT-none-none;instance_30_10_4_7;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;none;none;UNSATISFIABLE;0.046340767;300.0;0;1;0;0;0;;;;;;;;
+1;TOT-none-none;instance_30_10_4_8;epsilon;epsilon-constraint;similarity-budget;0.10;422;380;;;;totalizer;none;none;TIMEOUT;300.1289119;300.0;15.05973466;2;5743;56454;530;;;;;;;similarity_reference;422
+2;TOT-none-ss;instance_30_10_4_1;epsilon;epsilon-constraint;similarity-budget;0.10;421;379;;;;totalizer;none;slot-service;TIMEOUT;300.1218221;300.0;9.364728128;2;6167;62343;532;;;;;;;similarity_reference;421
+2;TOT-none-ss;instance_30_10_4_10;epsilon;epsilon-constraint;similarity-budget;0.10;414;373;;;;totalizer;none;slot-service;TIMEOUT;300.1272587;300.0;6.273273967;2;6342;59467;533;;;;;;;similarity_reference;414
+2;TOT-none-ss;instance_30_10_4_11;epsilon;epsilon-constraint;similarity-budget;0.10;402;362;;;;totalizer;none;slot-service;TIMEOUT;300.120184;300.0;8.185662792;2;6135;56471;520;;;;;;;similarity_reference;402
+2;TOT-none-ss;instance_30_10_4_12;epsilon;epsilon-constraint;similarity-budget;0.10;397;358;;;;totalizer;none;slot-service;TIMEOUT;300.1260377;300.0;15.27993344;2;6469;64416;535;;;;;;;similarity_reference;397
+2;TOT-none-ss;instance_30_10_4_13;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;none;slot-service;UNSATISFIABLE;0.036041776;300.0;0;1;0;0;0;;;;;;;;
+2;TOT-none-ss;instance_30_10_4_14;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;none;slot-service;UNSATISFIABLE;0.034437444;300.0;0;1;0;0;0;;;;;;;;
+2;TOT-none-ss;instance_30_10_4_15;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;none;slot-service;UNSATISFIABLE;0.026936174;300.0;0;1;0;0;0;;;;;;;;
+2;TOT-none-ss;instance_30_10_4_16;epsilon;epsilon-constraint;similarity-budget;0.10;436;393;;;;totalizer;none;slot-service;TIMEOUT;300.1297068;300.0;4.441067465;2;6971;70082;565;;;;;;;similarity_reference;436
+2;TOT-none-ss;instance_30_10_4_17;epsilon;epsilon-constraint;similarity-budget;0.10;402;362;;;;totalizer;none;slot-service;TIMEOUT;300.1343922;300.0;243.64938992900002;4;129889;290947;847;;;;;;;similarity_reference | continuity | overtime;402 | 0 | 0
+2;TOT-none-ss;instance_30_10_4_18;epsilon;epsilon-constraint;similarity-budget;0.10;414;373;;;;totalizer;none;slot-service;TIMEOUT;300.1297751;300.0;281.29403285300003;3;92307;222531;858;;;;;;;similarity_reference | continuity;414 | 0
+2;TOT-none-ss;instance_30_10_4_19;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;none;slot-service;UNSATISFIABLE;0.045979983;300.0;0;1;0;0;0;;;;;;;;
+2;TOT-none-ss;instance_30_10_4_2;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;none;slot-service;UNSATISFIABLE;0.046446712;300.0;0;1;0;0;0;;;;;;;;
+2;TOT-none-ss;instance_30_10_4_20;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;none;slot-service;UNSATISFIABLE;0.040005658;300.0;0;1;0;0;0;;;;;;;;
+2;TOT-none-ss;instance_30_10_4_21;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;none;slot-service;UNSATISFIABLE;0.045974742;300.0;0;1;0;0;0;;;;;;;;
+2;TOT-none-ss;instance_30_10_4_22;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;none;slot-service;UNSATISFIABLE;0.043396894;300.0;0;1;0;0;0;;;;;;;;
+2;TOT-none-ss;instance_30_10_4_23;epsilon;epsilon-constraint;similarity-budget;0.10;382;344;4;2/191;0.010471204188481676;totalizer;none;slot-service;OPTIMUM;245.9436461;300.0;245.167996152;4;173754;399333;891;378.0;378.0;378.0;0.0;0.0;120.0;similarity_reference | continuity | overtime | similarity_tiebreak;382 | 0 | 0 | 378
+2;TOT-none-ss;instance_30_10_4_24;epsilon;epsilon-constraint;similarity-budget;0.10;396;357;;;;totalizer;none;slot-service;TIMEOUT;300.12012;300.0;9.284868405;2;5790;49932;463;;;;;;;similarity_reference;396
+2;TOT-none-ss;instance_30_10_4_25;epsilon;epsilon-constraint;similarity-budget;0.10;446;402;;;;totalizer;none;slot-service;TIMEOUT;300.1317461;300.0;5.486208664;2;7237;75581;614;;;;;;;similarity_reference;446
+2;TOT-none-ss;instance_30_10_4_26;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;none;slot-service;UNSATISFIABLE;0.060321148;300.0;0;1;0;0;0;;;;;;;;
+2;TOT-none-ss;instance_30_10_4_27;epsilon;epsilon-constraint;similarity-budget;0.10;405;365;;;;totalizer;none;slot-service;TIMEOUT;300.1202044;300.0;8.689166023;2;5616;45152;480;;;;;;;similarity_reference;405
+2;TOT-none-ss;instance_30_10_4_28;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;none;slot-service;UNSATISFIABLE;0.029002661;300.0;0;1;0;0;0;;;;;;;;
+2;TOT-none-ss;instance_30_10_4_29;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;none;slot-service;UNSATISFIABLE;0.041449076;300.0;0;1;0;0;0;;;;;;;;
+2;TOT-none-ss;instance_30_10_4_3;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;none;slot-service;UNSATISFIABLE;0.040251054;300.0;0;1;0;0;0;;;;;;;;
+2;TOT-none-ss;instance_30_10_4_30;epsilon;epsilon-constraint;similarity-budget;0.10;407;367;;;;totalizer;none;slot-service;TIMEOUT;300.1266523;300.0;12.14420379;2;6832;67783;606;;;;;;;similarity_reference;407
+2;TOT-none-ss;instance_30_10_4_31;epsilon;epsilon-constraint;similarity-budget;0.10;381;343;6;2/127;0.015748031496062992;totalizer;none;slot-service;OPTIMUM;242.5272583;300.0;241.834824847;4;151100;344562;803;369.0;369.0;375.0;6.0;0.0;120.0;similarity_reference | continuity | overtime | similarity_tiebreak;381 | 6 | 0 | 375
+2;TOT-none-ss;instance_30_10_4_32;epsilon;epsilon-constraint;similarity-budget;0.10;424;382;;;;totalizer;none;slot-service;TIMEOUT;300.1246992;300.0;6.382565858;2;6106;61965;527;;;;;;;similarity_reference;424
+2;TOT-none-ss;instance_30_10_4_33;epsilon;epsilon-constraint;similarity-budget;0.10;436;393;;;;totalizer;none;slot-service;TIMEOUT;300.1237002;300.0;12.28987315;2;6600;65499;538;;;;;;;similarity_reference;436
+2;TOT-none-ss;instance_30_10_4_34;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;none;slot-service;UNSATISFIABLE;0.051718803;300.0;0;1;0;0;0;;;;;;;;
+2;TOT-none-ss;instance_30_10_4_35;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;none;slot-service;UNSATISFIABLE;0.036811457;300.0;0;1;0;0;0;;;;;;;;
+2;TOT-none-ss;instance_30_10_4_36;epsilon;epsilon-constraint;similarity-budget;0.10;410;369;;;;totalizer;none;slot-service;TIMEOUT;300.1341741;300.0;13.27110992;2;7285;78390;644;;;;;;;similarity_reference;410
+2;TOT-none-ss;instance_30_10_4_37;epsilon;epsilon-constraint;similarity-budget;0.10;444;400;;;;totalizer;none;slot-service;TIMEOUT;300.1313967;300.0;11.31200092;2;6739;68080;555;;;;;;;similarity_reference;444
+2;TOT-none-ss;instance_30_10_4_38;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;none;slot-service;UNSATISFIABLE;0.051786379;300.0;0;1;0;0;0;;;;;;;;
+2;TOT-none-ss;instance_30_10_4_39;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;none;slot-service;UNSATISFIABLE;0.051269005;300.0;0;1;0;0;0;;;;;;;;
+2;TOT-none-ss;instance_30_10_4_4;epsilon;epsilon-constraint;similarity-budget;0.10;431;388;;;;totalizer;none;slot-service;TIMEOUT;300.1306512;300.0;7.392109401;2;6351;61515;500;;;;;;;similarity_reference;431
+2;TOT-none-ss;instance_30_10_4_40;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;none;slot-service;UNSATISFIABLE;0.039254262;300.0;0;1;0;0;0;;;;;;;;
+2;TOT-none-ss;instance_30_10_4_41;epsilon;epsilon-constraint;similarity-budget;0.10;358;323;18;9/179;0.05027932960893855;totalizer;none;slot-service;OPTIMUM;197.1413204;300.0;196.599228391;4;122449;268077;836;338.0;338.0;340.0;2.0;0.0;120.0;similarity_reference | continuity | overtime | similarity_tiebreak;358 | 2 | 0 | 340
+2;TOT-none-ss;instance_30_10_4_42;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;none;slot-service;UNSATISFIABLE;0.041522369;300.0;0;1;0;0;0;;;;;;;;
+2;TOT-none-ss;instance_30_10_4_43;epsilon;epsilon-constraint;similarity-budget;0.10;419;378;;;;totalizer;none;slot-service;TIMEOUT;300.1329774;300.0;13.26155793;2;6719;67467;596;;;;;;;similarity_reference;419
+2;TOT-none-ss;instance_30_10_4_44;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;none;slot-service;UNSATISFIABLE;0.046735057;300.0;0;1;0;0;0;;;;;;;;
+2;TOT-none-ss;instance_30_10_4_45;epsilon;epsilon-constraint;similarity-budget;0.10;371;334;;;;totalizer;none;slot-service;TIMEOUT;300.1310594;300.0;280.327949142;4;146455;334762;836;;;;;;;similarity_reference | continuity | overtime;371 | 0 | 0
+2;TOT-none-ss;instance_30_10_4_46;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;none;slot-service;UNSATISFIABLE;0.02845412;300.0;0;1;0;0;0;;;;;;;;
+2;TOT-none-ss;instance_30_10_4_47;epsilon;epsilon-constraint;similarity-budget;0.10;399;360;;;;totalizer;none;slot-service;TIMEOUT;300.1209471;300.0;8.15608272;2;5435;43001;426;;;;;;;similarity_reference;399
+2;TOT-none-ss;instance_30_10_4_48;epsilon;epsilon-constraint;similarity-budget;0.10;377;340;4;4/377;0.010610079575596816;totalizer;none;slot-service;OPTIMUM;33.85633523;300.0;33.316197291;4;127704;280088;891;373.0;373.0;373.0;0.0;0.0;120.0;similarity_reference | continuity | overtime | similarity_tiebreak;377 | 0 | 0 | 373
+2;TOT-none-ss;instance_30_10_4_49;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;none;slot-service;UNSATISFIABLE;0.051953925;300.0;0;1;0;0;0;;;;;;;;
+2;TOT-none-ss;instance_30_10_4_5;epsilon;epsilon-constraint;similarity-budget;0.10;424;382;;;;totalizer;none;slot-service;TIMEOUT;300.1193146;300.0;10.28756657;2;5915;53322;487;;;;;;;similarity_reference;424
+2;TOT-none-ss;instance_30_10_4_50;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;none;slot-service;UNSATISFIABLE;0.040720965;300.0;0;1;0;0;0;;;;;;;;
+2;TOT-none-ss;instance_30_10_4_6;epsilon;epsilon-constraint;similarity-budget;0.10;391;352;;;;totalizer;none;slot-service;TIMEOUT;300.1182203;300.0;8.247203734;2;6119;65338;528;;;;;;;similarity_reference;391
+2;TOT-none-ss;instance_30_10_4_7;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;none;slot-service;UNSATISFIABLE;0.036014363;300.0;0;1;0;0;0;;;;;;;;
+2;TOT-none-ss;instance_30_10_4_8;epsilon;epsilon-constraint;similarity-budget;0.10;422;380;;;;totalizer;none;slot-service;TIMEOUT;300.125967;300.0;15.83365332;2;6155;57976;530;;;;;;;similarity_reference;422
+3;TOT-both-none;instance_30_10_4_1;epsilon;epsilon-constraint;similarity-budget;0.10;421;379;;;;totalizer;both;none;TIMEOUT;300.123678;300.0;7.570615674;2;9576;78887;532;;;;;;;similarity_reference;421
+3;TOT-both-none;instance_30_10_4_10;epsilon;epsilon-constraint;similarity-budget;0.10;414;373;;;;totalizer;both;none;TIMEOUT;300.1250569;300.0;5.426391825;2;9291;73761;533;;;;;;;similarity_reference;414
+3;TOT-both-none;instance_30_10_4_11;epsilon;epsilon-constraint;similarity-budget;0.10;402;362;;;;totalizer;both;none;TIMEOUT;300.1214978;300.0;9.252374553;2;9038;70474;520;;;;;;;similarity_reference;402
+3;TOT-both-none;instance_30_10_4_12;epsilon;epsilon-constraint;similarity-budget;0.10;397;358;;;;totalizer;both;none;TIMEOUT;300.1306122;300.0;12.64442933;2;9578;79760;535;;;;;;;similarity_reference;397
+3;TOT-both-none;instance_30_10_4_13;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;both;none;UNSATISFIABLE;0.042526701;300.0;0;1;0;0;0;;;;;;;;
+3;TOT-both-none;instance_30_10_4_14;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;both;none;UNSATISFIABLE;0.048164372;300.0;0;1;0;0;0;;;;;;;;
+3;TOT-both-none;instance_30_10_4_15;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;both;none;UNSATISFIABLE;0.036769891;300.0;0;1;0;0;0;;;;;;;;
+3;TOT-both-none;instance_30_10_4_16;epsilon;epsilon-constraint;similarity-budget;0.10;436;393;;;;totalizer;both;none;TIMEOUT;300.1254515;300.0;3.603805625;2;9903;84083;565;;;;;;;similarity_reference;436
+3;TOT-both-none;instance_30_10_4_17;epsilon;epsilon-constraint;similarity-budget;0.10;402;362;;;;totalizer;both;none;TIMEOUT;300.1164523;300.0;5.378408337;2;8318;56985;399;;;;;;;similarity_reference;402
+3;TOT-both-none;instance_30_10_4_18;epsilon;epsilon-constraint;similarity-budget;0.10;414;373;;;;totalizer;both;none;TIMEOUT;300.1204593;300.0;4.420210671;2;8848;65084;484;;;;;;;similarity_reference;414
+3;TOT-both-none;instance_30_10_4_19;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;both;none;UNSATISFIABLE;0.061027734;300.0;0;1;0;0;0;;;;;;;;
+3;TOT-both-none;instance_30_10_4_2;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;both;none;UNSATISFIABLE;0.060140506;300.0;0;1;0;0;0;;;;;;;;
+3;TOT-both-none;instance_30_10_4_20;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;both;none;UNSATISFIABLE;0.053257309;300.0;0;1;0;0;0;;;;;;;;
+3;TOT-both-none;instance_30_10_4_21;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;both;none;UNSATISFIABLE;0.066241791;300.0;0;1;0;0;0;;;;;;;;
+3;TOT-both-none;instance_30_10_4_22;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;both;none;UNSATISFIABLE;0.064094392;300.0;0;1;0;0;0;;;;;;;;
+3;TOT-both-none;instance_30_10_4_23;epsilon;epsilon-constraint;similarity-budget;0.10;382;344;;;;totalizer;both;none;TIMEOUT;300.1423175;300.0;254.64868911899998;4;176829;414447;891;;;;;;;similarity_reference | continuity | overtime;382 | 0 | 0
+3;TOT-both-none;instance_30_10_4_24;epsilon;epsilon-constraint;similarity-budget;0.10;396;357;;;;totalizer;both;none;TIMEOUT;300.1354197;300.0;292.519580957;4;149198;345887;847;;;;;;;similarity_reference | continuity | overtime;396 | 1 | 0
+3;TOT-both-none;instance_30_10_4_25;epsilon;epsilon-constraint;similarity-budget;0.10;446;402;;;;totalizer;both;none;TIMEOUT;300.1380619;300.0;2.728752705;2;10405;91318;614;;;;;;;similarity_reference;446
+3;TOT-both-none;instance_30_10_4_26;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;both;none;UNSATISFIABLE;0.071872811;300.0;0;1;0;0;0;;;;;;;;
+3;TOT-both-none;instance_30_10_4_27;epsilon;epsilon-constraint;similarity-budget;0.10;405;365;;;;totalizer;both;none;TIMEOUT;300.1196499;300.0;12.24889003;2;8639;59749;480;;;;;;;similarity_reference;405
+3;TOT-both-none;instance_30_10_4_28;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;both;none;UNSATISFIABLE;0.03441061;300.0;0;1;0;0;0;;;;;;;;
+3;TOT-both-none;instance_30_10_4_29;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;both;none;UNSATISFIABLE;0.054057869;300.0;0;1;0;0;0;;;;;;;;
+3;TOT-both-none;instance_30_10_4_3;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;both;none;UNSATISFIABLE;0.052540808;300.0;0;1;0;0;0;;;;;;;;
+3;TOT-both-none;instance_30_10_4_30;epsilon;epsilon-constraint;similarity-budget;0.10;407;367;;;;totalizer;both;none;TIMEOUT;300.1267003;300.0;13.57172065;2;9751;81937;606;;;;;;;similarity_reference;407
+3;TOT-both-none;instance_30_10_4_31;epsilon;epsilon-constraint;similarity-budget;0.10;381;343;6;2/127;0.015748031496062992;totalizer;both;none;OPTIMUM;286.6208563;300.0;285.935937447;4;154323;360566;803;369.0;369.0;375.0;6.0;0.0;120.0;similarity_reference | continuity | overtime | similarity_tiebreak;381 | 6 | 0 | 375
+3;TOT-both-none;instance_30_10_4_32;epsilon;epsilon-constraint;similarity-budget;0.10;424;382;;;;totalizer;both;none;TIMEOUT;300.123398;300.0;6.636932847;2;9509;78350;527;;;;;;;similarity_reference;424
+3;TOT-both-none;instance_30_10_4_33;epsilon;epsilon-constraint;similarity-budget;0.10;436;393;;;;totalizer;both;none;TIMEOUT;300.1260604;300.0;13.38307036;2;9905;82009;538;;;;;;;similarity_reference;436
+3;TOT-both-none;instance_30_10_4_34;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;both;none;UNSATISFIABLE;0.063884974;300.0;0;1;0;0;0;;;;;;;;
+3;TOT-both-none;instance_30_10_4_35;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;both;none;UNSATISFIABLE;0.041820242;300.0;0;1;0;0;0;;;;;;;;
+3;TOT-both-none;instance_30_10_4_36;epsilon;epsilon-constraint;similarity-budget;0.10;410;369;;;;totalizer;both;none;TIMEOUT;300.1276787;300.0;18.73008782;2;9912;90716;644;;;;;;;similarity_reference;410
+3;TOT-both-none;instance_30_10_4_37;epsilon;epsilon-constraint;similarity-budget;0.10;444;400;;;;totalizer;both;none;TIMEOUT;300.132757;300.0;14.61164329;2;9813;83360;555;;;;;;;similarity_reference;444
+3;TOT-both-none;instance_30_10_4_38;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;both;none;UNSATISFIABLE;0.064168022;300.0;0;1;0;0;0;;;;;;;;
+3;TOT-both-none;instance_30_10_4_39;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;both;none;UNSATISFIABLE;0.054987081;300.0;0;1;0;0;0;;;;;;;;
+3;TOT-both-none;instance_30_10_4_4;epsilon;epsilon-constraint;similarity-budget;0.10;431;388;;;;totalizer;both;none;TIMEOUT;300.1292224;300.0;7.583947337;2;9388;76372;500;;;;;;;similarity_reference;431
+3;TOT-both-none;instance_30_10_4_40;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;both;none;UNSATISFIABLE;0.059455981;300.0;0;1;0;0;0;;;;;;;;
+3;TOT-both-none;instance_30_10_4_41;epsilon;epsilon-constraint;similarity-budget;0.10;358;323;18;9/179;0.05027932960893855;totalizer;both;none;OPTIMUM;157.1475377;300.0;156.566575806;4;125370;282077;836;338.0;338.0;340.0;2.0;0.0;120.0;similarity_reference | continuity | overtime | similarity_tiebreak;358 | 2 | 0 | 340
+3;TOT-both-none;instance_30_10_4_42;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;both;none;UNSATISFIABLE;0.064756414;300.0;0;1;0;0;0;;;;;;;;
+3;TOT-both-none;instance_30_10_4_43;epsilon;epsilon-constraint;similarity-budget;0.10;419;378;;;;totalizer;both;none;TIMEOUT;300.1298222;300.0;15.16752447;2;9509;80775;596;;;;;;;similarity_reference;419
+3;TOT-both-none;instance_30_10_4_44;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;both;none;UNSATISFIABLE;0.066496856;300.0;0;1;0;0;0;;;;;;;;
+3;TOT-both-none;instance_30_10_4_45;epsilon;epsilon-constraint;similarity-budget;0.10;371;334;;;;totalizer;both;none;TIMEOUT;300.1340169;300.0;216.201709131;4;149576;349937;836;;;;;;;similarity_reference | continuity | overtime;371 | 0 | 0
+3;TOT-both-none;instance_30_10_4_46;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;both;none;UNSATISFIABLE;0.038087631;300.0;0;1;0;0;0;;;;;;;;
+3;TOT-both-none;instance_30_10_4_47;epsilon;epsilon-constraint;similarity-budget;0.10;399;360;;;;totalizer;both;none;TIMEOUT;300.1190039;300.0;6.374988561;2;8528;57913;426;;;;;;;similarity_reference;399
+3;TOT-both-none;instance_30_10_4_48;epsilon;epsilon-constraint;similarity-budget;0.10;377;340;4;4/377;0.010610079575596816;totalizer;both;none;OPTIMUM;85.9251245;300.0;85.33037117800001;4;130767;295233;891;373.0;373.0;373.0;0.0;0.0;120.0;similarity_reference | continuity | overtime | similarity_tiebreak;377 | 0 | 0 | 373
+3;TOT-both-none;instance_30_10_4_49;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;both;none;UNSATISFIABLE;0.073806516;300.0;0;1;0;0;0;;;;;;;;
+3;TOT-both-none;instance_30_10_4_5;epsilon;epsilon-constraint;similarity-budget;0.10;424;382;;;;totalizer;both;none;TIMEOUT;300.1274185;300.0;6.446444547;2;8660;66295;487;;;;;;;similarity_reference;424
+3;TOT-both-none;instance_30_10_4_50;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;both;none;UNSATISFIABLE;0.065259061;300.0;0;1;0;0;0;;;;;;;;
+3;TOT-both-none;instance_30_10_4_6;epsilon;epsilon-constraint;similarity-budget;0.10;391;352;;;;totalizer;both;none;TIMEOUT;300.128732;300.0;4.613938184;2;9659;82218;528;;;;;;;similarity_reference;391
+3;TOT-both-none;instance_30_10_4_7;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;both;none;UNSATISFIABLE;0.056253415;300.0;0;1;0;0;0;;;;;;;;
+3;TOT-both-none;instance_30_10_4_8;epsilon;epsilon-constraint;similarity-budget;0.10;422;380;;;;totalizer;both;none;TIMEOUT;300.1264264;300.0;22.99151082;2;9114;72298;530;;;;;;;similarity_reference;422
+4;TOT-both-ss;instance_30_10_4_1;epsilon;epsilon-constraint;similarity-budget;0.10;421;379;;;;totalizer;both;slot-service;TIMEOUT;300.1285915;300.0;7.633283229;2;9582;78913;532;;;;;;;similarity_reference;421
+4;TOT-both-ss;instance_30_10_4_10;epsilon;epsilon-constraint;similarity-budget;0.10;414;373;;;;totalizer;both;slot-service;TIMEOUT;300.1309956;300.0;8.448715751;2;9292;73768;533;;;;;;;similarity_reference;414
+4;TOT-both-ss;instance_30_10_4_11;epsilon;epsilon-constraint;similarity-budget;0.10;402;362;;;;totalizer;both;slot-service;TIMEOUT;300.124834;300.0;8.295593808;2;9038;70477;520;;;;;;;similarity_reference;402
+4;TOT-both-ss;instance_30_10_4_12;epsilon;epsilon-constraint;similarity-budget;0.10;397;358;;;;totalizer;both;slot-service;TIMEOUT;300.1309816;300.0;12.7033443;2;9578;79761;535;;;;;;;similarity_reference;397
+4;TOT-both-ss;instance_30_10_4_13;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;both;slot-service;UNSATISFIABLE;0.053593483;300.0;0;1;0;0;0;;;;;;;;
+4;TOT-both-ss;instance_30_10_4_14;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;both;slot-service;UNSATISFIABLE;0.053353323;300.0;0;1;0;0;0;;;;;;;;
+4;TOT-both-ss;instance_30_10_4_15;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;both;slot-service;UNSATISFIABLE;0.035164258;300.0;0;1;0;0;0;;;;;;;;
+4;TOT-both-ss;instance_30_10_4_16;epsilon;epsilon-constraint;similarity-budget;0.10;436;393;;;;totalizer;both;slot-service;TIMEOUT;300.1327606;300.0;4.673135802;2;9909;84109;565;;;;;;;similarity_reference;436
+4;TOT-both-ss;instance_30_10_4_17;epsilon;epsilon-constraint;similarity-budget;0.10;402;362;;;;totalizer;both;slot-service;TIMEOUT;300.1269929;300.0;289.81471124;4;133008;306387;847;;;;;;;similarity_reference | continuity | overtime;402 | 0 | 0
+4;TOT-both-ss;instance_30_10_4_18;epsilon;epsilon-constraint;similarity-budget;0.10;414;373;;;;totalizer;both;slot-service;TIMEOUT;300.1287227;300.0;294.285220241;3;95725;238838;858;;;;;;;similarity_reference | continuity;414 | 0
+4;TOT-both-ss;instance_30_10_4_19;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;both;slot-service;UNSATISFIABLE;0.062520374;300.0;0;1;0;0;0;;;;;;;;
+4;TOT-both-ss;instance_30_10_4_2;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;both;slot-service;UNSATISFIABLE;0.062347559;300.0;0;1;0;0;0;;;;;;;;
+4;TOT-both-ss;instance_30_10_4_20;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;both;slot-service;UNSATISFIABLE;0.043759598;300.0;0;1;0;0;0;;;;;;;;
+4;TOT-both-ss;instance_30_10_4_21;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;both;slot-service;UNSATISFIABLE;0.065821542;300.0;0;1;0;0;0;;;;;;;;
+4;TOT-both-ss;instance_30_10_4_22;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;both;slot-service;UNSATISFIABLE;0.065132339;300.0;0;1;0;0;0;;;;;;;;
+4;TOT-both-ss;instance_30_10_4_23;epsilon;epsilon-constraint;similarity-budget;0.10;382;344;;;;totalizer;both;slot-service;TIMEOUT;300.1384697;300.0;295.59243303;3;110410;281612;891;;;;;;;similarity_reference | continuity;382 | 0
+4;TOT-both-ss;instance_30_10_4_24;epsilon;epsilon-constraint;similarity-budget;0.10;396;357;;;;totalizer;both;slot-service;TIMEOUT;300.1216909;300.0;6.56709093;2;8815;65130;463;;;;;;;similarity_reference;396
+4;TOT-both-ss;instance_30_10_4_25;epsilon;epsilon-constraint;similarity-budget;0.10;446;402;;;;totalizer;both;slot-service;TIMEOUT;300.1271378;300.0;3.736845222;2;10408;91338;614;;;;;;;similarity_reference;446
+4;TOT-both-ss;instance_30_10_4_26;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;both;slot-service;UNSATISFIABLE;0.076088718;300.0;0;1;0;0;0;;;;;;;;
+4;TOT-both-ss;instance_30_10_4_27;epsilon;epsilon-constraint;similarity-budget;0.10;405;365;;;;totalizer;both;slot-service;TIMEOUT;300.122655;300.0;11.2065019;2;8644;59774;480;;;;;;;similarity_reference;405
+4;TOT-both-ss;instance_30_10_4_28;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;both;slot-service;UNSATISFIABLE;0.036231626;300.0;0;1;0;0;0;;;;;;;;
+4;TOT-both-ss;instance_30_10_4_29;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;both;slot-service;UNSATISFIABLE;0.055451433;300.0;0;1;0;0;0;;;;;;;;
+4;TOT-both-ss;instance_30_10_4_3;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;both;slot-service;UNSATISFIABLE;0.056237472;300.0;0;1;0;0;0;;;;;;;;
+4;TOT-both-ss;instance_30_10_4_30;epsilon;epsilon-constraint;similarity-budget;0.10;407;367;;;;totalizer;both;slot-service;TIMEOUT;300.1249705;300.0;13.50566679;2;9751;81939;606;;;;;;;similarity_reference;407
+4;TOT-both-ss;instance_30_10_4_31;epsilon;epsilon-constraint;similarity-budget;0.10;381;343;;;;totalizer;both;slot-service;TIMEOUT;300.1278306;300.0;269.28088011799997;4;154335;360602;803;;;;;;;similarity_reference | continuity | overtime;381 | 6 | 0
+4;TOT-both-ss;instance_30_10_4_32;epsilon;epsilon-constraint;similarity-budget;0.10;424;382;;;;totalizer;both;slot-service;TIMEOUT;300.1280521;300.0;6.554941135;2;9525;78416;527;;;;;;;similarity_reference;424
+4;TOT-both-ss;instance_30_10_4_33;epsilon;epsilon-constraint;similarity-budget;0.10;436;393;;;;totalizer;both;slot-service;TIMEOUT;300.1228811;300.0;13.18190075;2;9905;82011;538;;;;;;;similarity_reference;436
+4;TOT-both-ss;instance_30_10_4_34;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;both;slot-service;UNSATISFIABLE;0.065177188;300.0;0;1;0;0;0;;;;;;;;
+4;TOT-both-ss;instance_30_10_4_35;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;both;slot-service;UNSATISFIABLE;0.051781477;300.0;0;1;0;0;0;;;;;;;;
+4;TOT-both-ss;instance_30_10_4_36;epsilon;epsilon-constraint;similarity-budget;0.10;410;369;;;;totalizer;both;slot-service;TIMEOUT;300.1348328;300.0;14.48165696;2;9923;90766;644;;;;;;;similarity_reference;410
+4;TOT-both-ss;instance_30_10_4_37;epsilon;epsilon-constraint;similarity-budget;0.10;444;400;;;;totalizer;both;slot-service;TIMEOUT;300.131633;300.0;12.82177384;2;9813;83361;555;;;;;;;similarity_reference;444
+4;TOT-both-ss;instance_30_10_4_38;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;both;slot-service;UNSATISFIABLE;0.067469717;300.0;0;1;0;0;0;;;;;;;;
+4;TOT-both-ss;instance_30_10_4_39;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;both;slot-service;UNSATISFIABLE;0.0555703;300.0;0;1;0;0;0;;;;;;;;
+4;TOT-both-ss;instance_30_10_4_4;epsilon;epsilon-constraint;similarity-budget;0.10;431;388;;;;totalizer;both;slot-service;TIMEOUT;300.123703;300.0;6.607841429;2;9408;76460;500;;;;;;;similarity_reference;431
+4;TOT-both-ss;instance_30_10_4_40;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;both;slot-service;UNSATISFIABLE;0.059419016;300.0;0;1;0;0;0;;;;;;;;
+4;TOT-both-ss;instance_30_10_4_41;epsilon;epsilon-constraint;similarity-budget;0.10;358;323;18;9/179;0.05027932960893855;totalizer;both;slot-service;OPTIMUM;227.6111683;300.0;227.0325006;4;125394;282184;836;338.0;338.0;340.0;2.0;0.0;120.0;similarity_reference | continuity | overtime | similarity_tiebreak;358 | 2 | 0 | 340
+4;TOT-both-ss;instance_30_10_4_42;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;both;slot-service;UNSATISFIABLE;0.066562975;300.0;0;1;0;0;0;;;;;;;;
+4;TOT-both-ss;instance_30_10_4_43;epsilon;epsilon-constraint;similarity-budget;0.10;419;378;;;;totalizer;both;slot-service;TIMEOUT;300.1368576;300.0;17.16261552;2;9515;80803;596;;;;;;;similarity_reference;419
+4;TOT-both-ss;instance_30_10_4_44;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;both;slot-service;UNSATISFIABLE;0.06750584;300.0;0;1;0;0;0;;;;;;;;
+4;TOT-both-ss;instance_30_10_4_45;epsilon;epsilon-constraint;similarity-budget;0.10;371;334;;;;totalizer;both;slot-service;TIMEOUT;300.1363369;300.0;281.835593084;3;91064;232935;836;;;;;;;similarity_reference | continuity;371 | 0
+4;TOT-both-ss;instance_30_10_4_46;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;both;slot-service;UNSATISFIABLE;0.03789981;300.0;0;1;0;0;0;;;;;;;;
+4;TOT-both-ss;instance_30_10_4_47;epsilon;epsilon-constraint;similarity-budget;0.10;399;360;;;;totalizer;both;slot-service;TIMEOUT;300.1168886;300.0;5.791121406;2;8545;57989;426;;;;;;;similarity_reference;399
+4;TOT-both-ss;instance_30_10_4_48;epsilon;epsilon-constraint;similarity-budget;0.10;377;340;4;4/377;0.010610079575596816;totalizer;both;slot-service;OPTIMUM;72.1460113;300.0;71.557024705;4;130767;295235;891;373.0;373.0;373.0;0.0;0.0;120.0;similarity_reference | continuity | overtime | similarity_tiebreak;377 | 0 | 0 | 373
+4;TOT-both-ss;instance_30_10_4_49;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;both;slot-service;UNSATISFIABLE;0.074972833;300.0;0;1;0;0;0;;;;;;;;
+4;TOT-both-ss;instance_30_10_4_5;epsilon;epsilon-constraint;similarity-budget;0.10;424;382;;;;totalizer;both;slot-service;TIMEOUT;300.1225599;300.0;10.3813322;2;8664;66315;487;;;;;;;similarity_reference;424
+4;TOT-both-ss;instance_30_10_4_50;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;totalizer;both;slot-service;UNSATISFIABLE;0.065331082;300.0;0;1;0;0;0;;;;;;;;
+4;TOT-both-ss;instance_30_10_4_6;epsilon;epsilon-constraint;similarity-budget;0.10;391;352;;;;totalizer;both;slot-service;TIMEOUT;300.1250935;300.0;4.582246544;2;9659;82218;528;;;;;;;similarity_reference;391
+5;ORIGINAL;instance_30_10_4_1;epsilon;epsilon-constraint;similarity-budget;0.10;421;379;;;;sorting-network;none;none;TIMEOUT;300.1296568;300.0;5.809752331;2;15458;60139;532;;;;;;;similarity_reference;421
+5;ORIGINAL;instance_30_10_4_10;epsilon;epsilon-constraint;similarity-budget;0.10;414;373;;;;sorting-network;none;none;TIMEOUT;300.1285478;300.0;8.561137368;2;17109;59733;533;;;;;;;similarity_reference;414
+5;ORIGINAL;instance_30_10_4_11;epsilon;epsilon-constraint;similarity-budget;0.10;402;362;;;;sorting-network;none;none;TIMEOUT;300.1241124;300.0;8.451115816;2;16332;56268;520;;;;;;;similarity_reference;402
+5;ORIGINAL;instance_30_10_4_12;epsilon;epsilon-constraint;similarity-budget;0.10;397;358;;;;sorting-network;none;none;TIMEOUT;300.1227039;300.0;7.998381085;2;16412;60849;535;;;;;;;similarity_reference;397
+5;ORIGINAL;instance_30_10_4_13;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;none;none;UNSATISFIABLE;0.033723683;300.0;0;1;0;0;0;;;;;;;;
+5;ORIGINAL;instance_30_10_4_14;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;none;none;UNSATISFIABLE;0.046811461;300.0;0;1;0;0;0;;;;;;;;
+5;ORIGINAL;instance_30_10_4_15;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;none;none;UNSATISFIABLE;0.026342052;300.0;0;1;0;0;0;;;;;;;;
+5;ORIGINAL;instance_30_10_4_16;epsilon;epsilon-constraint;similarity-budget;0.10;436;393;;;;sorting-network;none;none;TIMEOUT;300.1235347;300.0;5.952224666;2;17677;67347;565;;;;;;;similarity_reference;436
+5;ORIGINAL;instance_30_10_4_17;epsilon;epsilon-constraint;similarity-budget;0.10;402;362;;;;sorting-network;none;none;TIMEOUT;300.1268593;300.0;237.810325367;4;135329;287406;847;;;;;;;similarity_reference | continuity | overtime;402 | 0 | 0
+5;ORIGINAL;instance_30_10_4_18;epsilon;epsilon-constraint;similarity-budget;0.10;414;373;;;;sorting-network;none;none;TIMEOUT;300.1338962;300.0;292.48604011;4;159931;337926;858;;;;;;;similarity_reference | continuity | overtime;414 | 0 | 0
+5;ORIGINAL;instance_30_10_4_19;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;none;none;UNSATISFIABLE;0.044958332;300.0;0;1;0;0;0;;;;;;;;
+5;ORIGINAL;instance_30_10_4_2;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;none;none;UNSATISFIABLE;0.055774505;300.0;0;1;0;0;0;;;;;;;;
+5;ORIGINAL;instance_30_10_4_20;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;none;none;UNSATISFIABLE;0.045940058;300.0;0;1;0;0;0;;;;;;;;
+5;ORIGINAL;instance_30_10_4_21;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;none;none;UNSATISFIABLE;0.057657653;300.0;0;1;0;0;0;;;;;;;;
+5;ORIGINAL;instance_30_10_4_22;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;none;none;UNSATISFIABLE;0.051201787;300.0;0;1;0;0;0;;;;;;;;
+5;ORIGINAL;instance_30_10_4_23;epsilon;epsilon-constraint;similarity-budget;0.10;382;344;;;;sorting-network;none;none;TIMEOUT;300.1328996;300.0;265.733111091;4;184822;397025;891;;;;;;;similarity_reference | continuity | overtime;382 | 0 | 0
+5;ORIGINAL;instance_30_10_4_24;epsilon;epsilon-constraint;similarity-budget;0.10;396;357;;;;sorting-network;none;none;TIMEOUT;300.1209928;300.0;10.80694635;2;13402;49470;463;;;;;;;similarity_reference;396
+5;ORIGINAL;instance_30_10_4_25;epsilon;epsilon-constraint;similarity-budget;0.10;446;402;;;;sorting-network;none;none;TIMEOUT;300.1246874;300.0;5.850167965;2;17704;68453;614;;;;;;;similarity_reference;446
+5;ORIGINAL;instance_30_10_4_26;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;none;none;UNSATISFIABLE;0.059764312;300.0;0;1;0;0;0;;;;;;;;
+5;ORIGINAL;instance_30_10_4_27;epsilon;epsilon-constraint;similarity-budget;0.10;405;365;;;;sorting-network;none;none;TIMEOUT;300.1174577;300.0;9.323765345;2;13839;44708;480;;;;;;;similarity_reference;405
+5;ORIGINAL;instance_30_10_4_28;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;none;none;UNSATISFIABLE;0.028236773;300.0;0;1;0;0;0;;;;;;;;
+5;ORIGINAL;instance_30_10_4_29;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;none;none;UNSATISFIABLE;0.048693832;300.0;0;1;0;0;0;;;;;;;;
+5;ORIGINAL;instance_30_10_4_3;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;none;none;UNSATISFIABLE;0.039665609;300.0;0;1;0;0;0;;;;;;;;
+5;ORIGINAL;instance_30_10_4_30;epsilon;epsilon-constraint;similarity-budget;0.10;407;367;;;;sorting-network;none;none;TIMEOUT;300.1242515;300.0;10.576052;2;18708;63200;606;;;;;;;similarity_reference;407
+5;ORIGINAL;instance_30_10_4_31;epsilon;epsilon-constraint;similarity-budget;0.10;381;343;;;;sorting-network;none;none;TIMEOUT;300.1303111;300.0;209.234654554;4;159583;340813;803;;;;;;;similarity_reference | continuity | overtime;381 | 6 | 0
+5;ORIGINAL;instance_30_10_4_32;epsilon;epsilon-constraint;similarity-budget;0.10;424;382;;;;sorting-network;none;none;TIMEOUT;300.123519;300.0;6.806976749;2;15717;58369;527;;;;;;;similarity_reference;424
+5;ORIGINAL;instance_30_10_4_33;epsilon;epsilon-constraint;similarity-budget;0.10;436;393;;;;sorting-network;none;none;TIMEOUT;300.1297558;300.0;8.537603159;2;14662;56321;538;;;;;;;similarity_reference;436
+5;ORIGINAL;instance_30_10_4_34;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;none;none;UNSATISFIABLE;0.051328703;300.0;0;1;0;0;0;;;;;;;;
+5;ORIGINAL;instance_30_10_4_35;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;none;none;UNSATISFIABLE;0.035120129;300.0;0;1;0;0;0;;;;;;;;
+5;ORIGINAL;instance_30_10_4_36;epsilon;epsilon-constraint;similarity-budget;0.10;410;369;;;;sorting-network;none;none;TIMEOUT;300.1232502;300.0;11.70742449;2;17953;64090;644;;;;;;;similarity_reference;410
+5;ORIGINAL;instance_30_10_4_37;epsilon;epsilon-constraint;similarity-budget;0.10;444;400;;;;sorting-network;none;none;TIMEOUT;300.1295704;300.0;8.737851563;2;15129;59689;555;;;;;;;similarity_reference;444
+5;ORIGINAL;instance_30_10_4_38;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;none;none;UNSATISFIABLE;0.05271507;300.0;0;1;0;0;0;;;;;;;;
+5;ORIGINAL;instance_30_10_4_39;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;none;none;UNSATISFIABLE;0.034598278;300.0;0;1;0;0;0;;;;;;;;
+5;ORIGINAL;instance_30_10_4_4;epsilon;epsilon-constraint;similarity-budget;0.10;431;388;;;;sorting-network;none;none;TIMEOUT;300.1188675;300.0;10.11442985;2;14595;56747;500;;;;;;;similarity_reference;431
+5;ORIGINAL;instance_30_10_4_40;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;none;none;UNSATISFIABLE;0.048147775;300.0;0;1;0;0;0;;;;;;;;
+5;ORIGINAL;instance_30_10_4_41;epsilon;epsilon-constraint;similarity-budget;0.10;358;323;18;9/179;0.05027932960893855;sorting-network;none;none;OPTIMUM;166.8954144;300.0;166.340569635;4;126255;263227;836;338.0;338.0;340.0;2.0;0.0;120.0;similarity_reference | continuity | overtime | similarity_tiebreak;358 | 2 | 0 | 340
+5;ORIGINAL;instance_30_10_4_42;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;none;none;UNSATISFIABLE;0.048435748;300.0;0;1;0;0;0;;;;;;;;
+5;ORIGINAL;instance_30_10_4_43;epsilon;epsilon-constraint;similarity-budget;0.10;419;378;;;;sorting-network;none;none;TIMEOUT;300.122846;300.0;15.77236963;2;18422;61900;596;;;;;;;similarity_reference;419
+5;ORIGINAL;instance_30_10_4_44;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;none;none;UNSATISFIABLE;0.06858484;300.0;0;1;0;0;0;;;;;;;;
+5;ORIGINAL;instance_30_10_4_45;epsilon;epsilon-constraint;similarity-budget;0.10;371;334;;;;sorting-network;none;none;TIMEOUT;300.1353971;300.0;271.150753961;4;154948;334516;836;;;;;;;similarity_reference | continuity | overtime;371 | 0 | 0
+5;ORIGINAL;instance_30_10_4_46;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;none;none;UNSATISFIABLE;0.02654219;300.0;0;1;0;0;0;;;;;;;;
+5;ORIGINAL;instance_30_10_4_47;epsilon;epsilon-constraint;similarity-budget;0.10;399;360;;;;sorting-network;none;none;TIMEOUT;300.1143062;300.0;4.44010471;2;11712;40948;426;;;;;;;similarity_reference;399
+5;ORIGINAL;instance_30_10_4_48;epsilon;epsilon-constraint;similarity-budget;0.10;377;340;4;4/377;0.010610079575596816;sorting-network;none;none;OPTIMUM;43.94399209;300.0;43.37098629;4;133097;278829;891;373.0;373.0;373.0;0.0;0.0;120.0;similarity_reference | continuity | overtime | similarity_tiebreak;377 | 0 | 0 | 373
+5;ORIGINAL;instance_30_10_4_49;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;none;none;UNSATISFIABLE;0.067369162;300.0;0;1;0;0;0;;;;;;;;
+5;ORIGINAL;instance_30_10_4_5;epsilon;epsilon-constraint;similarity-budget;0.10;424;382;;;;sorting-network;none;none;TIMEOUT;300.1287282;300.0;8.511151143;2;13334;49344;487;;;;;;;similarity_reference;424
+5;ORIGINAL;instance_30_10_4_50;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;none;none;UNSATISFIABLE;0.050896447;300.0;0;1;0;0;0;;;;;;;;
+5;ORIGINAL;instance_30_10_4_6;epsilon;epsilon-constraint;similarity-budget;0.10;391;352;;;;sorting-network;none;none;TIMEOUT;300.1265014;300.0;8.593615088;2;15363;57534;528;;;;;;;similarity_reference;391
+5;ORIGINAL;instance_30_10_4_7;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;none;none;UNSATISFIABLE;0.048276862;300.0;0;1;0;0;0;;;;;;;;
+5;ORIGINAL;instance_30_10_4_8;epsilon;epsilon-constraint;similarity-budget;0.10;422;380;;;;sorting-network;none;none;TIMEOUT;300.1230987;300.0;26.12666597;2;15326;52352;530;;;;;;;similarity_reference;422
+6;SN-none-ss;instance_30_10_4_1;epsilon;epsilon-constraint;similarity-budget;0.10;421;379;;;;sorting-network;none;slot-service;TIMEOUT;300.1212725;300.0;8.782594272;2;15464;60165;532;;;;;;;similarity_reference;421
+6;SN-none-ss;instance_30_10_4_10;epsilon;epsilon-constraint;similarity-budget;0.10;414;373;;;;sorting-network;none;slot-service;TIMEOUT;300.1305803;300.0;8.592187519;2;17515;61403;533;;;;;;;similarity_reference;414
+6;SN-none-ss;instance_30_10_4_11;epsilon;epsilon-constraint;similarity-budget;0.10;402;362;;;;sorting-network;none;slot-service;TIMEOUT;300.118834;300.0;7.49045844;2;16741;57801;520;;;;;;;similarity_reference;402
+6;SN-none-ss;instance_30_10_4_12;epsilon;epsilon-constraint;similarity-budget;0.10;397;358;;;;sorting-network;none;slot-service;TIMEOUT;300.1236461;300.0;14.60960022;2;16833;62658;535;;;;;;;similarity_reference;397
+6;SN-none-ss;instance_30_10_4_13;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;none;slot-service;UNSATISFIABLE;0.034538998;300.0;0;1;0;0;0;;;;;;;;
+6;SN-none-ss;instance_30_10_4_14;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;none;slot-service;UNSATISFIABLE;0.049460156;300.0;0;1;0;0;0;;;;;;;;
+6;SN-none-ss;instance_30_10_4_15;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;none;slot-service;UNSATISFIABLE;0.028240304;300.0;0;1;0;0;0;;;;;;;;
+6;SN-none-ss;instance_30_10_4_16;epsilon;epsilon-constraint;similarity-budget;0.10;436;393;;;;sorting-network;none;slot-service;TIMEOUT;300.124648;300.0;7.059699943;2;18093;69338;565;;;;;;;similarity_reference;436
+6;SN-none-ss;instance_30_10_4_17;epsilon;epsilon-constraint;similarity-budget;0.10;402;362;;;;sorting-network;none;slot-service;TIMEOUT;300.1219358;300.0;6.46357806;2;11086;39660;399;;;;;;;similarity_reference;402
+6;SN-none-ss;instance_30_10_4_18;epsilon;epsilon-constraint;similarity-budget;0.10;414;373;;;;sorting-network;none;slot-service;TIMEOUT;300.1313757;300.0;294.33165966400003;3;98311;214685;858;;;;;;;similarity_reference | continuity;414 | 0
+6;SN-none-ss;instance_30_10_4_19;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;none;slot-service;UNSATISFIABLE;0.046758242;300.0;0;1;0;0;0;;;;;;;;
+6;SN-none-ss;instance_30_10_4_2;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;none;slot-service;UNSATISFIABLE;0.056005012;300.0;0;1;0;0;0;;;;;;;;
+6;SN-none-ss;instance_30_10_4_20;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;none;slot-service;UNSATISFIABLE;0.03830963;300.0;0;1;0;0;0;;;;;;;;
+6;SN-none-ss;instance_30_10_4_21;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;none;slot-service;UNSATISFIABLE;0.058515594;300.0;0;1;0;0;0;;;;;;;;
+6;SN-none-ss;instance_30_10_4_22;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;none;slot-service;UNSATISFIABLE;0.052199604;300.0;0;1;0;0;0;;;;;;;;
+6;SN-none-ss;instance_30_10_4_23;epsilon;epsilon-constraint;similarity-budget;0.10;382;344;;;;sorting-network;none;slot-service;TIMEOUT;300.1315951;300.0;288.914711736;4;185241;398712;891;;;;;;;similarity_reference | continuity | overtime;382 | 0 | 0
+6;SN-none-ss;instance_30_10_4_24;epsilon;epsilon-constraint;similarity-budget;0.10;396;357;;;;sorting-network;none;slot-service;TIMEOUT;300.1246211;300.0;11.48623263;2;13822;51178;463;;;;;;;similarity_reference;396
+6;SN-none-ss;instance_30_10_4_25;epsilon;epsilon-constraint;similarity-budget;0.10;446;402;;;;sorting-network;none;slot-service;TIMEOUT;300.1322058;300.0;6.072529233;2;18132;70477;614;;;;;;;similarity_reference;446
+6;SN-none-ss;instance_30_10_4_26;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;none;slot-service;UNSATISFIABLE;0.061447812;300.0;0;1;0;0;0;;;;;;;;
+6;SN-none-ss;instance_30_10_4_27;epsilon;epsilon-constraint;similarity-budget;0.10;405;365;;;;sorting-network;none;slot-service;TIMEOUT;300.1203098;300.0;9.798643261;2;14266;46080;480;;;;;;;similarity_reference;405
+6;SN-none-ss;instance_30_10_4_28;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;none;slot-service;UNSATISFIABLE;0.028943723;300.0;0;1;0;0;0;;;;;;;;
+6;SN-none-ss;instance_30_10_4_29;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;none;slot-service;UNSATISFIABLE;0.051426337;300.0;0;1;0;0;0;;;;;;;;
+6;SN-none-ss;instance_30_10_4_3;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;none;slot-service;UNSATISFIABLE;0.041217322;300.0;0;1;0;0;0;;;;;;;;
+6;SN-none-ss;instance_30_10_4_30;epsilon;epsilon-constraint;similarity-budget;0.10;407;367;;;;sorting-network;none;slot-service;TIMEOUT;300.1226919;300.0;11.83556066;2;19120;64737;606;;;;;;;similarity_reference;407
+6;SN-none-ss;instance_30_10_4_31;epsilon;epsilon-constraint;similarity-budget;0.10;381;343;;;;sorting-network;none;slot-service;TIMEOUT;300.1256465;300.0;234.30477252000003;4;160033;342453;803;;;;;;;similarity_reference | continuity | overtime;381 | 6 | 0
+6;SN-none-ss;instance_30_10_4_32;epsilon;epsilon-constraint;similarity-budget;0.10;424;382;;;;sorting-network;none;slot-service;TIMEOUT;300.1240432;300.0;6.720530074;2;15733;58435;527;;;;;;;similarity_reference;424
+6;SN-none-ss;instance_30_10_4_33;epsilon;epsilon-constraint;similarity-budget;0.10;436;393;;;;sorting-network;none;slot-service;TIMEOUT;300.1219799;300.0;17.30115106;2;15103;58209;538;;;;;;;similarity_reference;436
+6;SN-none-ss;instance_30_10_4_34;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;none;slot-service;UNSATISFIABLE;0.052467003;300.0;0;1;0;0;0;;;;;;;;
+6;SN-none-ss;instance_30_10_4_35;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;none;slot-service;UNSATISFIABLE;0.035530267;300.0;0;1;0;0;0;;;;;;;;
+6;SN-none-ss;instance_30_10_4_36;epsilon;epsilon-constraint;similarity-budget;0.10;410;369;;;;sorting-network;none;slot-service;TIMEOUT;300.1314055;300.0;11.71245153;2;18345;65808;644;;;;;;;similarity_reference;410
+6;SN-none-ss;instance_30_10_4_37;epsilon;epsilon-constraint;similarity-budget;0.10;444;400;;;;sorting-network;none;slot-service;TIMEOUT;300.1319851;300.0;9.716296279;2;15550;61588;555;;;;;;;similarity_reference;444
+6;SN-none-ss;instance_30_10_4_38;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;none;slot-service;UNSATISFIABLE;0.054337628;300.0;0;1;0;0;0;;;;;;;;
+6;SN-none-ss;instance_30_10_4_39;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;none;slot-service;UNSATISFIABLE;0.04766549;300.0;0;1;0;0;0;;;;;;;;
+6;SN-none-ss;instance_30_10_4_4;epsilon;epsilon-constraint;similarity-budget;0.10;431;388;;;;sorting-network;none;slot-service;TIMEOUT;300.1208272;300.0;11.07665148;2;15032;58711;500;;;;;;;similarity_reference;431
+6;SN-none-ss;instance_30_10_4_40;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;none;slot-service;UNSATISFIABLE;0.04081595;300.0;0;1;0;0;0;;;;;;;;
+6;SN-none-ss;instance_30_10_4_41;epsilon;epsilon-constraint;similarity-budget;0.10;358;323;18;9/179;0.05027932960893855;sorting-network;none;slot-service;OPTIMUM;153.1655691;300.0;152.645872177;4;126681;264555;836;338.0;338.0;340.0;2.0;0.0;120.0;similarity_reference | continuity | overtime | similarity_tiebreak;358 | 2 | 0 | 340
+6;SN-none-ss;instance_30_10_4_42;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;none;slot-service;UNSATISFIABLE;0.051238811;300.0;0;1;0;0;0;;;;;;;;
+6;SN-none-ss;instance_30_10_4_43;epsilon;epsilon-constraint;similarity-budget;0.10;419;378;;;;sorting-network;none;slot-service;TIMEOUT;300.129175;300.0;18.52193808;2;18822;63455;596;;;;;;;similarity_reference;419
+6;SN-none-ss;instance_30_10_4_44;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;none;slot-service;UNSATISFIABLE;0.060907964;300.0;0;1;0;0;0;;;;;;;;
+6;SN-none-ss;instance_30_10_4_45;epsilon;epsilon-constraint;similarity-budget;0.10;371;334;;;;sorting-network;none;slot-service;TIMEOUT;300.1299984;300.0;249.212667979;4;155378;336206;836;;;;;;;similarity_reference | continuity | overtime;371 | 0 | 0
+6;SN-none-ss;instance_30_10_4_46;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;none;slot-service;UNSATISFIABLE;0.028078178;300.0;0;1;0;0;0;;;;;;;;
+6;SN-none-ss;instance_30_10_4_47;epsilon;epsilon-constraint;similarity-budget;0.10;399;360;;;;sorting-network;none;slot-service;TIMEOUT;300.1336273;300.0;294.01563201700003;3;82794;183843;913;;;;;;;similarity_reference | continuity;399 | 0
+6;SN-none-ss;instance_30_10_4_48;epsilon;epsilon-constraint;similarity-budget;0.10;377;340;4;4/377;0.010610079575596816;sorting-network;none;slot-service;OPTIMUM;36.29626386;300.0;35.754634544999995;4;133511;280110;891;373.0;373.0;373.0;0.0;0.0;120.0;similarity_reference | continuity | overtime | similarity_tiebreak;377 | 0 | 0 | 373
+6;SN-none-ss;instance_30_10_4_49;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;none;slot-service;UNSATISFIABLE;0.0561635;300.0;0;1;0;0;0;;;;;;;;
+6;SN-none-ss;instance_30_10_4_5;epsilon;epsilon-constraint;similarity-budget;0.10;424;382;;;;sorting-network;none;slot-service;TIMEOUT;300.1217912;300.0;11.9229632;2;13721;50930;487;;;;;;;similarity_reference;424
+6;SN-none-ss;instance_30_10_4_50;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;none;slot-service;UNSATISFIABLE;0.05170472;300.0;0;1;0;0;0;;;;;;;;
+6;SN-none-ss;instance_30_10_4_6;epsilon;epsilon-constraint;similarity-budget;0.10;391;352;;;;sorting-network;none;slot-service;TIMEOUT;300.1368242;300.0;274.98260138200004;3;110428;247664;858;;;;;;;similarity_reference | continuity;391 | 0
+6;SN-none-ss;instance_30_10_4_7;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;none;slot-service;UNSATISFIABLE;0.036738456;300.0;0;1;0;0;0;;;;;;;;
+6;SN-none-ss;instance_30_10_4_8;epsilon;epsilon-constraint;similarity-budget;0.10;422;380;;;;sorting-network;none;slot-service;TIMEOUT;300.1317357;300.0;255.77147645000002;3;116583;255564;803;;;;;;;similarity_reference | continuity;422 | 1
+7;SN-both-none;instance_30_10_4_1;epsilon;epsilon-constraint;similarity-budget;0.10;421;379;;;;sorting-network;both;none;TIMEOUT;300.1254694;300.0;8.052664923;2;22401;81401;532;;;;;;;similarity_reference;421
+7;SN-both-none;instance_30_10_4_10;epsilon;epsilon-constraint;similarity-budget;0.10;414;373;;;;sorting-network;both;none;TIMEOUT;300.1276758;300.0;7.810509583;2;23901;80337;533;;;;;;;similarity_reference;414
+7;SN-both-none;instance_30_10_4_11;epsilon;epsilon-constraint;similarity-budget;0.10;402;362;;;;sorting-network;both;none;TIMEOUT;300.1278397;300.0;9.716115765;2;22993;76322;520;;;;;;;similarity_reference;402
+7;SN-both-none;instance_30_10_4_12;epsilon;epsilon-constraint;similarity-budget;0.10;397;358;;;;sorting-network;both;none;TIMEOUT;300.1302672;300.0;6.322399952;2;23897;83618;535;;;;;;;similarity_reference;397
+7;SN-both-none;instance_30_10_4_13;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;both;none;UNSATISFIABLE;0.056057994;300.0;0;1;0;0;0;;;;;;;;
+7;SN-both-none;instance_30_10_4_14;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;both;none;UNSATISFIABLE;0.055843108;300.0;0;1;0;0;0;;;;;;;;
+7;SN-both-none;instance_30_10_4_15;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;both;none;UNSATISFIABLE;0.036307677;300.0;0;1;0;0;0;;;;;;;;
+7;SN-both-none;instance_30_10_4_16;epsilon;epsilon-constraint;similarity-budget;0.10;436;393;;;;sorting-network;both;none;TIMEOUT;300.1279602;300.0;4.148646519;2;24538;88421;565;;;;;;;similarity_reference;436
+7;SN-both-none;instance_30_10_4_17;epsilon;epsilon-constraint;similarity-budget;0.10;402;362;;;;sorting-network;both;none;TIMEOUT;300.1235423;300.0;5.638392034;2;17923;59901;399;;;;;;;similarity_reference;402
+7;SN-both-none;instance_30_10_4_18;epsilon;epsilon-constraint;similarity-budget;0.10;414;373;;;;sorting-network;both;none;TIMEOUT;300.1265218;300.0;240.688213527;4;166724;358381;858;;;;;;;similarity_reference | continuity | overtime;414 | 0 | 0
+7;SN-both-none;instance_30_10_4_19;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;both;none;UNSATISFIABLE;0.064064562;300.0;0;1;0;0;0;;;;;;;;
+7;SN-both-none;instance_30_10_4_2;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;both;none;UNSATISFIABLE;0.058519085;300.0;0;1;0;0;0;;;;;;;;
+7;SN-both-none;instance_30_10_4_20;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;both;none;UNSATISFIABLE;0.051690067;300.0;0;1;0;0;0;;;;;;;;
+7;SN-both-none;instance_30_10_4_21;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;both;none;UNSATISFIABLE;0.063537318;300.0;0;1;0;0;0;;;;;;;;
+7;SN-both-none;instance_30_10_4_22;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;both;none;UNSATISFIABLE;0.066159432;300.0;0;1;0;0;0;;;;;;;;
+7;SN-both-none;instance_30_10_4_23;epsilon;epsilon-constraint;similarity-budget;0.10;382;344;;;;sorting-network;both;none;TIMEOUT;300.1306551;300.0;222.79268226099998;4;192213;419399;891;;;;;;;similarity_reference | continuity | overtime;382 | 0 | 0
+7;SN-both-none;instance_30_10_4_24;epsilon;epsilon-constraint;similarity-budget;0.10;396;357;;;;sorting-network;both;none;TIMEOUT;300.1306518;300.0;299.36240848;3;100565;231554;847;;;;;;;similarity_reference | continuity;396 | 1
+7;SN-both-none;instance_30_10_4_25;epsilon;epsilon-constraint;similarity-budget;0.10;446;402;;;;sorting-network;both;none;TIMEOUT;300.1341521;300.0;6.294667715;2;25018;90848;614;;;;;;;similarity_reference;446
+7;SN-both-none;instance_30_10_4_26;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;both;none;UNSATISFIABLE;0.085925139;300.0;0;1;0;0;0;;;;;;;;
+7;SN-both-none;instance_30_10_4_27;epsilon;epsilon-constraint;similarity-budget;0.10;405;365;;;;sorting-network;both;none;TIMEOUT;300.1225954;300.0;10.42300328;2;20862;65639;480;;;;;;;similarity_reference;405
+7;SN-both-none;instance_30_10_4_28;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;both;none;UNSATISFIABLE;0.035179661;300.0;0;1;0;0;0;;;;;;;;
+7;SN-both-none;instance_30_10_4_29;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;both;none;UNSATISFIABLE;0.058272393;300.0;0;1;0;0;0;;;;;;;;
+7;SN-both-none;instance_30_10_4_3;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;both;none;UNSATISFIABLE;0.06341297;300.0;0;1;0;0;0;;;;;;;;
+7;SN-both-none;instance_30_10_4_30;epsilon;epsilon-constraint;similarity-budget;0.10;407;367;;;;sorting-network;both;none;TIMEOUT;300.1320746;300.0;10.52420591;2;25475;83591;606;;;;;;;similarity_reference;407
+7;SN-both-none;instance_30_10_4_31;epsilon;epsilon-constraint;similarity-budget;0.10;381;343;;;;sorting-network;both;none;TIMEOUT;300.130766;300.0;204.13913539499998;4;167440;364421;803;;;;;;;similarity_reference | continuity | overtime;381 | 6 | 0
+7;SN-both-none;instance_30_10_4_32;epsilon;epsilon-constraint;similarity-budget;0.10;424;382;;;;sorting-network;both;none;TIMEOUT;300.1277411;300.0;8.275331242;2;22795;79896;527;;;;;;;similarity_reference;424
+7;SN-both-none;instance_30_10_4_33;epsilon;epsilon-constraint;similarity-budget;0.10;436;393;;;;sorting-network;both;none;TIMEOUT;300.123988;300.0;21.69863291;2;22909;81373;538;;;;;;;similarity_reference;436
+7;SN-both-none;instance_30_10_4_34;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;both;none;UNSATISFIABLE;0.06428474;300.0;0;1;0;0;0;;;;;;;;
+7;SN-both-none;instance_30_10_4_35;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;both;none;UNSATISFIABLE;0.052308386;300.0;0;1;0;0;0;;;;;;;;
+7;SN-both-none;instance_30_10_4_36;epsilon;epsilon-constraint;similarity-budget;0.10;410;369;;;;sorting-network;both;none;TIMEOUT;300.12719;300.0;15.97662895;2;24128;82944;644;;;;;;;similarity_reference;410
+7;SN-both-none;instance_30_10_4_37;epsilon;epsilon-constraint;similarity-budget;0.10;444;400;;;;sorting-network;both;none;TIMEOUT;300.1298386;300.0;15.70143691;2;22366;81788;555;;;;;;;similarity_reference;444
+7;SN-both-none;instance_30_10_4_38;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;both;none;UNSATISFIABLE;0.065199034;300.0;0;1;0;0;0;;;;;;;;
+7;SN-both-none;instance_30_10_4_39;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;both;none;UNSATISFIABLE;0.056827212;300.0;0;1;0;0;0;;;;;;;;
+7;SN-both-none;instance_30_10_4_4;epsilon;epsilon-constraint;similarity-budget;0.10;431;388;;;;sorting-network;both;none;TIMEOUT;300.1275559;300.0;9.230510442;2;21770;78668;500;;;;;;;similarity_reference;431
+7;SN-both-none;instance_30_10_4_40;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;both;none;UNSATISFIABLE;0.072080425;300.0;0;1;0;0;0;;;;;;;;
+7;SN-both-none;instance_30_10_4_41;epsilon;epsilon-constraint;similarity-budget;0.10;358;323;18;9/179;0.05027932960893855;sorting-network;both;none;OPTIMUM;222.0001764;300.0;221.45021540599998;4;133363;284359;836;338.0;338.0;340.0;2.0;0.0;120.0;similarity_reference | continuity | overtime | similarity_tiebreak;358 | 2 | 0 | 340
+7;SN-both-none;instance_30_10_4_42;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;both;none;UNSATISFIABLE;0.065596087;300.0;0;1;0;0;0;;;;;;;;
+7;SN-both-none;instance_30_10_4_43;epsilon;epsilon-constraint;similarity-budget;0.10;419;378;;;;sorting-network;both;none;TIMEOUT;300.1308066;300.0;10.91500517;2;24965;81653;596;;;;;;;similarity_reference;419
+7;SN-both-none;instance_30_10_4_44;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;both;none;UNSATISFIABLE;0.095948018;300.0;0;1;0;0;0;;;;;;;;
+7;SN-both-none;instance_30_10_4_45;epsilon;epsilon-constraint;similarity-budget;0.10;371;334;;;;sorting-network;both;none;TIMEOUT;300.1340252;300.0;217.027087071;4;162348;356863;836;;;;;;;similarity_reference | continuity | overtime;371 | 0 | 0
+7;SN-both-none;instance_30_10_4_46;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;both;none;UNSATISFIABLE;0.040355367;300.0;0;1;0;0;0;;;;;;;;
+7;SN-both-none;instance_30_10_4_47;epsilon;epsilon-constraint;similarity-budget;0.10;399;360;;;;sorting-network;both;none;TIMEOUT;300.1250447;300.0;9.082342858;2;18969;62749;426;;;;;;;similarity_reference;399
+7;SN-both-none;instance_30_10_4_48;epsilon;epsilon-constraint;similarity-budget;0.10;377;340;4;4/377;0.010610079575596816;sorting-network;both;none;OPTIMUM;50.68554099;300.0;50.117279147;4;140055;299511;891;373.0;373.0;373.0;0.0;0.0;120.0;similarity_reference | continuity | overtime | similarity_tiebreak;377 | 0 | 0 | 373
+7;SN-both-none;instance_30_10_4_49;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;both;none;UNSATISFIABLE;0.077539779;300.0;0;1;0;0;0;;;;;;;;
+7;SN-both-none;instance_30_10_4_5;epsilon;epsilon-constraint;similarity-budget;0.10;424;382;;;;sorting-network;both;none;TIMEOUT;300.1247104;300.0;7.81599417;2;19570;68243;487;;;;;;;similarity_reference;424
+7;SN-both-none;instance_30_10_4_50;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;both;none;UNSATISFIABLE;0.066753065;300.0;0;1;0;0;0;;;;;;;;
+7;SN-both-none;instance_30_10_4_6;epsilon;epsilon-constraint;similarity-budget;0.10;391;352;;;;sorting-network;both;none;TIMEOUT;300.1266649;300.0;6.967947399;2;22694;79828;528;;;;;;;similarity_reference;391
+7;SN-both-none;instance_30_10_4_7;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;both;none;UNSATISFIABLE;0.064770626;300.0;0;1;0;0;0;;;;;;;;
+7;SN-both-none;instance_30_10_4_8;epsilon;epsilon-constraint;similarity-budget;0.10;422;380;;;;sorting-network;both;none;TIMEOUT;300.1240442;300.0;19.75012471;2;22161;72914;530;;;;;;;similarity_reference;422
+8;SN-both-ss;instance_30_10_4_1;epsilon;epsilon-constraint;similarity-budget;0.10;421;379;;;;sorting-network;both;slot-service;TIMEOUT;300.1222949;300.0;8.126961313;2;22407;81427;532;;;;;;;similarity_reference;421
+8;SN-both-ss;instance_30_10_4_10;epsilon;epsilon-constraint;similarity-budget;0.10;414;373;;;;sorting-network;both;slot-service;TIMEOUT;300.130127;300.0;9.894656417;2;23902;80344;533;;;;;;;similarity_reference;414
+8;SN-both-ss;instance_30_10_4_11;epsilon;epsilon-constraint;similarity-budget;0.10;402;362;;;;sorting-network;both;slot-service;TIMEOUT;300.1279705;300.0;9.163904185;2;22993;76325;520;;;;;;;similarity_reference;402
+8;SN-both-ss;instance_30_10_4_12;epsilon;epsilon-constraint;similarity-budget;0.10;397;358;;;;sorting-network;both;slot-service;TIMEOUT;300.1278857;300.0;11.57858171;2;23897;83619;535;;;;;;;similarity_reference;397
+8;SN-both-ss;instance_30_10_4_13;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;both;slot-service;UNSATISFIABLE;0.056353069;300.0;0;1;0;0;0;;;;;;;;
+8;SN-both-ss;instance_30_10_4_14;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;both;slot-service;UNSATISFIABLE;0.055042936;300.0;0;1;0;0;0;;;;;;;;
+8;SN-both-ss;instance_30_10_4_15;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;both;slot-service;UNSATISFIABLE;0.03655675;300.0;0;1;0;0;0;;;;;;;;
+8;SN-both-ss;instance_30_10_4_16;epsilon;epsilon-constraint;similarity-budget;0.10;436;393;;;;sorting-network;both;slot-service;TIMEOUT;300.1278599;300.0;9.112573788;2;24544;88447;565;;;;;;;similarity_reference;436
+8;SN-both-ss;instance_30_10_4_17;epsilon;epsilon-constraint;similarity-budget;0.10;402;362;;;;sorting-network;both;slot-service;TIMEOUT;300.1258356;300.0;244.385709254;3;82553;189182;847;;;;;;;similarity_reference | continuity;402 | 0
+8;SN-both-ss;instance_30_10_4_18;epsilon;epsilon-constraint;similarity-budget;0.10;414;373;;;;sorting-network;both;slot-service;TIMEOUT;300.1289612;300.0;276.70474338200006;4;166724;358381;858;;;;;;;similarity_reference | continuity | overtime;414 | 0 | 0
+8;SN-both-ss;instance_30_10_4_19;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;both;slot-service;UNSATISFIABLE;0.065355618;300.0;0;1;0;0;0;;;;;;;;
+8;SN-both-ss;instance_30_10_4_2;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;both;slot-service;UNSATISFIABLE;0.074092568;300.0;0;1;0;0;0;;;;;;;;
+8;SN-both-ss;instance_30_10_4_20;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;both;slot-service;UNSATISFIABLE;0.05265698;300.0;0;1;0;0;0;;;;;;;;
+8;SN-both-ss;instance_30_10_4_21;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;both;slot-service;UNSATISFIABLE;0.076592347;300.0;0;1;0;0;0;;;;;;;;
+8;SN-both-ss;instance_30_10_4_22;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;both;slot-service;UNSATISFIABLE;0.065091267;300.0;0;1;0;0;0;;;;;;;;
+8;SN-both-ss;instance_30_10_4_23;epsilon;epsilon-constraint;similarity-budget;0.10;382;344;;;;sorting-network;both;slot-service;TIMEOUT;300.1381626;300.0;249.105631609;3;125794;286564;891;;;;;;;similarity_reference | continuity;382 | 0
+8;SN-both-ss;instance_30_10_4_24;epsilon;epsilon-constraint;similarity-budget;0.10;396;357;;;;sorting-network;both;slot-service;TIMEOUT;300.1345738;300.0;284.972196573;4;161319;353073;847;;;;;;;similarity_reference | continuity | overtime;396 | 1 | 0
+8;SN-both-ss;instance_30_10_4_25;epsilon;epsilon-constraint;similarity-budget;0.10;446;402;;;;sorting-network;both;slot-service;TIMEOUT;300.1312815;300.0;6.321829259;2;25021;90868;614;;;;;;;similarity_reference;446
+8;SN-both-ss;instance_30_10_4_26;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;both;slot-service;UNSATISFIABLE;0.084880132;300.0;0;1;0;0;0;;;;;;;;
+8;SN-both-ss;instance_30_10_4_27;epsilon;epsilon-constraint;similarity-budget;0.10;405;365;;;;sorting-network;both;slot-service;TIMEOUT;300.1207506;300.0;8.851456965;2;20867;65664;480;;;;;;;similarity_reference;405
+8;SN-both-ss;instance_30_10_4_28;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;both;slot-service;UNSATISFIABLE;0.036584134;300.0;0;1;0;0;0;;;;;;;;
+8;SN-both-ss;instance_30_10_4_29;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;both;slot-service;UNSATISFIABLE;0.064165032;300.0;0;1;0;0;0;;;;;;;;
+8;SN-both-ss;instance_30_10_4_3;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;both;slot-service;UNSATISFIABLE;0.06208258;300.0;0;1;0;0;0;;;;;;;;
+8;SN-both-ss;instance_30_10_4_30;epsilon;epsilon-constraint;similarity-budget;0.10;407;367;;;;sorting-network;both;slot-service;TIMEOUT;300.127855;300.0;10.86950657;2;25475;83593;606;;;;;;;similarity_reference;407
+8;SN-both-ss;instance_30_10_4_31;epsilon;epsilon-constraint;similarity-budget;0.10;381;343;;;;sorting-network;both;slot-service;TIMEOUT;300.1309318;300.0;208.43145691;4;167452;364476;803;;;;;;;similarity_reference | continuity | overtime;381 | 6 | 0
+8;SN-both-ss;instance_30_10_4_32;epsilon;epsilon-constraint;similarity-budget;0.10;424;382;;;;sorting-network;both;slot-service;TIMEOUT;300.124722;300.0;7.056504208;2;22811;79962;527;;;;;;;similarity_reference;424
+8;SN-both-ss;instance_30_10_4_33;epsilon;epsilon-constraint;similarity-budget;0.10;436;393;;;;sorting-network;both;slot-service;TIMEOUT;300.1223765;300.0;13.06539789;2;22909;81375;538;;;;;;;similarity_reference;436
+8;SN-both-ss;instance_30_10_4_34;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;both;slot-service;UNSATISFIABLE;0.065242065;300.0;0;1;0;0;0;;;;;;;;
+8;SN-both-ss;instance_30_10_4_35;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;both;slot-service;UNSATISFIABLE;0.054263058;300.0;0;1;0;0;0;;;;;;;;
+8;SN-both-ss;instance_30_10_4_36;epsilon;epsilon-constraint;similarity-budget;0.10;410;369;;;;sorting-network;both;slot-service;TIMEOUT;300.1326843;300.0;14.90566867;2;24139;82994;644;;;;;;;similarity_reference;410
+8;SN-both-ss;instance_30_10_4_37;epsilon;epsilon-constraint;similarity-budget;0.10;444;400;;;;sorting-network;both;slot-service;TIMEOUT;300.1288649;300.0;16.65512454;2;22366;81789;555;;;;;;;similarity_reference;444
+8;SN-both-ss;instance_30_10_4_38;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;both;slot-service;UNSATISFIABLE;0.068126527;300.0;0;1;0;0;0;;;;;;;;
+8;SN-both-ss;instance_30_10_4_39;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;both;slot-service;UNSATISFIABLE;0.057232783;300.0;0;1;0;0;0;;;;;;;;
+8;SN-both-ss;instance_30_10_4_4;epsilon;epsilon-constraint;similarity-budget;0.10;431;388;;;;sorting-network;both;slot-service;TIMEOUT;300.1254606;300.0;8.205905638;2;21790;78756;500;;;;;;;similarity_reference;431
+8;SN-both-ss;instance_30_10_4_40;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;both;slot-service;UNSATISFIABLE;0.072781248;300.0;0;1;0;0;0;;;;;;;;
+8;SN-both-ss;instance_30_10_4_41;epsilon;epsilon-constraint;similarity-budget;0.10;358;323;18;9/179;0.05027932960893855;sorting-network;both;slot-service;OPTIMUM;184.0829948;300.0;183.52447416799998;4;133387;284466;836;338.0;338.0;340.0;2.0;0.0;120.0;similarity_reference | continuity | overtime | similarity_tiebreak;358 | 2 | 0 | 340
+8;SN-both-ss;instance_30_10_4_42;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;both;slot-service;UNSATISFIABLE;0.065480368;300.0;0;1;0;0;0;;;;;;;;
+8;SN-both-ss;instance_30_10_4_43;epsilon;epsilon-constraint;similarity-budget;0.10;419;378;;;;sorting-network;both;slot-service;TIMEOUT;300.1265062;300.0;15.97224636;2;24971;81681;596;;;;;;;similarity_reference;419
+8;SN-both-ss;instance_30_10_4_44;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;both;slot-service;UNSATISFIABLE;0.096810983;300.0;0;1;0;0;0;;;;;;;;
+8;SN-both-ss;instance_30_10_4_45;epsilon;epsilon-constraint;similarity-budget;0.10;371;334;;;;sorting-network;both;slot-service;TIMEOUT;300.1304249;300.0;273.812491608;4;162356;356902;836;;;;;;;similarity_reference | continuity | overtime;371 | 0 | 0
+8;SN-both-ss;instance_30_10_4_46;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;both;slot-service;UNSATISFIABLE;0.050795551;300.0;0;1;0;0;0;;;;;;;;
+8;SN-both-ss;instance_30_10_4_47;epsilon;epsilon-constraint;similarity-budget;0.10;399;360;;;;sorting-network;both;slot-service;TIMEOUT;300.1215306;300.0;9.165992553;2;18986;62825;426;;;;;;;similarity_reference;399
+8;SN-both-ss;instance_30_10_4_48;epsilon;epsilon-constraint;similarity-budget;0.10;377;340;4;4/377;0.010610079575596816;sorting-network;both;slot-service;OPTIMUM;80.40428791;300.0;79.835256995;4;140055;299513;891;373.0;373.0;373.0;0.0;0.0;120.0;similarity_reference | continuity | overtime | similarity_tiebreak;377 | 0 | 0 | 373
+8;SN-both-ss;instance_30_10_4_49;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;both;slot-service;UNSATISFIABLE;0.077174212;300.0;0;1;0;0;0;;;;;;;;
+8;SN-both-ss;instance_30_10_4_5;epsilon;epsilon-constraint;similarity-budget;0.10;424;382;;;;sorting-network;both;slot-service;TIMEOUT;300.1236086;300.0;8.970692716;2;19574;68263;487;;;;;;;similarity_reference;424
+8;SN-both-ss;instance_30_10_4_50;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;both;slot-service;UNSATISFIABLE;0.066714797;300.0;0;1;0;0;0;;;;;;;;
+8;SN-both-ss;instance_30_10_4_6;epsilon;epsilon-constraint;similarity-budget;0.10;391;352;;;;sorting-network;both;slot-service;TIMEOUT;300.1260631;300.0;7.087189647;2;22694;79828;528;;;;;;;similarity_reference;391
+8;SN-both-ss;instance_30_10_4_7;epsilon;epsilon-constraint;similarity-budget;0.10;;;;;;sorting-network;both;slot-service;UNSATISFIABLE;0.065824659;300.0;0;1;0;0;0;;;;;;;;
+8;SN-both-ss;instance_30_10_4_8;epsilon;epsilon-constraint;similarity-budget;0.10;422;380;;;;sorting-network;both;slot-service;TIMEOUT;300.1270856;300.0;16.81210305;2;22170;72953;530;;;;;;;similarity_reference;422

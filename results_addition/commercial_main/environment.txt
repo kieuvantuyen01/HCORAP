@@ -1,0 +1,31 @@
+created_utc=2026-07-24T07:48:36Z
+uname=Linux instance-temp-3 6.8.0-1064-gcp #72~22.04.1-Ubuntu SMP Sat Jul 11 00:27:00 UTC 2026 x86_64 x86_64 x86_64 GNU/Linux
+binary=./bin/release/hcorap_commercial
+binary_sha256=a31ce6eafc15691ac4260c20a36305851b3398348ef2e90cd7108fe8605f8cc9
+commercial_configs=gurobi-mip:mip-e cplex-mip:mip-e cplex-cp:cp-t cplex-cp:cp-i
+methods=weighted lex-continuity lex-overtime
+run_epsilon=1
+deltas=0 0.01 0.025 0.05 0.10
+timeout=300
+threads=1
+seed=0
+wc=1
+wo=1
+mip_gap=0
+absolute_mip_gap=0
+soft_coverage=0
+gurobi_param_file=
+cplex_param_file=
+compiler=g++ (Ubuntu 11.4.0-1ubuntu1~22.04.3) 11.4.0
+git_commit=3c7e0c94b3992d99e1266c300b7723e2263f64c6
+git_dirty_files=5
+
+backend_inventory=
+{
+  "backends": [
+    {"name": "gurobi-mip", "formulations": ["mip-e"], "compiled": true},
+    {"name": "cplex-mip", "formulations": ["mip-e"], "compiled": false},
+    {"name": "cplex-cp", "formulations": ["cp-t", "cp-i"], "compiled": false},
+    {"name": "reference-enumerator", "formulations": ["direct-schedule-enumeration"], "compiled": true}
+  ]
+}

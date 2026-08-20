@@ -1,0 +1,23 @@
+{
+  "binary": "../../bin/release/hcorap_multi",
+  "solver": "${EVALMAXSAT_BIN}",
+  "result_dir": "../results/gcp_maxsat_commercial_validation",
+  "instances": [
+    "../../instances/paperInstances/TXT_10-25_4-5_U30/instance_30_15_4_*.txt",
+    "../../instances/paperInstances/TXT_10-25_4-5_U40/instance_40_25_5_*.txt"
+  ],
+  "instance_filters": {"seeds": [1,2,3,4,5,6,7,8,9,10]},
+  "expected_instances": 20,
+  "expected_runs": 40,
+  "timeout_seconds": 300,
+  "hard_grace_seconds": 60,
+  "workers": 1,
+  "order_seed": 20270816,
+  "configurations": [
+    {"cardinality": "totalizer", "implied": "both", "symmetry": "slot-service"}
+  ],
+  "runs": [
+    {"method": "weighted", "wc": 1, "wo": 1, "print_assignments": true},
+    {"method": "lex-cos", "print_assignments": true}
+  ]
+}

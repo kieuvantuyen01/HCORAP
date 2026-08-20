@@ -1,6 +1,6 @@
 {
   "binary": "../../bin/release/hcorap_multi",
-  "solver": "${OPEN_WBO_BIN}",
+  "solver": "${EVALMAXSAT_BIN}",
   "result_dir": "../results/gcp_weight_confirmation",
   "instances": [
     "../../instances/corrected_v2_reduced_suite/evaluation_critical/evaluation/critical/*.txt"

@@ -1,72 +1,65 @@
 {
   "schema_version": 1,
-  "name": "ICIIT 2027 reduced publication campaign",
+  "name": "ICIIT 2027 compact publication campaign",
+  "maxsat_solver": {
+    "name": "EvalMaxSAT",
+    "platform": "linux-x86_64",
+    "sha256": "97614c996e1173ca0672ec46da153656046db1d84b9362a8561161ee750779f7"
+  },
   "timing_model": "one sequential solver process; worst case equals expected_runs * timeout_seconds",
   "measured_campaigns": [
     {
       "name": "original_factorial_ablation",
       "config": "gcp_original_ablation.json",
-      "expected_runs": 1280,
-      "timeout_seconds": 120
-    },
-    {
-      "name": "corrected_multiobjective_screen",
-      "config": "gcp_multiobjective_screen.json",
-      "expected_runs": 128,
-      "timeout_seconds": 60
-    },
-    {
-      "name": "corrected_weight_screen",
-      "config": "gcp_weight_screen.json",
-      "expected_runs": 128,
-      "timeout_seconds": 60
-    },
-    {
-      "name": "original_lex_scalability_screen",
-      "config": "gcp_lex_scalability_screen.json",
-      "expected_runs": 320,
-      "timeout_seconds": 300
-    },
-    {
-      "name": "original_weighted_primary",
-      "config": "gcp_original_weighted_primary.json",
-      "expected_runs": 1600,
+      "expected_runs": 640,
       "timeout_seconds": 300
     },
     {
       "name": "original_lex_cos_primary",
       "config": "gcp_original_lex_primary.json",
-      "expected_runs": 560,
+      "expected_runs": 280,
       "timeout_seconds": 300
     },
     {
       "name": "original_lex_ocs_sensitivity",
       "config": "gcp_original_lex_sensitivity.json",
+      "expected_runs": 70,
+      "timeout_seconds": 300
+    },
+    {
+      "name": "corrected_v2_validation",
+      "config": "gcp_corrected_primary.json",
       "expected_runs": 160,
       "timeout_seconds": 300
     },
     {
-      "name": "corrected_v2_primary",
-      "config": "gcp_corrected_primary.json",
-      "expected_runs": 320,
+      "name": "commercial_exact_validation",
+      "config": "gcp_commercial_original.json",
+      "expected_runs": 80,
       "timeout_seconds": 300
     },
     {
-      "name": "commercial_original",
-      "config": "gcp_commercial_original.json",
-      "expected_runs": 400,
+      "name": "maxsat_commercial_validation",
+      "config": "gcp_maxsat_commercial_validation.json",
+      "expected_runs": 40,
       "timeout_seconds": 300
     }
   ],
   "non_measured_campaigns": [
     {
+      "name": "evalmaxsat_lex_calibration",
+      "config": "gcp_evalmaxsat_lex_calibration.json",
+      "expected_runs": 4,
+      "timeout_seconds": 300
+    },
+    {
       "name": "commercial_correctness_smoke",
       "config": "gcp_commercial_correctness_smoke.json",
-      "expected_runs": 36,
+      "expected_runs": 18,
       "timeout_seconds": 30
     }
   ],
-  "expected_measured_runs": 4896,
-  "expected_worst_case_seconds": 1176960,
-  "expected_worst_case_core_hours": 326.93333333333334
+  "expected_measured_runs": 1270,
+  "expected_worst_case_seconds": 381000,
+  "expected_worst_case_core_hours": 105.83333333333333
 }

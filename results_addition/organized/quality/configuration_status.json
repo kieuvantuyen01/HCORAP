@@ -1,0 +1,1558 @@
+[
+  {
+    "analysis_unit": "commercial_30_15_4_40_25_5",
+    "configuration": "cfg1_GUROBI-MIP",
+    "errors_nonempty": 0,
+    "runs": 71,
+    "status_counts": {
+      "INFEASIBLE": 3,
+      "OPTIMUM": 68
+    },
+    "unique_instances": 71,
+    "verified_false": 0,
+    "verified_missing": 3,
+    "verified_true": 68
+  },
+  {
+    "analysis_unit": "commercial_30_15_4_40_25_5",
+    "configuration": "cfg2_CPLEX-MIP",
+    "errors_nonempty": 0,
+    "runs": 71,
+    "status_counts": {
+      "INFEASIBLE": 3,
+      "OPTIMUM": 68
+    },
+    "unique_instances": 71,
+    "verified_false": 0,
+    "verified_missing": 3,
+    "verified_true": 68
+  },
+  {
+    "analysis_unit": "commercial_30_15_4_40_25_5",
+    "configuration": "cfg3_CPLEX-CP-T",
+    "errors_nonempty": 0,
+    "runs": 71,
+    "status_counts": {
+      "INFEASIBLE": 3,
+      "TIMEOUT_FEASIBLE": 68
+    },
+    "unique_instances": 71,
+    "verified_false": 0,
+    "verified_missing": 3,
+    "verified_true": 68
+  },
+  {
+    "analysis_unit": "commercial_30_15_4_40_25_5",
+    "configuration": "cfg4_CPLEX-CP-I",
+    "errors_nonempty": 0,
+    "runs": 71,
+    "status_counts": {
+      "INFEASIBLE": 3,
+      "TIMEOUT_FEASIBLE": 68
+    },
+    "unique_instances": 71,
+    "verified_false": 0,
+    "verified_missing": 3,
+    "verified_true": 68
+  },
+  {
+    "analysis_unit": "commercial_all_modes_30_15_4_40_25_5/epsilon_delta_0",
+    "configuration": "cfg1_GUROBI-MIP",
+    "errors_nonempty": 0,
+    "runs": 100,
+    "status_counts": {
+      "INFEASIBLE": 6,
+      "OPTIMUM": 94
+    },
+    "unique_instances": 100,
+    "verified_false": 0,
+    "verified_missing": 6,
+    "verified_true": 94
+  },
+  {
+    "analysis_unit": "commercial_all_modes_30_15_4_40_25_5/epsilon_delta_0",
+    "configuration": "cfg2_CPLEX-MIP",
+    "errors_nonempty": 0,
+    "runs": 100,
+    "status_counts": {
+      "INFEASIBLE": 6,
+      "OPTIMUM": 94
+    },
+    "unique_instances": 100,
+    "verified_false": 0,
+    "verified_missing": 6,
+    "verified_true": 94
+  },
+  {
+    "analysis_unit": "commercial_all_modes_30_15_4_40_25_5/epsilon_delta_0",
+    "configuration": "cfg3_CPLEX-CP-T",
+    "errors_nonempty": 0,
+    "runs": 100,
+    "status_counts": {
+      "INFEASIBLE": 6,
+      "OPTIMUM": 1,
+      "TIMEOUT_FEASIBLE": 93
+    },
+    "unique_instances": 100,
+    "verified_false": 0,
+    "verified_missing": 6,
+    "verified_true": 94
+  },
+  {
+    "analysis_unit": "commercial_all_modes_30_15_4_40_25_5/epsilon_delta_0",
+    "configuration": "cfg4_CPLEX-CP-I",
+    "errors_nonempty": 0,
+    "runs": 100,
+    "status_counts": {
+      "INFEASIBLE": 6,
+      "OPTIMUM": 1,
+      "TIMEOUT_FEASIBLE": 93
+    },
+    "unique_instances": 100,
+    "verified_false": 0,
+    "verified_missing": 6,
+    "verified_true": 94
+  },
+  {
+    "analysis_unit": "commercial_all_modes_30_15_4_40_25_5/epsilon_delta_0p01",
+    "configuration": "cfg1_GUROBI-MIP",
+    "errors_nonempty": 0,
+    "runs": 100,
+    "status_counts": {
+      "INFEASIBLE": 6,
+      "OPTIMUM": 94
+    },
+    "unique_instances": 100,
+    "verified_false": 0,
+    "verified_missing": 6,
+    "verified_true": 94
+  },
+  {
+    "analysis_unit": "commercial_all_modes_30_15_4_40_25_5/epsilon_delta_0p01",
+    "configuration": "cfg2_CPLEX-MIP",
+    "errors_nonempty": 0,
+    "runs": 100,
+    "status_counts": {
+      "INFEASIBLE": 6,
+      "OPTIMUM": 94
+    },
+    "unique_instances": 100,
+    "verified_false": 0,
+    "verified_missing": 6,
+    "verified_true": 94
+  },
+  {
+    "analysis_unit": "commercial_all_modes_30_15_4_40_25_5/epsilon_delta_0p01",
+    "configuration": "cfg3_CPLEX-CP-T",
+    "errors_nonempty": 0,
+    "runs": 100,
+    "status_counts": {
+      "INFEASIBLE": 6,
+      "TIMEOUT_FEASIBLE": 94
+    },
+    "unique_instances": 100,
+    "verified_false": 0,
+    "verified_missing": 6,
+    "verified_true": 94
+  },
+  {
+    "analysis_unit": "commercial_all_modes_30_15_4_40_25_5/epsilon_delta_0p01",
+    "configuration": "cfg4_CPLEX-CP-I",
+    "errors_nonempty": 0,
+    "runs": 100,
+    "status_counts": {
+      "INFEASIBLE": 6,
+      "TIMEOUT_FEASIBLE": 94
+    },
+    "unique_instances": 100,
+    "verified_false": 0,
+    "verified_missing": 6,
+    "verified_true": 94
+  },
+  {
+    "analysis_unit": "commercial_all_modes_30_15_4_40_25_5/epsilon_delta_0p025",
+    "configuration": "cfg1_GUROBI-MIP",
+    "errors_nonempty": 0,
+    "runs": 100,
+    "status_counts": {
+      "INFEASIBLE": 6,
+      "OPTIMUM": 94
+    },
+    "unique_instances": 100,
+    "verified_false": 0,
+    "verified_missing": 6,
+    "verified_true": 94
+  },
+  {
+    "analysis_unit": "commercial_all_modes_30_15_4_40_25_5/epsilon_delta_0p025",
+    "configuration": "cfg2_CPLEX-MIP",
+    "errors_nonempty": 0,
+    "runs": 100,
+    "status_counts": {
+      "INFEASIBLE": 6,
+      "OPTIMUM": 94
+    },
+    "unique_instances": 100,
+    "verified_false": 0,
+    "verified_missing": 6,
+    "verified_true": 94
+  },
+  {
+    "analysis_unit": "commercial_all_modes_30_15_4_40_25_5/epsilon_delta_0p025",
+    "configuration": "cfg3_CPLEX-CP-T",
+    "errors_nonempty": 0,
+    "runs": 100,
+    "status_counts": {
+      "INFEASIBLE": 6,
+      "TIMEOUT_FEASIBLE": 94
+    },
+    "unique_instances": 100,
+    "verified_false": 0,
+    "verified_missing": 6,
+    "verified_true": 94
+  },
+  {
+    "analysis_unit": "commercial_all_modes_30_15_4_40_25_5/epsilon_delta_0p025",
+    "configuration": "cfg4_CPLEX-CP-I",
+    "errors_nonempty": 0,
+    "runs": 100,
+    "status_counts": {
+      "INFEASIBLE": 6,
+      "TIMEOUT_FEASIBLE": 94
+    },
+    "unique_instances": 100,
+    "verified_false": 0,
+    "verified_missing": 6,
+    "verified_true": 94
+  },
+  {
+    "analysis_unit": "commercial_all_modes_30_15_4_40_25_5/epsilon_delta_0p05",
+    "configuration": "cfg1_GUROBI-MIP",
+    "errors_nonempty": 0,
+    "runs": 100,
+    "status_counts": {
+      "INFEASIBLE": 6,
+      "OPTIMUM": 94
+    },
+    "unique_instances": 100,
+    "verified_false": 0,
+    "verified_missing": 6,
+    "verified_true": 94
+  },
+  {
+    "analysis_unit": "commercial_all_modes_30_15_4_40_25_5/epsilon_delta_0p05",
+    "configuration": "cfg2_CPLEX-MIP",
+    "errors_nonempty": 0,
+    "runs": 100,
+    "status_counts": {
+      "INFEASIBLE": 6,
+      "OPTIMUM": 94
+    },
+    "unique_instances": 100,
+    "verified_false": 0,
+    "verified_missing": 6,
+    "verified_true": 94
+  },
+  {
+    "analysis_unit": "commercial_all_modes_30_15_4_40_25_5/epsilon_delta_0p05",
+    "configuration": "cfg3_CPLEX-CP-T",
+    "errors_nonempty": 0,
+    "runs": 100,
+    "status_counts": {
+      "INFEASIBLE": 6,
+      "TIMEOUT_FEASIBLE": 94
+    },
+    "unique_instances": 100,
+    "verified_false": 0,
+    "verified_missing": 6,
+    "verified_true": 94
+  },
+  {
+    "analysis_unit": "commercial_all_modes_30_15_4_40_25_5/epsilon_delta_0p05",
+    "configuration": "cfg4_CPLEX-CP-I",
+    "errors_nonempty": 0,
+    "runs": 100,
+    "status_counts": {
+      "INFEASIBLE": 6,
+      "TIMEOUT_FEASIBLE": 94
+    },
+    "unique_instances": 100,
+    "verified_false": 0,
+    "verified_missing": 6,
+    "verified_true": 94
+  },
+  {
+    "analysis_unit": "commercial_all_modes_30_15_4_40_25_5/epsilon_delta_0p10",
+    "configuration": "cfg1_GUROBI-MIP",
+    "errors_nonempty": 0,
+    "runs": 100,
+    "status_counts": {
+      "INFEASIBLE": 6,
+      "OPTIMUM": 94
+    },
+    "unique_instances": 100,
+    "verified_false": 0,
+    "verified_missing": 6,
+    "verified_true": 94
+  },
+  {
+    "analysis_unit": "commercial_all_modes_30_15_4_40_25_5/epsilon_delta_0p10",
+    "configuration": "cfg2_CPLEX-MIP",
+    "errors_nonempty": 0,
+    "runs": 100,
+    "status_counts": {
+      "INFEASIBLE": 6,
+      "OPTIMUM": 94
+    },
+    "unique_instances": 100,
+    "verified_false": 0,
+    "verified_missing": 6,
+    "verified_true": 94
+  },
+  {
+    "analysis_unit": "commercial_all_modes_30_15_4_40_25_5/epsilon_delta_0p10",
+    "configuration": "cfg3_CPLEX-CP-T",
+    "errors_nonempty": 0,
+    "runs": 78,
+    "status_counts": {
+      "INFEASIBLE": 3,
+      "TIMEOUT_FEASIBLE": 75
+    },
+    "unique_instances": 78,
+    "verified_false": 0,
+    "verified_missing": 3,
+    "verified_true": 75
+  },
+  {
+    "analysis_unit": "commercial_all_modes_30_15_4_40_25_5/epsilon_delta_0p10",
+    "configuration": "cfg4_CPLEX-CP-I",
+    "errors_nonempty": 0,
+    "runs": 71,
+    "status_counts": {
+      "INFEASIBLE": 3,
+      "TIMEOUT_FEASIBLE": 68
+    },
+    "unique_instances": 71,
+    "verified_false": 0,
+    "verified_missing": 3,
+    "verified_true": 68
+  },
+  {
+    "analysis_unit": "commercial_all_modes_30_15_4_40_25_5/lex-continuity",
+    "configuration": "cfg1_GUROBI-MIP",
+    "errors_nonempty": 0,
+    "runs": 100,
+    "status_counts": {
+      "INFEASIBLE": 6,
+      "OPTIMUM": 94
+    },
+    "unique_instances": 100,
+    "verified_false": 0,
+    "verified_missing": 6,
+    "verified_true": 94
+  },
+  {
+    "analysis_unit": "commercial_all_modes_30_15_4_40_25_5/lex-continuity",
+    "configuration": "cfg2_CPLEX-MIP",
+    "errors_nonempty": 0,
+    "runs": 100,
+    "status_counts": {
+      "INFEASIBLE": 6,
+      "OPTIMUM": 94
+    },
+    "unique_instances": 100,
+    "verified_false": 0,
+    "verified_missing": 6,
+    "verified_true": 94
+  },
+  {
+    "analysis_unit": "commercial_all_modes_30_15_4_40_25_5/lex-continuity",
+    "configuration": "cfg3_CPLEX-CP-T",
+    "errors_nonempty": 0,
+    "runs": 100,
+    "status_counts": {
+      "INFEASIBLE": 6,
+      "TIMEOUT_FEASIBLE": 94
+    },
+    "unique_instances": 100,
+    "verified_false": 0,
+    "verified_missing": 6,
+    "verified_true": 94
+  },
+  {
+    "analysis_unit": "commercial_all_modes_30_15_4_40_25_5/lex-continuity",
+    "configuration": "cfg4_CPLEX-CP-I",
+    "errors_nonempty": 0,
+    "runs": 100,
+    "status_counts": {
+      "INFEASIBLE": 6,
+      "TIMEOUT_FEASIBLE": 94
+    },
+    "unique_instances": 100,
+    "verified_false": 0,
+    "verified_missing": 6,
+    "verified_true": 94
+  },
+  {
+    "analysis_unit": "commercial_all_modes_30_15_4_40_25_5/lex-overtime",
+    "configuration": "cfg1_GUROBI-MIP",
+    "errors_nonempty": 0,
+    "runs": 100,
+    "status_counts": {
+      "INFEASIBLE": 6,
+      "OPTIMUM": 94
+    },
+    "unique_instances": 100,
+    "verified_false": 0,
+    "verified_missing": 6,
+    "verified_true": 94
+  },
+  {
+    "analysis_unit": "commercial_all_modes_30_15_4_40_25_5/lex-overtime",
+    "configuration": "cfg2_CPLEX-MIP",
+    "errors_nonempty": 0,
+    "runs": 100,
+    "status_counts": {
+      "INFEASIBLE": 6,
+      "OPTIMUM": 94
+    },
+    "unique_instances": 100,
+    "verified_false": 0,
+    "verified_missing": 6,
+    "verified_true": 94
+  },
+  {
+    "analysis_unit": "commercial_all_modes_30_15_4_40_25_5/lex-overtime",
+    "configuration": "cfg3_CPLEX-CP-T",
+    "errors_nonempty": 0,
+    "runs": 100,
+    "status_counts": {
+      "INFEASIBLE": 6,
+      "TIMEOUT_FEASIBLE": 94
+    },
+    "unique_instances": 100,
+    "verified_false": 0,
+    "verified_missing": 6,
+    "verified_true": 94
+  },
+  {
+    "analysis_unit": "commercial_all_modes_30_15_4_40_25_5/lex-overtime",
+    "configuration": "cfg4_CPLEX-CP-I",
+    "errors_nonempty": 0,
+    "runs": 100,
+    "status_counts": {
+      "INFEASIBLE": 6,
+      "TIMEOUT_FEASIBLE": 94
+    },
+    "unique_instances": 100,
+    "verified_false": 0,
+    "verified_missing": 6,
+    "verified_true": 94
+  },
+  {
+    "analysis_unit": "commercial_all_modes_30_15_4_40_25_5/weighted",
+    "configuration": "cfg1_GUROBI-MIP",
+    "errors_nonempty": 0,
+    "runs": 100,
+    "status_counts": {
+      "INFEASIBLE": 6,
+      "OPTIMUM": 94
+    },
+    "unique_instances": 100,
+    "verified_false": 0,
+    "verified_missing": 6,
+    "verified_true": 94
+  },
+  {
+    "analysis_unit": "commercial_all_modes_30_15_4_40_25_5/weighted",
+    "configuration": "cfg2_CPLEX-MIP",
+    "errors_nonempty": 0,
+    "runs": 100,
+    "status_counts": {
+      "INFEASIBLE": 6,
+      "OPTIMUM": 94
+    },
+    "unique_instances": 100,
+    "verified_false": 0,
+    "verified_missing": 6,
+    "verified_true": 94
+  },
+  {
+    "analysis_unit": "commercial_all_modes_30_15_4_40_25_5/weighted",
+    "configuration": "cfg3_CPLEX-CP-T",
+    "errors_nonempty": 0,
+    "runs": 100,
+    "status_counts": {
+      "INFEASIBLE": 6,
+      "TIMEOUT_FEASIBLE": 94
+    },
+    "unique_instances": 100,
+    "verified_false": 0,
+    "verified_missing": 6,
+    "verified_true": 94
+  },
+  {
+    "analysis_unit": "commercial_all_modes_30_15_4_40_25_5/weighted",
+    "configuration": "cfg4_CPLEX-CP-I",
+    "errors_nonempty": 0,
+    "runs": 100,
+    "status_counts": {
+      "INFEASIBLE": 6,
+      "TIMEOUT_FEASIBLE": 94
+    },
+    "unique_instances": 100,
+    "verified_false": 0,
+    "verified_missing": 6,
+    "verified_true": 94
+  },
+  {
+    "analysis_unit": "commercial_main",
+    "configuration": "cplex-cp/cp-i",
+    "errors_nonempty": 0,
+    "runs": 40,
+    "status_counts": {
+      "INFEASIBLE": 16,
+      "OPTIMUM": 24
+    },
+    "unique_instances": 5,
+    "verified_false": 0,
+    "verified_missing": 16,
+    "verified_true": 24
+  },
+  {
+    "analysis_unit": "commercial_main",
+    "configuration": "cplex-cp/cp-t",
+    "errors_nonempty": 0,
+    "runs": 40,
+    "status_counts": {
+      "INFEASIBLE": 16,
+      "OPTIMUM": 24
+    },
+    "unique_instances": 5,
+    "verified_false": 0,
+    "verified_missing": 16,
+    "verified_true": 24
+  },
+  {
+    "analysis_unit": "commercial_main",
+    "configuration": "cplex-mip/mip-e",
+    "errors_nonempty": 0,
+    "runs": 40,
+    "status_counts": {
+      "INFEASIBLE": 16,
+      "OPTIMUM": 24
+    },
+    "unique_instances": 5,
+    "verified_false": 0,
+    "verified_missing": 16,
+    "verified_true": 24
+  },
+  {
+    "analysis_unit": "commercial_main",
+    "configuration": "gurobi-mip/mip-e",
+    "errors_nonempty": 0,
+    "runs": 40,
+    "status_counts": {
+      "INFEASIBLE": 16,
+      "OPTIMUM": 24
+    },
+    "unique_instances": 5,
+    "verified_false": 0,
+    "verified_missing": 16,
+    "verified_true": 24
+  },
+  {
+    "analysis_unit": "epsilon_8cfg_evalmaxsat/delta_0",
+    "configuration": "cfg1_ORIGINAL",
+    "errors_nonempty": 0,
+    "runs": 2,
+    "status_counts": {
+      "TIMEOUT": 2
+    },
+    "unique_instances": 2,
+    "verified_false": 0,
+    "verified_missing": 2,
+    "verified_true": 0
+  },
+  {
+    "analysis_unit": "epsilon_8cfg_evalmaxsat/delta_0",
+    "configuration": "cfg1_TOT-none-none",
+    "errors_nonempty": 0,
+    "runs": 45,
+    "status_counts": {
+      "TIMEOUT": 24,
+      "UNSATISFIABLE": 21
+    },
+    "unique_instances": 45,
+    "verified_false": 0,
+    "verified_missing": 45,
+    "verified_true": 0
+  },
+  {
+    "analysis_unit": "epsilon_8cfg_evalmaxsat/delta_0",
+    "configuration": "cfg2_TOT-none-ss",
+    "errors_nonempty": 0,
+    "runs": 45,
+    "status_counts": {
+      "TIMEOUT": 24,
+      "UNSATISFIABLE": 21
+    },
+    "unique_instances": 45,
+    "verified_false": 0,
+    "verified_missing": 45,
+    "verified_true": 0
+  },
+  {
+    "analysis_unit": "epsilon_8cfg_evalmaxsat/delta_0",
+    "configuration": "cfg3_TOT-both-none",
+    "errors_nonempty": 0,
+    "runs": 45,
+    "status_counts": {
+      "TIMEOUT": 24,
+      "UNSATISFIABLE": 21
+    },
+    "unique_instances": 45,
+    "verified_false": 0,
+    "verified_missing": 45,
+    "verified_true": 0
+  },
+  {
+    "analysis_unit": "epsilon_8cfg_evalmaxsat/delta_0",
+    "configuration": "cfg4_TOT-both-ss",
+    "errors_nonempty": 0,
+    "runs": 45,
+    "status_counts": {
+      "TIMEOUT": 24,
+      "UNSATISFIABLE": 21
+    },
+    "unique_instances": 45,
+    "verified_false": 0,
+    "verified_missing": 45,
+    "verified_true": 0
+  },
+  {
+    "analysis_unit": "epsilon_8cfg_evalmaxsat/delta_0",
+    "configuration": "cfg5_ORIGINAL",
+    "errors_nonempty": 0,
+    "runs": 45,
+    "status_counts": {
+      "TIMEOUT": 24,
+      "UNSATISFIABLE": 21
+    },
+    "unique_instances": 45,
+    "verified_false": 0,
+    "verified_missing": 45,
+    "verified_true": 0
+  },
+  {
+    "analysis_unit": "epsilon_8cfg_evalmaxsat/delta_0",
+    "configuration": "cfg6_SN-none-ss",
+    "errors_nonempty": 0,
+    "runs": 45,
+    "status_counts": {
+      "TIMEOUT": 24,
+      "UNSATISFIABLE": 21
+    },
+    "unique_instances": 45,
+    "verified_false": 0,
+    "verified_missing": 45,
+    "verified_true": 0
+  },
+  {
+    "analysis_unit": "epsilon_8cfg_evalmaxsat/delta_0",
+    "configuration": "cfg7_SN-both-none",
+    "errors_nonempty": 0,
+    "runs": 45,
+    "status_counts": {
+      "TIMEOUT": 24,
+      "UNSATISFIABLE": 21
+    },
+    "unique_instances": 45,
+    "verified_false": 0,
+    "verified_missing": 45,
+    "verified_true": 0
+  },
+  {
+    "analysis_unit": "epsilon_8cfg_evalmaxsat/delta_0",
+    "configuration": "cfg8_SN-both-ss",
+    "errors_nonempty": 0,
+    "runs": 45,
+    "status_counts": {
+      "TIMEOUT": 24,
+      "UNSATISFIABLE": 21
+    },
+    "unique_instances": 45,
+    "verified_false": 0,
+    "verified_missing": 45,
+    "verified_true": 0
+  },
+  {
+    "analysis_unit": "epsilon_8cfg_evalmaxsat/delta_0p01",
+    "configuration": "cfg1_TOT-none-none",
+    "errors_nonempty": 0,
+    "runs": 45,
+    "status_counts": {
+      "TIMEOUT": 24,
+      "UNSATISFIABLE": 21
+    },
+    "unique_instances": 45,
+    "verified_false": 0,
+    "verified_missing": 45,
+    "verified_true": 0
+  },
+  {
+    "analysis_unit": "epsilon_8cfg_evalmaxsat/delta_0p01",
+    "configuration": "cfg2_TOT-none-ss",
+    "errors_nonempty": 0,
+    "runs": 45,
+    "status_counts": {
+      "TIMEOUT": 24,
+      "UNSATISFIABLE": 21
+    },
+    "unique_instances": 45,
+    "verified_false": 0,
+    "verified_missing": 45,
+    "verified_true": 0
+  },
+  {
+    "analysis_unit": "epsilon_8cfg_evalmaxsat/delta_0p01",
+    "configuration": "cfg3_TOT-both-none",
+    "errors_nonempty": 0,
+    "runs": 45,
+    "status_counts": {
+      "TIMEOUT": 24,
+      "UNSATISFIABLE": 21
+    },
+    "unique_instances": 45,
+    "verified_false": 0,
+    "verified_missing": 45,
+    "verified_true": 0
+  },
+  {
+    "analysis_unit": "epsilon_8cfg_evalmaxsat/delta_0p01",
+    "configuration": "cfg4_TOT-both-ss",
+    "errors_nonempty": 0,
+    "runs": 45,
+    "status_counts": {
+      "TIMEOUT": 24,
+      "UNSATISFIABLE": 21
+    },
+    "unique_instances": 45,
+    "verified_false": 0,
+    "verified_missing": 45,
+    "verified_true": 0
+  },
+  {
+    "analysis_unit": "epsilon_8cfg_evalmaxsat/delta_0p01",
+    "configuration": "cfg5_ORIGINAL",
+    "errors_nonempty": 0,
+    "runs": 45,
+    "status_counts": {
+      "TIMEOUT": 24,
+      "UNSATISFIABLE": 21
+    },
+    "unique_instances": 45,
+    "verified_false": 0,
+    "verified_missing": 45,
+    "verified_true": 0
+  },
+  {
+    "analysis_unit": "epsilon_8cfg_evalmaxsat/delta_0p01",
+    "configuration": "cfg6_SN-none-ss",
+    "errors_nonempty": 0,
+    "runs": 45,
+    "status_counts": {
+      "TIMEOUT": 24,
+      "UNSATISFIABLE": 21
+    },
+    "unique_instances": 45,
+    "verified_false": 0,
+    "verified_missing": 45,
+    "verified_true": 0
+  },
+  {
+    "analysis_unit": "epsilon_8cfg_evalmaxsat/delta_0p01",
+    "configuration": "cfg7_SN-both-none",
+    "errors_nonempty": 0,
+    "runs": 45,
+    "status_counts": {
+      "TIMEOUT": 24,
+      "UNSATISFIABLE": 21
+    },
+    "unique_instances": 45,
+    "verified_false": 0,
+    "verified_missing": 45,
+    "verified_true": 0
+  },
+  {
+    "analysis_unit": "epsilon_8cfg_evalmaxsat/delta_0p01",
+    "configuration": "cfg8_SN-both-ss",
+    "errors_nonempty": 0,
+    "runs": 45,
+    "status_counts": {
+      "TIMEOUT": 24,
+      "UNSATISFIABLE": 21
+    },
+    "unique_instances": 45,
+    "verified_false": 0,
+    "verified_missing": 45,
+    "verified_true": 0
+  },
+  {
+    "analysis_unit": "epsilon_8cfg_evalmaxsat/delta_0p025",
+    "configuration": "cfg1_TOT-none-none",
+    "errors_nonempty": 0,
+    "runs": 45,
+    "status_counts": {
+      "TIMEOUT": 24,
+      "UNSATISFIABLE": 21
+    },
+    "unique_instances": 45,
+    "verified_false": 0,
+    "verified_missing": 45,
+    "verified_true": 0
+  },
+  {
+    "analysis_unit": "epsilon_8cfg_evalmaxsat/delta_0p025",
+    "configuration": "cfg2_TOT-none-ss",
+    "errors_nonempty": 0,
+    "runs": 45,
+    "status_counts": {
+      "TIMEOUT": 24,
+      "UNSATISFIABLE": 21
+    },
+    "unique_instances": 45,
+    "verified_false": 0,
+    "verified_missing": 45,
+    "verified_true": 0
+  },
+  {
+    "analysis_unit": "epsilon_8cfg_evalmaxsat/delta_0p025",
+    "configuration": "cfg3_TOT-both-none",
+    "errors_nonempty": 0,
+    "runs": 45,
+    "status_counts": {
+      "TIMEOUT": 24,
+      "UNSATISFIABLE": 21
+    },
+    "unique_instances": 45,
+    "verified_false": 0,
+    "verified_missing": 45,
+    "verified_true": 0
+  },
+  {
+    "analysis_unit": "epsilon_8cfg_evalmaxsat/delta_0p025",
+    "configuration": "cfg4_TOT-both-ss",
+    "errors_nonempty": 0,
+    "runs": 45,
+    "status_counts": {
+      "TIMEOUT": 24,
+      "UNSATISFIABLE": 21
+    },
+    "unique_instances": 45,
+    "verified_false": 0,
+    "verified_missing": 45,
+    "verified_true": 0
+  },
+  {
+    "analysis_unit": "epsilon_8cfg_evalmaxsat/delta_0p025",
+    "configuration": "cfg5_ORIGINAL",
+    "errors_nonempty": 0,
+    "runs": 45,
+    "status_counts": {
+      "TIMEOUT": 24,
+      "UNSATISFIABLE": 21
+    },
+    "unique_instances": 45,
+    "verified_false": 0,
+    "verified_missing": 45,
+    "verified_true": 0
+  },
+  {
+    "analysis_unit": "epsilon_8cfg_evalmaxsat/delta_0p025",
+    "configuration": "cfg6_SN-none-ss",
+    "errors_nonempty": 0,
+    "runs": 45,
+    "status_counts": {
+      "TIMEOUT": 24,
+      "UNSATISFIABLE": 21
+    },
+    "unique_instances": 45,
+    "verified_false": 0,
+    "verified_missing": 45,
+    "verified_true": 0
+  },
+  {
+    "analysis_unit": "epsilon_8cfg_evalmaxsat/delta_0p025",
+    "configuration": "cfg7_SN-both-none",
+    "errors_nonempty": 0,
+    "runs": 45,
+    "status_counts": {
+      "TIMEOUT": 24,
+      "UNSATISFIABLE": 21
+    },
+    "unique_instances": 45,
+    "verified_false": 0,
+    "verified_missing": 45,
+    "verified_true": 0
+  },
+  {
+    "analysis_unit": "epsilon_8cfg_evalmaxsat/delta_0p025",
+    "configuration": "cfg8_SN-both-ss",
+    "errors_nonempty": 0,
+    "runs": 45,
+    "status_counts": {
+      "TIMEOUT": 24,
+      "UNSATISFIABLE": 21
+    },
+    "unique_instances": 45,
+    "verified_false": 0,
+    "verified_missing": 45,
+    "verified_true": 0
+  },
+  {
+    "analysis_unit": "epsilon_8cfg_evalmaxsat/delta_0p05",
+    "configuration": "cfg1_TOT-none-none",
+    "errors_nonempty": 0,
+    "runs": 47,
+    "status_counts": {
+      "OPTIMUM": 1,
+      "TIMEOUT": 24,
+      "UNSATISFIABLE": 22
+    },
+    "unique_instances": 47,
+    "verified_false": 0,
+    "verified_missing": 46,
+    "verified_true": 1
+  },
+  {
+    "analysis_unit": "epsilon_8cfg_evalmaxsat/delta_0p05",
+    "configuration": "cfg2_TOT-none-ss",
+    "errors_nonempty": 0,
+    "runs": 47,
+    "status_counts": {
+      "OPTIMUM": 1,
+      "TIMEOUT": 24,
+      "UNSATISFIABLE": 22
+    },
+    "unique_instances": 47,
+    "verified_false": 0,
+    "verified_missing": 46,
+    "verified_true": 1
+  },
+  {
+    "analysis_unit": "epsilon_8cfg_evalmaxsat/delta_0p05",
+    "configuration": "cfg3_TOT-both-none",
+    "errors_nonempty": 0,
+    "runs": 47,
+    "status_counts": {
+      "OPTIMUM": 1,
+      "TIMEOUT": 24,
+      "UNSATISFIABLE": 22
+    },
+    "unique_instances": 47,
+    "verified_false": 0,
+    "verified_missing": 46,
+    "verified_true": 1
+  },
+  {
+    "analysis_unit": "epsilon_8cfg_evalmaxsat/delta_0p05",
+    "configuration": "cfg4_TOT-both-ss",
+    "errors_nonempty": 0,
+    "runs": 47,
+    "status_counts": {
+      "OPTIMUM": 1,
+      "TIMEOUT": 24,
+      "UNSATISFIABLE": 22
+    },
+    "unique_instances": 47,
+    "verified_false": 0,
+    "verified_missing": 46,
+    "verified_true": 1
+  },
+  {
+    "analysis_unit": "epsilon_8cfg_evalmaxsat/delta_0p05",
+    "configuration": "cfg5_ORIGINAL",
+    "errors_nonempty": 0,
+    "runs": 47,
+    "status_counts": {
+      "OPTIMUM": 1,
+      "TIMEOUT": 24,
+      "UNSATISFIABLE": 22
+    },
+    "unique_instances": 47,
+    "verified_false": 0,
+    "verified_missing": 46,
+    "verified_true": 1
+  },
+  {
+    "analysis_unit": "epsilon_8cfg_evalmaxsat/delta_0p05",
+    "configuration": "cfg6_SN-none-ss",
+    "errors_nonempty": 0,
+    "runs": 47,
+    "status_counts": {
+      "OPTIMUM": 1,
+      "TIMEOUT": 24,
+      "UNSATISFIABLE": 22
+    },
+    "unique_instances": 47,
+    "verified_false": 0,
+    "verified_missing": 46,
+    "verified_true": 1
+  },
+  {
+    "analysis_unit": "epsilon_8cfg_evalmaxsat/delta_0p05",
+    "configuration": "cfg7_SN-both-none",
+    "errors_nonempty": 0,
+    "runs": 47,
+    "status_counts": {
+      "OPTIMUM": 1,
+      "TIMEOUT": 24,
+      "UNSATISFIABLE": 22
+    },
+    "unique_instances": 47,
+    "verified_false": 0,
+    "verified_missing": 46,
+    "verified_true": 1
+  },
+  {
+    "analysis_unit": "epsilon_8cfg_evalmaxsat/delta_0p05",
+    "configuration": "cfg8_SN-both-ss",
+    "errors_nonempty": 0,
+    "runs": 47,
+    "status_counts": {
+      "OPTIMUM": 1,
+      "TIMEOUT": 24,
+      "UNSATISFIABLE": 22
+    },
+    "unique_instances": 47,
+    "verified_false": 0,
+    "verified_missing": 46,
+    "verified_true": 1
+  },
+  {
+    "analysis_unit": "epsilon_8cfg_evalmaxsat/delta_0p10",
+    "configuration": "cfg1_TOT-none-none",
+    "errors_nonempty": 0,
+    "runs": 49,
+    "status_counts": {
+      "OPTIMUM": 2,
+      "TIMEOUT": 24,
+      "UNSATISFIABLE": 23
+    },
+    "unique_instances": 49,
+    "verified_false": 0,
+    "verified_missing": 47,
+    "verified_true": 2
+  },
+  {
+    "analysis_unit": "epsilon_8cfg_evalmaxsat/delta_0p10",
+    "configuration": "cfg2_TOT-none-ss",
+    "errors_nonempty": 0,
+    "runs": 49,
+    "status_counts": {
+      "OPTIMUM": 4,
+      "TIMEOUT": 22,
+      "UNSATISFIABLE": 23
+    },
+    "unique_instances": 49,
+    "verified_false": 0,
+    "verified_missing": 45,
+    "verified_true": 4
+  },
+  {
+    "analysis_unit": "epsilon_8cfg_evalmaxsat/delta_0p10",
+    "configuration": "cfg3_TOT-both-none",
+    "errors_nonempty": 0,
+    "runs": 49,
+    "status_counts": {
+      "OPTIMUM": 3,
+      "TIMEOUT": 23,
+      "UNSATISFIABLE": 23
+    },
+    "unique_instances": 49,
+    "verified_false": 0,
+    "verified_missing": 46,
+    "verified_true": 3
+  },
+  {
+    "analysis_unit": "epsilon_8cfg_evalmaxsat/delta_0p10",
+    "configuration": "cfg4_TOT-both-ss",
+    "errors_nonempty": 0,
+    "runs": 47,
+    "status_counts": {
+      "OPTIMUM": 2,
+      "TIMEOUT": 23,
+      "UNSATISFIABLE": 22
+    },
+    "unique_instances": 47,
+    "verified_false": 0,
+    "verified_missing": 45,
+    "verified_true": 2
+  },
+  {
+    "analysis_unit": "epsilon_8cfg_evalmaxsat/delta_0p10",
+    "configuration": "cfg5_ORIGINAL",
+    "errors_nonempty": 0,
+    "runs": 49,
+    "status_counts": {
+      "OPTIMUM": 2,
+      "TIMEOUT": 24,
+      "UNSATISFIABLE": 23
+    },
+    "unique_instances": 49,
+    "verified_false": 0,
+    "verified_missing": 47,
+    "verified_true": 2
+  },
+  {
+    "analysis_unit": "epsilon_8cfg_evalmaxsat/delta_0p10",
+    "configuration": "cfg6_SN-none-ss",
+    "errors_nonempty": 0,
+    "runs": 49,
+    "status_counts": {
+      "OPTIMUM": 2,
+      "TIMEOUT": 24,
+      "UNSATISFIABLE": 23
+    },
+    "unique_instances": 49,
+    "verified_false": 0,
+    "verified_missing": 47,
+    "verified_true": 2
+  },
+  {
+    "analysis_unit": "epsilon_8cfg_evalmaxsat/delta_0p10",
+    "configuration": "cfg7_SN-both-none",
+    "errors_nonempty": 0,
+    "runs": 49,
+    "status_counts": {
+      "OPTIMUM": 2,
+      "TIMEOUT": 24,
+      "UNSATISFIABLE": 23
+    },
+    "unique_instances": 49,
+    "verified_false": 0,
+    "verified_missing": 47,
+    "verified_true": 2
+  },
+  {
+    "analysis_unit": "epsilon_8cfg_evalmaxsat/delta_0p10",
+    "configuration": "cfg8_SN-both-ss",
+    "errors_nonempty": 0,
+    "runs": 49,
+    "status_counts": {
+      "OPTIMUM": 2,
+      "TIMEOUT": 24,
+      "UNSATISFIABLE": 23
+    },
+    "unique_instances": 49,
+    "verified_false": 0,
+    "verified_missing": 47,
+    "verified_true": 2
+  },
+  {
+    "analysis_unit": "iciit2027_all_solvers/weighted",
+    "configuration": "solver1_EVALMAXSAT",
+    "errors_nonempty": 0,
+    "runs": 20,
+    "status_counts": {
+      "OPTIMUM": 19,
+      "UNSATISFIABLE": 1
+    },
+    "unique_instances": 20,
+    "verified_false": 0,
+    "verified_missing": 1,
+    "verified_true": 19
+  },
+  {
+    "analysis_unit": "lex_8cfg_evalmaxsat/lex-continuity",
+    "configuration": "cfg1_ORIGINAL",
+    "errors_nonempty": 0,
+    "runs": 45,
+    "status_counts": {
+      "TIMEOUT": 24,
+      "UNSATISFIABLE": 21
+    },
+    "unique_instances": 45,
+    "verified_false": 0,
+    "verified_missing": 45,
+    "verified_true": 0
+  },
+  {
+    "analysis_unit": "lex_8cfg_evalmaxsat/lex-continuity",
+    "configuration": "cfg2_SN-none-ss",
+    "errors_nonempty": 0,
+    "runs": 45,
+    "status_counts": {
+      "TIMEOUT": 24,
+      "UNSATISFIABLE": 21
+    },
+    "unique_instances": 45,
+    "verified_false": 0,
+    "verified_missing": 45,
+    "verified_true": 0
+  },
+  {
+    "analysis_unit": "lex_8cfg_evalmaxsat/lex-continuity",
+    "configuration": "cfg3_SN-both-none",
+    "errors_nonempty": 0,
+    "runs": 45,
+    "status_counts": {
+      "TIMEOUT": 24,
+      "UNSATISFIABLE": 21
+    },
+    "unique_instances": 45,
+    "verified_false": 0,
+    "verified_missing": 45,
+    "verified_true": 0
+  },
+  {
+    "analysis_unit": "lex_8cfg_evalmaxsat/lex-continuity",
+    "configuration": "cfg4_SN-both-ss",
+    "errors_nonempty": 0,
+    "runs": 45,
+    "status_counts": {
+      "TIMEOUT": 24,
+      "UNSATISFIABLE": 21
+    },
+    "unique_instances": 45,
+    "verified_false": 0,
+    "verified_missing": 45,
+    "verified_true": 0
+  },
+  {
+    "analysis_unit": "lex_8cfg_evalmaxsat/lex-continuity",
+    "configuration": "cfg5_TOT-none-none",
+    "errors_nonempty": 0,
+    "runs": 45,
+    "status_counts": {
+      "TIMEOUT": 24,
+      "UNSATISFIABLE": 21
+    },
+    "unique_instances": 45,
+    "verified_false": 0,
+    "verified_missing": 45,
+    "verified_true": 0
+  },
+  {
+    "analysis_unit": "lex_8cfg_evalmaxsat/lex-continuity",
+    "configuration": "cfg6_TOT-none-ss",
+    "errors_nonempty": 0,
+    "runs": 45,
+    "status_counts": {
+      "TIMEOUT": 24,
+      "UNSATISFIABLE": 21
+    },
+    "unique_instances": 45,
+    "verified_false": 0,
+    "verified_missing": 45,
+    "verified_true": 0
+  },
+  {
+    "analysis_unit": "lex_8cfg_evalmaxsat/lex-continuity",
+    "configuration": "cfg7_TOT-both-none",
+    "errors_nonempty": 0,
+    "runs": 45,
+    "status_counts": {
+      "TIMEOUT": 24,
+      "UNSATISFIABLE": 21
+    },
+    "unique_instances": 45,
+    "verified_false": 0,
+    "verified_missing": 45,
+    "verified_true": 0
+  },
+  {
+    "analysis_unit": "lex_8cfg_evalmaxsat/lex-continuity",
+    "configuration": "cfg8_TOT-both-ss",
+    "errors_nonempty": 0,
+    "runs": 45,
+    "status_counts": {
+      "TIMEOUT": 24,
+      "UNSATISFIABLE": 21
+    },
+    "unique_instances": 45,
+    "verified_false": 0,
+    "verified_missing": 45,
+    "verified_true": 0
+  },
+  {
+    "analysis_unit": "lex_8cfg_evalmaxsat/lex-overtime",
+    "configuration": "cfg1_ORIGINAL",
+    "errors_nonempty": 0,
+    "runs": 166,
+    "status_counts": {
+      "OPTIMUM": 105,
+      "TIMEOUT": 1,
+      "UNSATISFIABLE": 60
+    },
+    "unique_instances": 166,
+    "verified_false": 0,
+    "verified_missing": 61,
+    "verified_true": 105
+  },
+  {
+    "analysis_unit": "lex_8cfg_evalmaxsat/lex-overtime",
+    "configuration": "cfg2_SN-none-ss",
+    "errors_nonempty": 0,
+    "runs": 166,
+    "status_counts": {
+      "OPTIMUM": 105,
+      "TIMEOUT": 1,
+      "UNSATISFIABLE": 60
+    },
+    "unique_instances": 166,
+    "verified_false": 0,
+    "verified_missing": 61,
+    "verified_true": 105
+  },
+  {
+    "analysis_unit": "lex_8cfg_evalmaxsat/lex-overtime",
+    "configuration": "cfg3_SN-both-none",
+    "errors_nonempty": 0,
+    "runs": 165,
+    "status_counts": {
+      "OPTIMUM": 104,
+      "TIMEOUT": 1,
+      "UNSATISFIABLE": 60
+    },
+    "unique_instances": 165,
+    "verified_false": 0,
+    "verified_missing": 61,
+    "verified_true": 104
+  },
+  {
+    "analysis_unit": "lex_8cfg_evalmaxsat/lex-overtime",
+    "configuration": "cfg4_SN-both-ss",
+    "errors_nonempty": 0,
+    "runs": 165,
+    "status_counts": {
+      "OPTIMUM": 104,
+      "TIMEOUT": 1,
+      "UNSATISFIABLE": 60
+    },
+    "unique_instances": 165,
+    "verified_false": 0,
+    "verified_missing": 61,
+    "verified_true": 104
+  },
+  {
+    "analysis_unit": "lex_8cfg_evalmaxsat/lex-overtime",
+    "configuration": "cfg5_TOT-none-none",
+    "errors_nonempty": 0,
+    "runs": 168,
+    "status_counts": {
+      "OPTIMUM": 107,
+      "TIMEOUT": 1,
+      "UNSATISFIABLE": 60
+    },
+    "unique_instances": 168,
+    "verified_false": 0,
+    "verified_missing": 61,
+    "verified_true": 107
+  },
+  {
+    "analysis_unit": "lex_8cfg_evalmaxsat/lex-overtime",
+    "configuration": "cfg6_TOT-none-ss",
+    "errors_nonempty": 0,
+    "runs": 167,
+    "status_counts": {
+      "OPTIMUM": 106,
+      "TIMEOUT": 1,
+      "UNSATISFIABLE": 60
+    },
+    "unique_instances": 167,
+    "verified_false": 0,
+    "verified_missing": 61,
+    "verified_true": 106
+  },
+  {
+    "analysis_unit": "lex_8cfg_evalmaxsat/lex-overtime",
+    "configuration": "cfg7_TOT-both-none",
+    "errors_nonempty": 0,
+    "runs": 166,
+    "status_counts": {
+      "OPTIMUM": 105,
+      "TIMEOUT": 1,
+      "UNSATISFIABLE": 60
+    },
+    "unique_instances": 166,
+    "verified_false": 0,
+    "verified_missing": 61,
+    "verified_true": 105
+  },
+  {
+    "analysis_unit": "lex_8cfg_evalmaxsat/lex-overtime",
+    "configuration": "cfg8_TOT-both-ss",
+    "errors_nonempty": 0,
+    "runs": 166,
+    "status_counts": {
+      "OPTIMUM": 105,
+      "TIMEOUT": 1,
+      "UNSATISFIABLE": 60
+    },
+    "unique_instances": 166,
+    "verified_false": 0,
+    "verified_missing": 61,
+    "verified_true": 105
+  },
+  {
+    "analysis_unit": "main_8cfg_evalmaxsat",
+    "configuration": "cfg1_ORIGINAL",
+    "errors_nonempty": 0,
+    "runs": 250,
+    "status_counts": {
+      "OPTIMUM": 161,
+      "TIMEOUT": 15,
+      "UNSATISFIABLE": 74
+    },
+    "unique_instances": 250,
+    "verified_false": 0,
+    "verified_missing": 89,
+    "verified_true": 161
+  },
+  {
+    "analysis_unit": "main_8cfg_evalmaxsat",
+    "configuration": "cfg2_SN-none-ss",
+    "errors_nonempty": 0,
+    "runs": 250,
+    "status_counts": {
+      "OPTIMUM": 160,
+      "TIMEOUT": 16,
+      "UNSATISFIABLE": 74
+    },
+    "unique_instances": 250,
+    "verified_false": 0,
+    "verified_missing": 90,
+    "verified_true": 160
+  },
+  {
+    "analysis_unit": "main_8cfg_evalmaxsat",
+    "configuration": "cfg3_SN-both-none",
+    "errors_nonempty": 0,
+    "runs": 247,
+    "status_counts": {
+      "OPTIMUM": 158,
+      "TIMEOUT": 15,
+      "UNSATISFIABLE": 74
+    },
+    "unique_instances": 247,
+    "verified_false": 0,
+    "verified_missing": 89,
+    "verified_true": 158
+  },
+  {
+    "analysis_unit": "main_8cfg_evalmaxsat",
+    "configuration": "cfg4_SN-both-ss",
+    "errors_nonempty": 0,
+    "runs": 249,
+    "status_counts": {
+      "OPTIMUM": 159,
+      "TIMEOUT": 16,
+      "UNSATISFIABLE": 74
+    },
+    "unique_instances": 249,
+    "verified_false": 0,
+    "verified_missing": 90,
+    "verified_true": 159
+  },
+  {
+    "analysis_unit": "main_8cfg_evalmaxsat",
+    "configuration": "cfg5_TOT-none-none",
+    "errors_nonempty": 0,
+    "runs": 250,
+    "status_counts": {
+      "OPTIMUM": 163,
+      "TIMEOUT": 13,
+      "UNSATISFIABLE": 74
+    },
+    "unique_instances": 250,
+    "verified_false": 0,
+    "verified_missing": 87,
+    "verified_true": 163
+  },
+  {
+    "analysis_unit": "main_8cfg_evalmaxsat",
+    "configuration": "cfg6_TOT-none-ss",
+    "errors_nonempty": 0,
+    "runs": 250,
+    "status_counts": {
+      "OPTIMUM": 163,
+      "TIMEOUT": 13,
+      "UNSATISFIABLE": 74
+    },
+    "unique_instances": 250,
+    "verified_false": 0,
+    "verified_missing": 87,
+    "verified_true": 163
+  },
+  {
+    "analysis_unit": "main_8cfg_evalmaxsat",
+    "configuration": "cfg7_TOT-both-none",
+    "errors_nonempty": 0,
+    "runs": 250,
+    "status_counts": {
+      "OPTIMUM": 162,
+      "TIMEOUT": 14,
+      "UNSATISFIABLE": 74
+    },
+    "unique_instances": 250,
+    "verified_false": 0,
+    "verified_missing": 88,
+    "verified_true": 162
+  },
+  {
+    "analysis_unit": "main_8cfg_evalmaxsat",
+    "configuration": "cfg8_TOT-both-ss",
+    "errors_nonempty": 0,
+    "runs": 250,
+    "status_counts": {
+      "OPTIMUM": 162,
+      "TIMEOUT": 14,
+      "UNSATISFIABLE": 74
+    },
+    "unique_instances": 250,
+    "verified_false": 0,
+    "verified_missing": 88,
+    "verified_true": 162
+  },
+  {
+    "analysis_unit": "paper_test",
+    "configuration": "cplex-cp/cp-t",
+    "errors_nonempty": 0,
+    "runs": 1,
+    "status_counts": {
+      "TIMEOUT_FEASIBLE": 1
+    },
+    "unique_instances": 1,
+    "verified_false": 0,
+    "verified_missing": 0,
+    "verified_true": 1
+  },
+  {
+    "analysis_unit": "paper_test",
+    "configuration": "cplex-mip/mip-e",
+    "errors_nonempty": 0,
+    "runs": 8,
+    "status_counts": {
+      "OPTIMUM": 8
+    },
+    "unique_instances": 1,
+    "verified_false": 0,
+    "verified_missing": 0,
+    "verified_true": 8
+  },
+  {
+    "analysis_unit": "paper_test",
+    "configuration": "gurobi-mip/mip-e",
+    "errors_nonempty": 0,
+    "runs": 8,
+    "status_counts": {
+      "OPTIMUM": 8
+    },
+    "unique_instances": 1,
+    "verified_false": 0,
+    "verified_missing": 0,
+    "verified_true": 8
+  }
+]

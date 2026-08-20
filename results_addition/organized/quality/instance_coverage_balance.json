@@ -1,0 +1,527 @@
+[
+  {
+    "analysis_unit": "commercial_30_15_4_40_25_5",
+    "balanced_instance_sets": true,
+    "configurations": 4,
+    "delta": "0.05",
+    "instance_counts_by_configuration": {
+      "cfg1_GUROBI-MIP": 71,
+      "cfg2_CPLEX-MIP": 71,
+      "cfg3_CPLEX-CP-T": 71,
+      "cfg4_CPLEX-CP-I": 71
+    },
+    "intersection_instances": 71,
+    "method": "weighted",
+    "union_instances": 71
+  },
+  {
+    "analysis_unit": "commercial_all_modes_30_15_4_40_25_5/epsilon_delta_0",
+    "balanced_instance_sets": true,
+    "configurations": 4,
+    "delta": "0",
+    "instance_counts_by_configuration": {
+      "cfg1_GUROBI-MIP": 100,
+      "cfg2_CPLEX-MIP": 100,
+      "cfg3_CPLEX-CP-T": 100,
+      "cfg4_CPLEX-CP-I": 100
+    },
+    "intersection_instances": 100,
+    "method": "epsilon",
+    "union_instances": 100
+  },
+  {
+    "analysis_unit": "commercial_all_modes_30_15_4_40_25_5/epsilon_delta_0p01",
+    "balanced_instance_sets": true,
+    "configurations": 4,
+    "delta": "0.01",
+    "instance_counts_by_configuration": {
+      "cfg1_GUROBI-MIP": 100,
+      "cfg2_CPLEX-MIP": 100,
+      "cfg3_CPLEX-CP-T": 100,
+      "cfg4_CPLEX-CP-I": 100
+    },
+    "intersection_instances": 100,
+    "method": "epsilon",
+    "union_instances": 100
+  },
+  {
+    "analysis_unit": "commercial_all_modes_30_15_4_40_25_5/epsilon_delta_0p025",
+    "balanced_instance_sets": true,
+    "configurations": 4,
+    "delta": "0.025",
+    "instance_counts_by_configuration": {
+      "cfg1_GUROBI-MIP": 100,
+      "cfg2_CPLEX-MIP": 100,
+      "cfg3_CPLEX-CP-T": 100,
+      "cfg4_CPLEX-CP-I": 100
+    },
+    "intersection_instances": 100,
+    "method": "epsilon",
+    "union_instances": 100
+  },
+  {
+    "analysis_unit": "commercial_all_modes_30_15_4_40_25_5/epsilon_delta_0p05",
+    "balanced_instance_sets": true,
+    "configurations": 4,
+    "delta": "0.05",
+    "instance_counts_by_configuration": {
+      "cfg1_GUROBI-MIP": 100,
+      "cfg2_CPLEX-MIP": 100,
+      "cfg3_CPLEX-CP-T": 100,
+      "cfg4_CPLEX-CP-I": 100
+    },
+    "intersection_instances": 100,
+    "method": "epsilon",
+    "union_instances": 100
+  },
+  {
+    "analysis_unit": "commercial_all_modes_30_15_4_40_25_5/epsilon_delta_0p10",
+    "balanced_instance_sets": false,
+    "configurations": 4,
+    "delta": "0.10",
+    "instance_counts_by_configuration": {
+      "cfg1_GUROBI-MIP": 100,
+      "cfg2_CPLEX-MIP": 100,
+      "cfg3_CPLEX-CP-T": 78,
+      "cfg4_CPLEX-CP-I": 71
+    },
+    "intersection_instances": 71,
+    "method": "epsilon",
+    "union_instances": 100
+  },
+  {
+    "analysis_unit": "commercial_all_modes_30_15_4_40_25_5/lex-continuity",
+    "balanced_instance_sets": true,
+    "configurations": 4,
+    "delta": "0.05",
+    "instance_counts_by_configuration": {
+      "cfg1_GUROBI-MIP": 100,
+      "cfg2_CPLEX-MIP": 100,
+      "cfg3_CPLEX-CP-T": 100,
+      "cfg4_CPLEX-CP-I": 100
+    },
+    "intersection_instances": 100,
+    "method": "lex-continuity",
+    "union_instances": 100
+  },
+  {
+    "analysis_unit": "commercial_all_modes_30_15_4_40_25_5/lex-overtime",
+    "balanced_instance_sets": true,
+    "configurations": 4,
+    "delta": "0.05",
+    "instance_counts_by_configuration": {
+      "cfg1_GUROBI-MIP": 100,
+      "cfg2_CPLEX-MIP": 100,
+      "cfg3_CPLEX-CP-T": 100,
+      "cfg4_CPLEX-CP-I": 100
+    },
+    "intersection_instances": 100,
+    "method": "lex-overtime",
+    "union_instances": 100
+  },
+  {
+    "analysis_unit": "commercial_all_modes_30_15_4_40_25_5/weighted",
+    "balanced_instance_sets": true,
+    "configurations": 4,
+    "delta": "0.05",
+    "instance_counts_by_configuration": {
+      "cfg1_GUROBI-MIP": 100,
+      "cfg2_CPLEX-MIP": 100,
+      "cfg3_CPLEX-CP-T": 100,
+      "cfg4_CPLEX-CP-I": 100
+    },
+    "intersection_instances": 100,
+    "method": "weighted",
+    "union_instances": 100
+  },
+  {
+    "analysis_unit": "commercial_main",
+    "balanced_instance_sets": true,
+    "configurations": 4,
+    "delta": "0",
+    "instance_counts_by_configuration": {
+      "cplex-cp/cp-i": 5,
+      "cplex-cp/cp-t": 5,
+      "cplex-mip/mip-e": 5,
+      "gurobi-mip/mip-e": 5
+    },
+    "intersection_instances": 5,
+    "method": "epsilon",
+    "union_instances": 5
+  },
+  {
+    "analysis_unit": "commercial_main",
+    "balanced_instance_sets": true,
+    "configurations": 4,
+    "delta": "0.01",
+    "instance_counts_by_configuration": {
+      "cplex-cp/cp-i": 5,
+      "cplex-cp/cp-t": 5,
+      "cplex-mip/mip-e": 5,
+      "gurobi-mip/mip-e": 5
+    },
+    "intersection_instances": 5,
+    "method": "epsilon",
+    "union_instances": 5
+  },
+  {
+    "analysis_unit": "commercial_main",
+    "balanced_instance_sets": true,
+    "configurations": 4,
+    "delta": "0.025",
+    "instance_counts_by_configuration": {
+      "cplex-cp/cp-i": 5,
+      "cplex-cp/cp-t": 5,
+      "cplex-mip/mip-e": 5,
+      "gurobi-mip/mip-e": 5
+    },
+    "intersection_instances": 5,
+    "method": "epsilon",
+    "union_instances": 5
+  },
+  {
+    "analysis_unit": "commercial_main",
+    "balanced_instance_sets": true,
+    "configurations": 4,
+    "delta": "0.05",
+    "instance_counts_by_configuration": {
+      "cplex-cp/cp-i": 5,
+      "cplex-cp/cp-t": 5,
+      "cplex-mip/mip-e": 5,
+      "gurobi-mip/mip-e": 5
+    },
+    "intersection_instances": 5,
+    "method": "epsilon",
+    "union_instances": 5
+  },
+  {
+    "analysis_unit": "commercial_main",
+    "balanced_instance_sets": true,
+    "configurations": 4,
+    "delta": "0.10",
+    "instance_counts_by_configuration": {
+      "cplex-cp/cp-i": 5,
+      "cplex-cp/cp-t": 5,
+      "cplex-mip/mip-e": 5,
+      "gurobi-mip/mip-e": 5
+    },
+    "intersection_instances": 5,
+    "method": "epsilon",
+    "union_instances": 5
+  },
+  {
+    "analysis_unit": "commercial_main",
+    "balanced_instance_sets": true,
+    "configurations": 4,
+    "delta": "0.05",
+    "instance_counts_by_configuration": {
+      "cplex-cp/cp-i": 5,
+      "cplex-cp/cp-t": 5,
+      "cplex-mip/mip-e": 5,
+      "gurobi-mip/mip-e": 5
+    },
+    "intersection_instances": 5,
+    "method": "lex-continuity",
+    "union_instances": 5
+  },
+  {
+    "analysis_unit": "commercial_main",
+    "balanced_instance_sets": true,
+    "configurations": 4,
+    "delta": "0.05",
+    "instance_counts_by_configuration": {
+      "cplex-cp/cp-i": 5,
+      "cplex-cp/cp-t": 5,
+      "cplex-mip/mip-e": 5,
+      "gurobi-mip/mip-e": 5
+    },
+    "intersection_instances": 5,
+    "method": "lex-overtime",
+    "union_instances": 5
+  },
+  {
+    "analysis_unit": "commercial_main",
+    "balanced_instance_sets": true,
+    "configurations": 4,
+    "delta": "0.05",
+    "instance_counts_by_configuration": {
+      "cplex-cp/cp-i": 5,
+      "cplex-cp/cp-t": 5,
+      "cplex-mip/mip-e": 5,
+      "gurobi-mip/mip-e": 5
+    },
+    "intersection_instances": 5,
+    "method": "weighted",
+    "union_instances": 5
+  },
+  {
+    "analysis_unit": "epsilon_8cfg_evalmaxsat/delta_0",
+    "balanced_instance_sets": false,
+    "configurations": 9,
+    "delta": "0",
+    "instance_counts_by_configuration": {
+      "cfg1_ORIGINAL": 2,
+      "cfg1_TOT-none-none": 45,
+      "cfg2_TOT-none-ss": 45,
+      "cfg3_TOT-both-none": 45,
+      "cfg4_TOT-both-ss": 45,
+      "cfg5_ORIGINAL": 45,
+      "cfg6_SN-none-ss": 45,
+      "cfg7_SN-both-none": 45,
+      "cfg8_SN-both-ss": 45
+    },
+    "intersection_instances": 2,
+    "method": "epsilon",
+    "union_instances": 45
+  },
+  {
+    "analysis_unit": "epsilon_8cfg_evalmaxsat/delta_0p01",
+    "balanced_instance_sets": true,
+    "configurations": 8,
+    "delta": "0.01",
+    "instance_counts_by_configuration": {
+      "cfg1_TOT-none-none": 45,
+      "cfg2_TOT-none-ss": 45,
+      "cfg3_TOT-both-none": 45,
+      "cfg4_TOT-both-ss": 45,
+      "cfg5_ORIGINAL": 45,
+      "cfg6_SN-none-ss": 45,
+      "cfg7_SN-both-none": 45,
+      "cfg8_SN-both-ss": 45
+    },
+    "intersection_instances": 45,
+    "method": "epsilon",
+    "union_instances": 45
+  },
+  {
+    "analysis_unit": "epsilon_8cfg_evalmaxsat/delta_0p025",
+    "balanced_instance_sets": true,
+    "configurations": 8,
+    "delta": "0.025",
+    "instance_counts_by_configuration": {
+      "cfg1_TOT-none-none": 45,
+      "cfg2_TOT-none-ss": 45,
+      "cfg3_TOT-both-none": 45,
+      "cfg4_TOT-both-ss": 45,
+      "cfg5_ORIGINAL": 45,
+      "cfg6_SN-none-ss": 45,
+      "cfg7_SN-both-none": 45,
+      "cfg8_SN-both-ss": 45
+    },
+    "intersection_instances": 45,
+    "method": "epsilon",
+    "union_instances": 45
+  },
+  {
+    "analysis_unit": "epsilon_8cfg_evalmaxsat/delta_0p05",
+    "balanced_instance_sets": true,
+    "configurations": 8,
+    "delta": "0.05",
+    "instance_counts_by_configuration": {
+      "cfg1_TOT-none-none": 47,
+      "cfg2_TOT-none-ss": 47,
+      "cfg3_TOT-both-none": 47,
+      "cfg4_TOT-both-ss": 47,
+      "cfg5_ORIGINAL": 47,
+      "cfg6_SN-none-ss": 47,
+      "cfg7_SN-both-none": 47,
+      "cfg8_SN-both-ss": 47
+    },
+    "intersection_instances": 47,
+    "method": "epsilon",
+    "union_instances": 47
+  },
+  {
+    "analysis_unit": "epsilon_8cfg_evalmaxsat/delta_0p10",
+    "balanced_instance_sets": false,
+    "configurations": 8,
+    "delta": "0.10",
+    "instance_counts_by_configuration": {
+      "cfg1_TOT-none-none": 49,
+      "cfg2_TOT-none-ss": 49,
+      "cfg3_TOT-both-none": 49,
+      "cfg4_TOT-both-ss": 47,
+      "cfg5_ORIGINAL": 49,
+      "cfg6_SN-none-ss": 49,
+      "cfg7_SN-both-none": 49,
+      "cfg8_SN-both-ss": 49
+    },
+    "intersection_instances": 47,
+    "method": "epsilon",
+    "union_instances": 49
+  },
+  {
+    "analysis_unit": "iciit2027_all_solvers/weighted",
+    "balanced_instance_sets": true,
+    "configurations": 1,
+    "delta": "0.05",
+    "instance_counts_by_configuration": {
+      "solver1_EVALMAXSAT": 20
+    },
+    "intersection_instances": 20,
+    "method": "weighted",
+    "union_instances": 20
+  },
+  {
+    "analysis_unit": "lex_8cfg_evalmaxsat/lex-continuity",
+    "balanced_instance_sets": true,
+    "configurations": 8,
+    "delta": "0.05",
+    "instance_counts_by_configuration": {
+      "cfg1_ORIGINAL": 45,
+      "cfg2_SN-none-ss": 45,
+      "cfg3_SN-both-none": 45,
+      "cfg4_SN-both-ss": 45,
+      "cfg5_TOT-none-none": 45,
+      "cfg6_TOT-none-ss": 45,
+      "cfg7_TOT-both-none": 45,
+      "cfg8_TOT-both-ss": 45
+    },
+    "intersection_instances": 45,
+    "method": "lex-continuity",
+    "union_instances": 45
+  },
+  {
+    "analysis_unit": "lex_8cfg_evalmaxsat/lex-overtime",
+    "balanced_instance_sets": false,
+    "configurations": 8,
+    "delta": "0.05",
+    "instance_counts_by_configuration": {
+      "cfg1_ORIGINAL": 166,
+      "cfg2_SN-none-ss": 166,
+      "cfg3_SN-both-none": 165,
+      "cfg4_SN-both-ss": 165,
+      "cfg5_TOT-none-none": 168,
+      "cfg6_TOT-none-ss": 167,
+      "cfg7_TOT-both-none": 166,
+      "cfg8_TOT-both-ss": 166
+    },
+    "intersection_instances": 165,
+    "method": "lex-overtime",
+    "union_instances": 168
+  },
+  {
+    "analysis_unit": "main_8cfg_evalmaxsat",
+    "balanced_instance_sets": false,
+    "configurations": 8,
+    "delta": "0.05",
+    "instance_counts_by_configuration": {
+      "cfg1_ORIGINAL": 250,
+      "cfg2_SN-none-ss": 250,
+      "cfg3_SN-both-none": 247,
+      "cfg4_SN-both-ss": 249,
+      "cfg5_TOT-none-none": 250,
+      "cfg6_TOT-none-ss": 250,
+      "cfg7_TOT-both-none": 250,
+      "cfg8_TOT-both-ss": 250
+    },
+    "intersection_instances": 247,
+    "method": "weighted",
+    "union_instances": 250
+  },
+  {
+    "analysis_unit": "paper_test",
+    "balanced_instance_sets": true,
+    "configurations": 2,
+    "delta": "0",
+    "instance_counts_by_configuration": {
+      "cplex-mip/mip-e": 1,
+      "gurobi-mip/mip-e": 1
+    },
+    "intersection_instances": 1,
+    "method": "epsilon",
+    "union_instances": 1
+  },
+  {
+    "analysis_unit": "paper_test",
+    "balanced_instance_sets": true,
+    "configurations": 2,
+    "delta": "0.01",
+    "instance_counts_by_configuration": {
+      "cplex-mip/mip-e": 1,
+      "gurobi-mip/mip-e": 1
+    },
+    "intersection_instances": 1,
+    "method": "epsilon",
+    "union_instances": 1
+  },
+  {
+    "analysis_unit": "paper_test",
+    "balanced_instance_sets": true,
+    "configurations": 2,
+    "delta": "0.025",
+    "instance_counts_by_configuration": {
+      "cplex-mip/mip-e": 1,
+      "gurobi-mip/mip-e": 1
+    },
+    "intersection_instances": 1,
+    "method": "epsilon",
+    "union_instances": 1
+  },
+  {
+    "analysis_unit": "paper_test",
+    "balanced_instance_sets": true,
+    "configurations": 2,
+    "delta": "0.05",
+    "instance_counts_by_configuration": {
+      "cplex-mip/mip-e": 1,
+      "gurobi-mip/mip-e": 1
+    },
+    "intersection_instances": 1,
+    "method": "epsilon",
+    "union_instances": 1
+  },
+  {
+    "analysis_unit": "paper_test",
+    "balanced_instance_sets": true,
+    "configurations": 2,
+    "delta": "0.10",
+    "instance_counts_by_configuration": {
+      "cplex-mip/mip-e": 1,
+      "gurobi-mip/mip-e": 1
+    },
+    "intersection_instances": 1,
+    "method": "epsilon",
+    "union_instances": 1
+  },
+  {
+    "analysis_unit": "paper_test",
+    "balanced_instance_sets": true,
+    "configurations": 2,
+    "delta": "0.05",
+    "instance_counts_by_configuration": {
+      "cplex-mip/mip-e": 1,
+      "gurobi-mip/mip-e": 1
+    },
+    "intersection_instances": 1,
+    "method": "lex-continuity",
+    "union_instances": 1
+  },
+  {
+    "analysis_unit": "paper_test",
+    "balanced_instance_sets": true,
+    "configurations": 2,
+    "delta": "0.05",
+    "instance_counts_by_configuration": {
+      "cplex-mip/mip-e": 1,
+      "gurobi-mip/mip-e": 1
+    },
+    "intersection_instances": 1,
+    "method": "lex-overtime",
+    "union_instances": 1
+  },
+  {
+    "analysis_unit": "paper_test",
+    "balanced_instance_sets": true,
+    "configurations": 3,
+    "delta": "0.05",
+    "instance_counts_by_configuration": {
+      "cplex-cp/cp-t": 1,
+      "cplex-mip/mip-e": 1,
+      "gurobi-mip/mip-e": 1
+    },
+    "intersection_instances": 1,
+    "method": "weighted",
+    "union_instances": 1
+  }
+]

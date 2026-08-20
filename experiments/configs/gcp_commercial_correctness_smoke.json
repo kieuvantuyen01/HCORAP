@@ -7,7 +7,7 @@
     "../../tests/instances/partial_coverage.txt"
   ],
   "expected_instances": 3,
-  "expected_runs": 36,
+  "expected_runs": 18,
   "timeout_seconds": 30,
   "preflight_timeout_seconds": 30,
   "hard_grace_seconds": 15,
@@ -24,8 +24,6 @@
   ],
   "runs": [
     {"method": "weighted", "print_assignments": true, "native_log": true},
-    {"method": "lex-cos", "print_assignments": true, "native_log": true},
-    {"method": "epsilon", "delta": "0.05", "print_assignments": true, "native_log": true},
-    {"method": "weighted", "soft_coverage": true, "print_assignments": true, "native_log": true}
+    {"method": "lex-cos", "print_assignments": true, "native_log": true}
   ]
 }

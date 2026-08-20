@@ -1,0 +1,246 @@
+[
+  {
+    "actual_json": 284,
+    "binary_sha256_values": [
+      "d26147661027a3718ba3c0895fe230715a9913d9c4e1de155154ff4ff095930e"
+    ],
+    "campaign": "commercial_30_15_4_40_25_5",
+    "completion_fraction": 0.71,
+    "expected_basis": "4 configurations x 100 instances; corroborated by CSV and .done_runs",
+    "expected_json": 400,
+    "missing_vs_expected": 116,
+    "publication_decision": "exclude-primary",
+    "reasons": [
+      "only 284 raw JSON files remain for 400 summarized rows",
+      "benchmark classes 30_15_4 and 40_25_5 were used during development",
+      "run predates the clean publication tag and the Ubuntu 24.04 GCP protocol"
+    ],
+    "reusable_scope": "development diagnostics only",
+    "role": "development-commercial-benchmark",
+    "solver_sha256_values": [],
+    "source_git_commits": [
+      "3c7e0c94b3992d99e1266c300b7723e2263f64c6"
+    ],
+    "status_counts": {
+      "INFEASIBLE": 12,
+      "OPTIMUM": 136,
+      "TIMEOUT_FEASIBLE": 136
+    }
+  },
+  {
+    "actual_json": 3149,
+    "binary_sha256_values": [
+      "d26147661027a3718ba3c0895fe230715a9913d9c4e1de155154ff4ff095930e"
+    ],
+    "campaign": "commercial_all_modes_30_15_4_40_25_5",
+    "completion_fraction": 0.9840625,
+    "expected_basis": "4 configurations x 100 instances x 8 objective settings",
+    "expected_json": 3200,
+    "missing_vs_expected": 51,
+    "publication_decision": "exclude-primary",
+    "reasons": [
+      "campaign is incomplete",
+      "legacy lex-continuity/lex-overtime policies are not the frozen LEX-COS protocol",
+      "benchmark classes were used during development and environment provenance is not publication-grade"
+    ],
+    "reusable_scope": "development and solver-consistency diagnostics only",
+    "role": "development-commercial-multiobjective",
+    "solver_sha256_values": [],
+    "source_git_commits": [
+      "3c7e0c94b3992d99e1266c300b7723e2263f64c6"
+    ],
+    "status_counts": {
+      "INFEASIBLE": 186,
+      "OPTIMUM": 1506,
+      "TIMEOUT_FEASIBLE": 1457
+    }
+  },
+  {
+    "actual_json": 160,
+    "binary_sha256_values": [
+      "a31ce6eafc15691ac4260c20a36305851b3398348ef2e90cd7108fe8605f8cc9"
+    ],
+    "campaign": "commercial_main",
+    "completion_fraction": 1.0,
+    "expected_basis": "160 unique manifest run IDs after removing an appended duplicate pass",
+    "expected_json": 160,
+    "missing_vs_expected": 0,
+    "publication_decision": "exclude-primary",
+    "reasons": [
+      "manifest contains two copies of every run",
+      "environment records five dirty Git files",
+      "inputs are tests/instances rather than the paper benchmark"
+    ],
+    "reusable_scope": "software correctness smoke tests only",
+    "role": "commercial-correctness-development",
+    "solver_sha256_values": [],
+    "source_git_commits": [
+      "3c7e0c94b3992d99e1266c300b7723e2263f64c6"
+    ],
+    "status_counts": {
+      "INFEASIBLE": 64,
+      "OPTIMUM": 96
+    }
+  },
+  {
+    "actual_json": 1848,
+    "binary_sha256_values": [
+      "4af393cfe7da90b5fe20c8b67da3eda94c1f8235d14d330c18abb57c4e40e3de",
+      "4e2605309d0a09f10b8abf4df67417e180282209ceadf321a91de30e09d8d6ff"
+    ],
+    "campaign": "epsilon_8cfg_evalmaxsat",
+    "completion_fraction": 0.1848,
+    "expected_basis": "5 deltas x 8 configurations x 250 benchmark instances (inferred from main campaign)",
+    "expected_json": 10000,
+    "missing_vs_expected": 8152,
+    "publication_decision": "exclude-primary",
+    "reasons": [
+      "run predates the clean publication tag and current EvalMaxSAT smoke/hash contract",
+      "per-configuration campaign limits censor the benchmark in file-name order",
+      "configuration naming is inconsistent in delta_0 and source commits differ across deltas"
+    ],
+    "reusable_scope": "historical exploratory diagnostics only",
+    "role": "legacy-epsilon-exploration",
+    "solver_sha256_values": [
+      "97614c996e1173ca0672ec46da153656046db1d84b9362a8561161ee750779f7"
+    ],
+    "source_git_commits": [
+      "98e40564ffa129cc03f2c10fd38c9d2f56ab55b0",
+      "a745d63066ec95477b6868ddbe08524f7bbea040"
+    ],
+    "status_counts": {
+      "OPTIMUM": 27,
+      "TIMEOUT": 958,
+      "UNSATISFIABLE": 863
+    }
+  },
+  {
+    "actual_json": 0,
+    "binary_sha256_values": [],
+    "campaign": "gcp_primary_analysis",
+    "completion_fraction": null,
+    "expected_basis": "no campaign contract found",
+    "expected_json": null,
+    "missing_vs_expected": null,
+    "publication_decision": "no-evidence",
+    "reasons": [
+      "directory is empty"
+    ],
+    "reusable_scope": "none",
+    "role": "empty-placeholder",
+    "solver_sha256_values": [],
+    "source_git_commits": [],
+    "status_counts": {}
+  },
+  {
+    "actual_json": 20,
+    "binary_sha256_values": [],
+    "campaign": "iciit2027_all_solvers",
+    "completion_fraction": 0.008333333333333333,
+    "expected_basis": "explicit run.log contract: 3 solvers x 8 settings x 100 instances",
+    "expected_json": 2400,
+    "missing_vs_expected": 2380,
+    "publication_decision": "exclude-primary",
+    "reasons": [
+      "only one of the three named solvers started and only 20 JSON files were completed",
+      "run predates the clean publication tag and current campaign matrix",
+      "cardinality/implied/symmetry settings do not represent the proposed configuration"
+    ],
+    "reusable_scope": "first-20-instance EvalMaxSAT smoke evidence only",
+    "role": "aborted-all-solvers-development-run",
+    "solver_sha256_values": [],
+    "source_git_commits": [
+      "98e40564ffa129cc03f2c10fd38c9d2f56ab55b0"
+    ],
+    "status_counts": {
+      "OPTIMUM": 19,
+      "UNSATISFIABLE": 1
+    }
+  },
+  {
+    "actual_json": 1689,
+    "binary_sha256_values": [
+      "4af393cfe7da90b5fe20c8b67da3eda94c1f8235d14d330c18abb57c4e40e3de"
+    ],
+    "campaign": "lex_8cfg_evalmaxsat",
+    "completion_fraction": 0.42225,
+    "expected_basis": "2 policies x 8 configurations x 250 benchmark instances (inferred from main campaign)",
+    "expected_json": 4000,
+    "missing_vs_expected": 2311,
+    "publication_decision": "exclude-primary",
+    "reasons": [
+      "run predates the clean publication tag and current campaign matrix",
+      "policies predate the frozen LEX-COS/LEX-OCS naming and ordering",
+      "per-configuration campaign limits produce partial, sometimes unbalanced coverage"
+    ],
+    "reusable_scope": "historical exploratory diagnostics only",
+    "role": "legacy-lexicographic-exploration",
+    "solver_sha256_values": [
+      "97614c996e1173ca0672ec46da153656046db1d84b9362a8561161ee750779f7"
+    ],
+    "source_git_commits": [
+      "98e40564ffa129cc03f2c10fd38c9d2f56ab55b0"
+    ],
+    "status_counts": {
+      "OPTIMUM": 841,
+      "TIMEOUT": 200,
+      "UNSATISFIABLE": 648
+    }
+  },
+  {
+    "actual_json": 1996,
+    "binary_sha256_values": [
+      "4e2605309d0a09f10b8abf4df67417e180282209ceadf321a91de30e09d8d6ff"
+    ],
+    "campaign": "main_8cfg_evalmaxsat",
+    "completion_fraction": 0.998,
+    "expected_basis": "8 configurations x 250 benchmark instances",
+    "expected_json": 2000,
+    "missing_vs_expected": 4,
+    "publication_decision": "exclude-primary",
+    "reasons": [
+      "run predates the clean publication tag and current campaign matrix",
+      "four raw results are absent from the balanced 8 x 250 matrix",
+      "run predates the clean publication tag and pinned Open-WBO protocol"
+    ],
+    "reusable_scope": "historical encoding diagnostics only",
+    "role": "legacy-eight-configuration-ablation",
+    "solver_sha256_values": [
+      "97614c996e1173ca0672ec46da153656046db1d84b9362a8561161ee750779f7"
+    ],
+    "source_git_commits": [
+      "788bfaba49593be5b9a48ec5a39407d9545abf58"
+    ],
+    "status_counts": {
+      "OPTIMUM": 1288,
+      "TIMEOUT": 116,
+      "UNSATISFIABLE": 592
+    }
+  },
+  {
+    "actual_json": 17,
+    "binary_sha256_values": [
+      "d26147661027a3718ba3c0895fe230715a9913d9c4e1de155154ff4ff095930e"
+    ],
+    "campaign": "paper_test",
+    "completion_fraction": 1.0,
+    "expected_basis": "17 unique manifest rows for one benchmark instance",
+    "expected_json": 17,
+    "missing_vs_expected": 0,
+    "publication_decision": "exclude-primary",
+    "reasons": [
+      "contains one benchmark instance",
+      "environment records six dirty Git files"
+    ],
+    "reusable_scope": "software smoke test only",
+    "role": "single-instance-commercial-smoke",
+    "solver_sha256_values": [],
+    "source_git_commits": [
+      "3c7e0c94b3992d99e1266c300b7723e2263f64c6"
+    ],
+    "status_counts": {
+      "OPTIMUM": 16,
+      "TIMEOUT_FEASIBLE": 1
+    }
+  }
+]

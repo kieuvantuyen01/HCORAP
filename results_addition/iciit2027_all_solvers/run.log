@@ -1,0 +1,37 @@
+==================================================================
+  ICIIT 2027 — Chiến dịch Thực nghiệm 3 Bộ giải (Tất cả chế độ)
+==================================================================
+Bộ giải         : EvalMaxSAT, Gurobi MIP, CPLEX MIP
+Tập bộ bài      : 30_15_4 & 40_25_5
+Phương pháp     : weighted lex-continuity lex-overtime (+ epsilon deltas: 0 0.01 0.025 0.05 0.10)
+Số bài kiểm thử : 100 (trên mỗi chế độ & bộ giải)
+Số bộ giải      : 3
+Số tổ hợp chế độ: 8
+Tổng lượt giải  : 2400
+Timeout/instance: 300s
+Thư mục lưu     : experiments/results/iciit2027_all_solvers
+Bắt đầu lúc     : Sun Aug  9 02:49:39 UTC 2026
+------------------------------------------------------------------
+
+=== Chế độ: method=weighted | delta=- ===
+[weighted][solver1_EVALMAXSAT] instance_30_15_4_1 | 02:49:39 ... OPTIMUM  (18s wall)
+[weighted][solver1_EVALMAXSAT] instance_30_15_4_10 | 02:49:57 ... OPTIMUM  (16s wall)
+[weighted][solver1_EVALMAXSAT] instance_30_15_4_11 | 02:50:13 ... OPTIMUM  (45s wall)
+[weighted][solver1_EVALMAXSAT] instance_30_15_4_12 | 02:50:58 ... OPTIMUM  (10s wall)
+[weighted][solver1_EVALMAXSAT] instance_30_15_4_13 | 02:51:08 ... OPTIMUM  (10s wall)
+[weighted][solver1_EVALMAXSAT] instance_30_15_4_14 | 02:51:18 ... OPTIMUM  (17s wall)
+[weighted][solver1_EVALMAXSAT] instance_30_15_4_15 | 02:51:35 ... OPTIMUM  (16s wall)
+[weighted][solver1_EVALMAXSAT] instance_30_15_4_16 | 02:51:51 ... OPTIMUM  (9s wall)
+[weighted][solver1_EVALMAXSAT] instance_30_15_4_17 | 02:52:00 ... OPTIMUM  (9s wall)
+[weighted][solver1_EVALMAXSAT] instance_30_15_4_18 | 02:52:09 ... OPTIMUM  (21s wall)
+[weighted][solver1_EVALMAXSAT] instance_30_15_4_19 | 02:52:30 ... OPTIMUM  (9s wall)
+[weighted][solver1_EVALMAXSAT] instance_30_15_4_2 | 02:52:39 ... OPTIMUM  (10s wall)
+[weighted][solver1_EVALMAXSAT] instance_30_15_4_20 | 02:52:49 ... OPTIMUM  (8s wall)
+[weighted][solver1_EVALMAXSAT] instance_30_15_4_21 | 02:52:57 ... UNSATISFIABLE  (0s wall)
+[weighted][solver1_EVALMAXSAT] instance_30_15_4_22 | 02:52:57 ... OPTIMUM  (2s wall)
+[weighted][solver1_EVALMAXSAT] instance_30_15_4_23 | 02:52:59 ... OPTIMUM  (12s wall)
+[weighted][solver1_EVALMAXSAT] instance_30_15_4_24 | 02:53:11 ... OPTIMUM  (16s wall)
+[weighted][solver1_EVALMAXSAT] instance_30_15_4_25 | 02:53:27 ... OPTIMUM  (10s wall)
+[weighted][solver1_EVALMAXSAT] instance_30_15_4_26 | 02:53:37 ... OPTIMUM  (11s wall)
+[weighted][solver1_EVALMAXSAT] instance_30_15_4_27 | 02:53:48 ... OPTIMUM  (5s wall)
+[weighted][solver1_EVALMAXSAT] instance_30_15_4_28 | 02:53:53 ... 

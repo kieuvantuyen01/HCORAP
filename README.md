@@ -30,8 +30,11 @@ make -j4 YICES=0
 
 Lệnh này tạo `hcorap2sat`, `hcorap_multi` và bản
 `hcorap_commercial` không phụ thuộc SDK thương mại, với cùng compiler flags.
-Phần mở rộng MaxSAT dùng một backend C++ chung. Backend đã kiểm thử là Open-WBO
-2.1 tại commit `80f3073e41028b219b0b0ad7c61fba28351f88e6`.
+Phần mở rộng MaxSAT dùng một backend C++ chung. Open-WBO 2.1 tại commit
+`80f3073e41028b219b0b0ad7c61fba28351f88e6` vẫn là backend phát triển mở;
+publication campaign trên GCP dùng EvalMaxSAT Linux x86-64, khóa bằng SHA-256
+`97614c996e1173ca0672ec46da153656046db1d84b9362a8561161ee750779f7` để nhất
+quán với solver family của nghiên cứu gốc.
 
 ```sh
 git clone https://github.com/sat-group/open-wbo.git /path/to/open-wbo
@@ -219,9 +222,9 @@ solver calls cho mỗi delta; soft-coverage dùng thêm một tầng coverage.
 ## Campaign C++ tái lập
 
 ```sh
-SOLVER_ID=open-wbo-2.1-80f3073 TIMEOUT=300 \
+SOLVER_ID=evalmaxsat-97614c996e11 TIMEOUT=300 \
 experiments/run_cpp_experiments.sh \
-  /absolute/path/to/open-wbo \
+  /opt/evalmaxsat/EvalMaxSAT_bin \
   experiments/results/cpp_pilot \
   tests/instances/tradeoff.txt \
   instances/paperInstances/TXT_10-25_4-5_U30/instance_30_15_4_47.txt
@@ -264,7 +267,7 @@ Screening chỉ chạy weighted baseline (không chạy lexicographic hoặc eps
 ```sh
 METHODS=weighted RUN_EPSILON=0 TIMEOUT=60 \
 experiments/run_cpp_experiments.sh \
-  /absolute/path/to/open-wbo \
+  /opt/evalmaxsat/EvalMaxSAT_bin \
   experiments/results/weighted_screening \
   INSTANCE.txt
 ```
@@ -276,10 +279,10 @@ vẫn chạy ba method cùng năm mức epsilon như trước. Đặt `METHODS='
 
 ## Kiểm thử
 
-Kiểm thử C++ end-to-end với cùng Open-WBO binary:
+Kiểm thử C++ end-to-end với đúng EvalMaxSAT publication binary:
 
 ```sh
-OPEN_WBO_BIN=/absolute/path/to/open-wbo \
+EVALMAXSAT_BIN=/opt/evalmaxsat/EvalMaxSAT_bin \
 PYTHONPATH=src/proposed python3 -m pytest -q
 ```
 
@@ -309,7 +312,8 @@ Python ở đây chỉ là test harness/oracle. Bộ test kiểm tra:
 | epsilon, delta 0 | 9 | 1 | 0 |
 | epsilon, delta 0.2 | 8 | 0 | 1 |
 
-Weighted có hai nghiệm đồng tối ưu điểm 8; bảng ghi nghiệm Open-WBO trả về.
+Weighted có hai nghiệm đồng tối ưu điểm 8; bảng ghi một nghiệm hợp lệ do backend
+trả về.
 
 ## Vai trò của Python
 

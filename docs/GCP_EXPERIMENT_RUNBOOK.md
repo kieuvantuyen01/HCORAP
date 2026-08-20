@@ -1,178 +1,189 @@
-# Runbook thực nghiệm rút gọn HCORAP trên GCP — ICIIT 2027
+# Runbook thực nghiệm compact HCORAP trên GCP — ICIIT 2027
 
-## 1. Quyết định rút gọn
+Cập nhật ngày 20/08/2026. Manifest chuẩn là
+`experiments/configs/reduced_campaign_manifest.json`; giải thích khoa học và
+audit dữ liệu cũ nằm tại
+[`COMPACT_EXPERIMENT_MATRIX_20260820.md`](COMPACT_EXPERIMENT_MATRIX_20260820.md).
 
-Campaign mặc định chỉ giữ bằng chứng trực tiếp cho bốn đóng góp của bài:
+## 1. Phạm vi chạy
 
-1. tác động của Totalizer, implied constraints và symmetry breaking;
-2. hàm mục tiêu `LEX-COS = CONT -> OT -> SIM`;
-3. kiểm tra trên corrected benchmark v2;
-4. đối chứng exact MIP bằng Gurobi và CPLEX.
+Campaign chỉ giữ bằng chứng trực tiếp cho factorial encoding/strengthening,
+LEX-COS/LEX-OCS, corrected-v2 policy validation và Gurobi/CPLEX exact-objective
+agreement.
 
-Ma trận cũ có 16.040 measured runs, tối đa xấp xỉ 1.171 core-hour. Ma trận đã
-khóa trong `experiments/configs/reduced_campaign_manifest.json` còn 4.896 runs,
-1.176.960 giây timeout cộng dồn, tức 326,93 core-hour hay 13,62 ngày nếu mọi run
-đều chạm timeout và chỉ dùng một worker. Mức giảm là khoảng 69,5%. Thời gian
-thực tế thường thấp hơn vì các run giải xong sớm.
+| Campaign | Runs | Timeout | Worst-case core-hour |
+|---|---:|---:|---:|
+| original factorial: 80 × 8 × weighted | 640 | 300 s | 53,33 |
+| original policy: 140 × R × weighted/LEX-COS | 280 | 300 s | 23,33 |
+| LEX-OCS sensitivity: 70 × R | 70 | 300 s | 5,83 |
+| corrected-v2: 80 × weighted/LEX-COS × R | 160 | 300 s | 13,33 |
+| Gurobi/CPLEX: 20 × 2 backends × 2 policies | 80 | 300 s | 6,67 |
+| EvalMaxSAT commercial: 20 × R × weighted/LEX-COS | 40 | 300 s | 3,33 |
+| **Tổng measured** | **1.270** |  | **105,83** |
 
-Các nhánh bị loại khỏi lệnh `all`:
+Ngoài bảng có 4 EvalMaxSAT LEX-COS scalability-calibration runs ở timeout 300 s
+và 18 commercial correctness-smoke runs ở timeout 30 s; không đưa timing của
+chúng vào bài. Pareto/epsilon, weight confirmation, uncertainty, routing và
+corrected load stress không được gọi bởi phase `all`.
 
-| Nhánh | Quyết định | Lý do |
-|---|---|---|
-| factorial 8 cấu hình trên đủ 800 instance | thay bằng 160-instance ablation + 800-instance baseline/proposed | 6.400 runs tốn nhất, trong khi claim chính chỉ cần phân rã trên mẫu paired và xác nhận hai cấu hình đầu-cuối |
-| full Pareto/epsilon confirmation | hoãn; chỉ giữ screen 3 mức delta | mỗi delta cần nhiều stage MaxSAT; không phải contribution chính |
-| full weight confirmation | hoãn; chỉ giữ screen 4 trọng số | weighted objective gốc và lexicographic mới quan trọng hơn một lưới tham số rộng |
-| corrected-v2 relaxed/saturated load stress | hoãn | tăng kích thước nhưng không trực tiếp kiểm tra encoding hay policy chính |
-| availability uncertainty | hoãn | đây mới là stress test, chưa phải robust optimization |
-| commercial epsilon/corrected/CP | loại khỏi campaign chính | chi phí license/runtime cao và làm loãng so sánh exact baseline |
-| routing | không chạy | model chưa có depot, duration, travel time hay route arcs |
+### Căn cứ chọn timeout
 
-Không diễn giải epsilon, weight và uncertainty screen như kết luận xác nhận.
-Nếu reviewer yêu cầu, các phase `pareto`, `weight-confirmation`, `uncertainty`
-vẫn được giữ trong code để chạy bổ sung sau.
+[Nghiên cứu gốc](<../Optimizing resource allocation in home care services using MaxSAT.tex>)
+dùng giới hạn 1 giờ và 16 GB cho mỗi execution trên Xeon E-2234; giá trị lớn
+nhất trong các thời gian trung bình của nhóm đã được chứng nhận ở bảng kết quả
+là 158,34 s. Dữ liệu EvalMaxSAT diagnostic cũ trong
+`results/comparison_pivot.csv` còn có
+một optimum hợp lệ ở 270,647 s. Vì vậy 120 s sẽ censor một ca đã biết có thể
+được chứng nhận, còn 300 s vượt thời gian chứng nhận lớn nhất đã quan sát trong
+audit. Mốc 300 s được áp dụng đồng nhất cho mọi measured top-level run; với
+lexicographic policy, đây là ngân sách cộng dồn cho toàn bộ stages.
 
-## 2. Ma trận còn lại
+Đây là một giới hạn compact đã khai báo trước, không phải phép tái lập giới hạn
+1 giờ của nghiên cứu gốc. Mọi timeout vẫn được giữ trong solved count và PAR-2;
+không diễn giải timeout là infeasible. `hard_grace_seconds=60` chỉ cho tiến trình
+cha thu output rồi cưỡng bức dừng một binary treo, không cộng thêm solver time.
 
-| Campaign | Thiết kế | Runs | Timeout | Tối đa core-hour |
-|---|---|---:|---:|---:|
-| original factorial ablation | 160 instance × 8 cấu hình, weighted | 1.280 | 120 s | 42,67 |
-| corrected multiobjective screen | 32 instance × LEX-COS/epsilon `0,.05,.10` | 128 | 60 s | 2,13 |
-| corrected weight screen | 32 instance × `(1,1),(1,4),(4,1),(8,8)` | 128 | 60 s | 2,13 |
-| original lex scalability | 80 instance × 2 cấu hình × weighted/LEX-COS | 320 | 300 s | 26,67 |
-| original weighted primary | đủ 800 instance × baseline/proposed | 1.600 | 300 s | 133,33 |
-| original LEX-COS primary | 280 held-out instance × baseline/proposed | 560 | 300 s | 46,67 |
-| LEX-OCS sensitivity | 80 instance × baseline/proposed | 160 | 300 s | 13,33 |
-| corrected-v2 primary | 160 evaluation-critical × weighted/LEX-COS | 320 | 300 s | 26,67 |
-| commercial original | 100 instance × Gurobi/CPLEX × weighted/LEX-COS | 400 | 300 s | 33,33 |
-| **Tổng measured** |  | **4.896** |  | **326,93** |
+## 2. Protocol khóa
 
-Ngoài bảng trên có 36 commercial correctness-smoke runs, timeout 30 giây,
-không đưa vào số liệu bài báo. Screen và confirmatory rows đều được giữ trong
-artifact, nhưng phải ghi rõ vai trò khi trình bày.
-
-## 3. Protocol máy và solver
-
-Tất cả measured runs dùng cùng một non-Spot VM `c4-highcpu-8`, Ubuntu 24.04
-LTS, một solver process, một thread và một vCPU được pin. Không chạy workload
-khác đồng thời. Open-WBO phải ở đúng commit:
+Tất cả measured runs dùng một non-Spot GCP `c4-highcpu-8`, Ubuntu 24.04 LTS,
+một solver process bị giới hạn vào một pinned vCPU. Gurobi/CPLEX còn được khóa
+một native solver thread. Không chạy workload khác. EvalMaxSAT phải là đúng
+Linux x86-64 binary đã dùng trên GCP trước đây:
 
 ```text
-80f3073e41028b219b0b0ad7c61fba28351f88e6
+SHA-256 = 97614c996e1173ca0672ec46da153656046db1d84b9362a8561161ee750779f7
 ```
-
-Baseline và proposed được khóa như sau:
 
 ```text
-baseline = sorting-network / implied none / symmetry none
-proposed = totalizer / implied both / symmetry slot-service
+B = sorting-network / implied none / symmetry none
+R = totalizer / implied both / symmetry slot-service
+LEX-COS = CONT -> OT -> SIM
+LEX-OCS = OT -> CONT -> SIM
 ```
 
-LEX-COS chính dùng thứ tự `CONT -> OT -> SIM`; LEX-OCS sensitivity dùng
-`OT -> CONT -> SIM`. Hai lớp `30_15_4` và `40_25_5` đã dùng trong commercial
-development nên bị loại khỏi LEX-COS confirmatory set. Corrected-v2 dùng
-calibration seed 1–10 và evaluation seed 1001–1010, không giao nhau.
+`R` là nhãn reference, không mặc định hàm ý nhanh hơn. B--R comparison tái sử
+dụng hai cell của factorial. RQ1 và commercial validation chạy lại weighted
+cùng LEX-COS trên sample riêng; mọi measured row dùng cùng timeout 300 s.
 
-## 4. Chuẩn bị VM
+Factorial dùng đủ 16 lớp × seeds 1--5. Original LEX-COS dùng 14 lớp × seeds
+1--10; loại `30_15_4` và `40_25_5` vì đã
+được xem trong commercial development. LEX-OCS dùng subset seeds 1--5.
+Corrected-v2 dùng 16 critical strata × evaluation seeds 1001--1005.
 
-Trong một fresh clone của commit được dùng cho bài:
+## 3. Chuẩn bị VM
+
+Trong fresh clone của publication commit:
 
 ```bash
 sudo apt-get update
 sudo apt-get install -y build-essential git jq libgmp-dev python3 python3-pip \
-  python3-venv tmux util-linux curl
+  python3-venv tmux util-linux curl rsync
 python3 -m venv .venv
 source .venv/bin/activate
 python3 -m pip install --upgrade pip
 python3 -m pip install -e '.[test]' psutil
 ```
 
-Build Open-WBO đã khóa:
+Đặt bản EvalMaxSAT Linux x86-64 đã lưu trữ của nhóm lên VM và kiểm hash:
 
 ```bash
-export HCORAP_OPEN_WBO_ROOT=/opt/hcorap-open-wbo
-sudo git clone https://github.com/sat-group/open-wbo.git "$HCORAP_OPEN_WBO_ROOT"
-sudo chown -R "$(id -u):$(id -g)" "$HCORAP_OPEN_WBO_ROOT"
-git -C "$HCORAP_OPEN_WBO_ROOT" checkout 80f3073e41028b219b0b0ad7c61fba28351f88e6
-git -C "$HCORAP_OPEN_WBO_ROOT" submodule update --init --recursive
-make -C "$HCORAP_OPEN_WBO_ROOT" -j8
+sudo install -d /opt/evalmaxsat
+sudo install -m 0755 /path/to/archived/EvalMaxSAT_bin \
+  /opt/evalmaxsat/EvalMaxSAT_bin
+sha256sum /opt/evalmaxsat/EvalMaxSAT_bin
 ```
 
-Cài Gurobi và IBM ILOG CPLEX Optimization Studio theo license của nhóm. Sau đó
-khai báo đường dẫn SDK thực tế:
+Không dùng file `EvalMaxSAT` ở root của worktree trên macOS: đó là Mach-O
+ARM64 và có hash khác. Campaign chỉ chấp nhận binary Linux có hash ở trên.
+
+Cài Gurobi và IBM ILOG CPLEX Optimization Studio theo license của nhóm, rồi đặt:
 
 ```bash
-export OPEN_WBO_SOURCE_DIR=/opt/hcorap-open-wbo
-export OPEN_WBO_BIN=/opt/hcorap-open-wbo/open-wbo
-export OPEN_WBO_COMMIT=80f3073e41028b219b0b0ad7c61fba28351f88e6
+export EVALMAXSAT_BIN=/opt/evalmaxsat/EvalMaxSAT_bin
 export GUROBI_HOME=/absolute/path/to/gurobi/platform
 export CPLEX_STUDIO_DIR=/absolute/path/to/CPLEX_Studio
 export HCORAP_CPU_CORE=0
+export HCORAP_EXPECTED_COMMIT=iciit2027-exp-v2
+export HCORAP_BACKUP_DIR=/mnt/hcorap-backup
 ```
 
-Không chạy publication campaign từ worktree dirty. Trước khi chạy:
+`HCORAP_BACKUP_DIR` phải ở ngoài worktree và nằm trên persistent storage.
+Measured phase bị từ chối nếu HEAD không đúng revision, worktree dirty, backup
+directory không hợp lệ hoặc VM thiếu 20 GB disk trống.
+
+Kiểm tra revision và ngân sách:
 
 ```bash
 git status --short
 git rev-parse HEAD
+git rev-parse "${HCORAP_EXPECTED_COMMIT}^{commit}"
 python3 experiments/validate_campaign_manifest.py
+python3 experiments/validate_publication_campaign.py
 ```
 
-## 5. Preflight
+Expected output của validator phải là 1.270 measured runs, 381.000 worst-case
+seconds, 105,8333 core-hour và contract `valid: true`.
 
-Chạy preflight trước để kiểm tra VM, compiler, solver, tests, benchmark và exact
-task count:
+## 4. Preflight
 
 ```bash
 mkdir -p vm-logs
 tmux new -s hcorap
-bash experiments/gcp_prepare_and_run.sh preflight 2>&1 | tee vm-logs/preflight.log
+bash experiments/gcp_prepare_and_run.sh preflight \
+  2>&1 | tee vm-logs/preflight.log
 bash experiments/gcp_prepare_and_run.sh commercial-preflight \
   2>&1 | tee vm-logs/commercial-preflight.log
 ```
 
-Preflight sẽ:
+Preflight phải:
 
-- yêu cầu Linux, ít nhất 8 vCPU, 15.000.000 KiB RAM và 20 GB trống;
-- xác minh source và binary Open-WBO cùng thuộc pinned commit;
-- build C++ và chạy toàn bộ pytest;
-- sinh và verify 160 calibration + 160 evaluation-critical corrected-v2
-  instances, full-coverage witness, hash, exact Cartesian matrix và seed split;
-- dry-run tám MaxSAT config đang hoạt động và từ chối sai expected count;
-- build lại Gurobi/CPLEX binary, thử license và chạy 36 correctness-smoke rows;
-- đối chiếu nghiệm exact giữa commercial solvers và reference enumerator.
+- xác minh Linux, ít nhất 8 vCPU, 15.000.000 KiB RAM và 20 GB trống;
+- xác minh EvalMaxSAT binary bằng SHA-256 và chạy weighted/LEX-COS smoke;
+- build C++ và chạy all tests;
+- sinh/verify corrected-v2 suite, witness, hash, matrix và seed split;
+- dry-run các MaxSAT configs và kiểm exact instance/task counts;
+- chạy weighted/LEX-COS correctness smoke; trước measured matrix, yêu cầu ít
+  nhất 2/4 LEX-COS development instances đạt optimum trong 300 s;
+- force-build commercial binary, kiểm license và chạy 18 smoke rows;
+- đạt 6/6 weighted/LEX-COS instance-policy agreement groups giữa Gurobi, CPLEX
+  và reference enumerator.
 
-Nếu preflight lỗi, sửa code/config và commit mới. Không đổi semantics, timeout,
-binary hay config rồi `--resume` một result directory cũ.
+Nếu lỗi, sửa code/config trên commit mới. Không đổi binary, timeout hoặc config
+rồi resume vào result directory cũ.
 
-## 6. Chạy toàn bộ ma trận rút gọn
-
-Script một lệnh cho toàn bộ campaign là:
+## 5. Chạy toàn bộ campaign
 
 ```bash
-export CONFIRM_REDUCED_CAMPAIGN=YES
-bash experiments/run_iciit2027_reduced_campaign.sh
+export CONFIRM_PUBLICATION_CAMPAIGN=YES
+bash experiments/run_all_remaining_publication.sh
 ```
 
-Script cố định `WORKERS=1`, bật xác nhận publication phase, ghi log có timestamp
-vào `vm-logs/`, rồi chạy theo thứ tự:
+Wrapper cố định `WORKERS=1`, bật `CONFIRM_FULL_CAMPAIGN=YES`, ghi log timestamp
+vào `vm-logs/`, ngăn hai campaign chạy đồng thời, checkpoint cả khi bị ngắt và
+chạy:
 
 ```text
-build/test -> benchmark verify -> budget/dry-run verify -> warm-up
--> screen + GO/NO-GO -> original primary -> corrected primary
--> commercial preflight/primary -> artifact package
+build/test/benchmark/task-count checks
+-> commercial preflight + 18 smoke rows
+-> warm-up
+-> 4-row EvalMaxSAT LEX-COS scalability gate
+-> C1 factorial hard gate
+-> C2 weighted/LEX-COS + C3 LEX-OCS
+-> C4 corrected-v2
+-> C5 commercial MIP + C6 EvalMaxSAT commercial weighted/LEX
+-> analysis -> package -> checkpoint
 ```
 
-`all` dừng ngay nếu screen trả `NO-GO`, có technical/validation error, optimum
-không verified, objective mismatch, license lỗi hoặc campaign thiếu rows. Không
-đặt biến để lách gate. Đọc `experiments/results/screening_decision.json`, sửa
-implementation hoặc thu hẹp claim rồi chạy lại trên commit mới.
+Factorial vừa là evidence vừa là hard gate. Pipeline dừng nếu thiếu row, có
+technical/validation error, unverified optimum, paired weighted-objective
+mismatch hoặc peak RSS vượt 12 GB. Gate không yêu cầu R nhanh hơn B và không có
+evidence branch hậu nghiệm cho epsilon/weight/LEX.
 
-## 7. Chạy theo phase và resume
-
-Nếu muốn kiểm tra từng chặng:
+## 6. Chạy theo phase và resume
 
 ```bash
-bash experiments/gcp_prepare_and_run.sh screen 2>&1 | tee vm-logs/screen.log
+bash experiments/gcp_prepare_and_run.sh screen \
+  2>&1 | tee vm-logs/screen.log
 jq . experiments/results/screening_decision.json
 
 export CONFIRM_FULL_CAMPAIGN=YES
@@ -182,41 +193,66 @@ bash experiments/gcp_prepare_and_run.sh corrected-primary \
   2>&1 | tee vm-logs/corrected-primary.log
 bash experiments/gcp_prepare_and_run.sh commercial \
   2>&1 | tee vm-logs/commercial.log
+bash experiments/gcp_prepare_and_run.sh analyze \
+  2>&1 | tee vm-logs/analyze.log
 bash experiments/gcp_prepare_and_run.sh package \
   2>&1 | tee vm-logs/package.log
 ```
 
-Mọi runner dùng authoritative run ID và `--resume`; sau reboot chỉ cần chạy lại
-đúng command. Không duplicate completed runs. Warm-up dùng 10 calibration
-instances ngoài số measured và không ghi vào bảng manuscript.
+Runner resume theo authoritative run ID và không chạy lại completed rows. Sau
+reboot, chạy lại đúng phase command. Chỉ resume row chưa hoàn tất hoặc lỗi kỹ
+thuật; không thay sample hậu nghiệm. Nếu binary/config thay đổi thì dùng commit
+mới và result directory mới.
 
-Kiểm tra nhanh sau mỗi phase:
+Sau mỗi phase:
 
 ```bash
 find experiments/results -path '*/validation.json' \
   -print -exec jq '.complete' {} \;
 find experiments/results -path '*/analysis*.json' -print
+df -h .
 ```
 
-## 8. Dữ liệu và bảng được phép dùng
+Checkpoint tự động sao chép results, native logs và phase logs sang
+`HCORAP_BACKUP_DIR`. Không dùng Spot VM và không phân tích một primary subset
+chưa đủ expected rows.
 
-| Claim | Nguồn dữ liệu |
+## 7. Exact outputs cần có
+
+| Output | Điều kiện |
 |---|---|
-| hiệu ứng Totalizer/implied/symmetry | `gcp_primary_analysis/factorial_*` |
-| baseline so với proposed trên 800 instance | `gcp_original_weighted_primary` |
-| LEX-COS quality/runtime | `gcp_primary_analysis/lex_confirmatory_*` |
-| LEX-OCS policy sensitivity | `lex_policy_sensitivity_pairs.csv` |
-| corrected-v2 weighted/LEX-COS | `gcp_corrected_primary` |
-| commercial agreement/runtime | `gcp_commercial_original` |
-| epsilon/weight exploratory evidence | hai `gcp_*_screen_analysis` directories |
-| reproducibility | environment, resolved campaign, hashes, raw JSON và native logs |
+| `gcp_original_ablation` | 640 rows; 80/cell |
+| `gcp_evalmaxsat_lex_calibration` | 4 non-measured LEX-COS rows; ít nhất 2 optimum |
+| `gcp_original_lex_primary` | 280 rows; 140/policy under R |
+| `gcp_original_lex_sensitivity` | 70 LEX-OCS R rows |
+| `gcp_corrected_primary` | 160 rows; 80/policy |
+| `gcp_commercial_original` | 80 rows; 20/backend/policy |
+| `gcp_maxsat_commercial_validation` | 40 rows; 20/policy under R |
+| `gcp_primary_analysis` | valid; 8 cells, 12 contrasts, 80 B--R, 140 policy pairs, 70 sensitivity pairs |
+| `gcp_corrected_analysis` | valid; 80 instances/policy |
+| `gcp_cross_paradigm_analysis` | valid; 20 groups/policy |
 
-Không dùng raw runtime lịch sử thiếu manifest/provenance trong bảng chính.
-Không gọi three-delta screen là Pareto frontier confirmation. Không gọi
-availability code là robust optimization. Routing, full Pareto, full weight
-confirmation, uncertainty và load stress phải nằm ở limitation/future work,
-trừ khi được chạy bổ sung và báo cáo tách biệt.
+Objective deltas chỉ dùng jointly-optimum, verifier-passing pairs. Solved count
+và PAR-2 giữ toàn bộ rows, kể cả timeout. Three-backend agreement chỉ được báo
+khi cả EvalMaxSAT, Gurobi và CPLEX đều chứng minh optimum.
 
-Artifact cuối nằm trong `artifacts/hcorap_iciit2027_<UTC>.tar.gz` cùng file
-`.sha256`. Archive chứa source, configs, benchmark/sidecars, raw results,
-native logs, generated tables, binary và environment snapshot.
+## 8. Sinh bản thảo và artifact
+
+```bash
+python3 experiments/generate_manuscript_results.py
+bash experiments/package_experiment_artifacts.sh
+```
+
+Generator sinh hai bảng full-width, quantitative prose, abstract findings,
+conclusion và `manuscript-provenance.json`. Review PDF/diff, commit generated
+bundle, rồi chạy `freeze_manuscript_bundle.py` từ clean commit; freeze kiểm
+SHA-256 của CSV/JSON nguồn và fragments.
+
+Artifact nằm trong `artifacts/hcorap_iciit2027_<UTC>.tar.gz` cùng `.sha256` và
+phải chứa source, configs, benchmark/sidecars, raw results, native logs,
+generated tables, HCORAP binaries, EvalMaxSAT SHA-256 và environment snapshot.
+Chỉ đặt `HCORAP_INCLUDE_SOLVER_BINARY=YES` nếu giấy phép EvalMaxSAT cho phép
+phân phối lại binary trong artifact.
+
+Không nhập runtime từ `results/`, `results_addition/` hoặc pilot directories
+vào publication tables. Các nguồn đó chỉ còn vai trò diagnostic/historical.

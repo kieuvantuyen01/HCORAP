@@ -1,0 +1,31 @@
+{
+  "schema_version": 2,
+  "status": "OPTIMUM",
+  "method": "weighted",
+  "objective_mode": "weighted",
+  "objective_policy": "weighted-sum",
+  "language": "C++",
+  "instance": "instances/paperInstances/TXT_10-25_4-5_U30/instance_30_10_4_10.txt",
+  "solver": "./solver/EvalMaxSAT_bin",
+  "wcnf_format": "legacy-top-weight",
+  "timing_scope": "parse+encode+serialize+solve+verify",
+  "timeout_seconds": 300,
+  "elapsed_seconds": 9.696367336,
+  "solver_calls": 1,
+  "full_coverage": true,
+  "continuity_weight": 1,
+  "overtime_weight": 1,
+  "overtime_penalty_per_hour": 1,
+  "cardinality_encoding": "sorting-network",
+  "implied_constraints": "both",
+  "symmetry_breaking": "none",
+  "delta": "0.05",
+  "similarity_reference_optimum": null,
+  "similarity_lower_bound": null,
+  "similarity_realized_loss_absolute": null,
+  "similarity_realized_loss_fraction": null,
+  "stages": [
+    {"objective": "weighted_score", "sense": "max", "optimum": 403, "encode_seconds": 0.032385872, "solve_seconds": 9.643357669, "variables": 23901, "hard_clauses": 80337, "soft_clauses": 1399}
+  ],
+  "metrics": {"coverage": 120, "similarity": 410, "continuity": 7, "overtime": 0, "overtime_cost": 0, "weighted_reference_score": 403, "verified": true}
+}

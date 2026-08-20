@@ -1,6 +1,6 @@
 {
   "binary": "../../bin/release/hcorap_multi",
-  "solver": "${OPEN_WBO_BIN}",
+  "solver": "${EVALMAXSAT_BIN}",
   "result_dir": "../results/gcp_original_lex_development",
   "instances": [
     "../../instances/paperInstances/TXT_10-25_4-5_U30/instance_30_15_4_*.txt",

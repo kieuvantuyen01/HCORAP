@@ -1,5 +1,15 @@
 # Rà soát khoảng trống thực nghiệm HCORAP — 08/08/2026
 
+> **Cập nhật vận hành 20/08/2026:** audit bên dưới được giữ để truy vết quyết
+> định và chất lượng dữ liệu lịch sử. Ma trận 4.996 runs mô tả trong bản audit
+> gốc đã bị thay thế bởi compact campaign **1.270 measured runs / 105,83
+> core-hour**. Nguồn hiện hành là
+> [`COMPACT_EXPERIMENT_MATRIX_20260820.md`](COMPACT_EXPERIMENT_MATRIX_20260820.md)
+> và `experiments/configs/reduced_campaign_manifest.json`. Mọi con số 4.996,
+> 280-instance LEX, 160-instance corrected primary, 100-instance commercial,
+> epsilon/weight screen và 36-run smoke ở các đoạn lịch sử không còn là chỉ dẫn
+> chạy.
+
 ## Kết luận ngắn
 
 Bộ kết quả hiện tại đủ để chứng minh Totalizer bảo toàn weighted optimum và có
@@ -13,10 +23,12 @@ nghiêm trọng nhất là:
 
 Đã sửa parser, thêm chính sách `LEX-COS = CONT -> OT -> SIM`, thêm corrected-v2
 có feasible witness và dựng runner tái lập. Các pilot mới xác nhận mục tiêu mới
-tạo ra trade-off thực, nhưng chưa thay thế campaign chính trên GCP. Sau khi rà
-soát chi phí, campaign mặc định đã được rút từ 16.040 xuống 4.896 measured runs;
-full Pareto, full weight confirmation, uncertainty, load stress và CP baseline
-được hoãn, không còn nằm trong lệnh `all`.
+tạo ra trade-off thực, nhưng chưa thay thế campaign chính trên GCP. Sau lần rà
+soát thứ hai, campaign mặc định còn 1.270 measured runs: factorial 640,
+original weighted/LEX-COS 280, LEX-OCS 70, corrected-v2 160, commercial MIP 80
+và MaxSAT commercial weighted/LEX 40. Pareto/epsilon, weight confirmation,
+uncertainty, load stress
+và CP baseline đều nằm ngoài lệnh `all`.
 
 ## 1. Audit kết quả đang có
 
@@ -64,6 +76,8 @@ không chỉ 29 instance lỗi. Campaign commercial tối thiểu đã khóa cho
 - Gurobi MIP và CPLEX MIP: `weighted`, `lex-cos`; 100 instance; 1 thread;
   seed 0; gap tuyệt đối/tương đối bằng 0; timeout 300 s;
 - tổng 400 measured runs; chỉ so hai exact MIP backend trên cùng hai policy;
+- thêm 100 MaxSAT `lex-cos` runs với cấu hình reference composite trên cùng
+  commercial subset để tạo các nhóm kiểm chứng ba backend;
 - `lex-continuity`, commercial epsilon, corrected-v2 commercial và CP-T/CP-I
   được loại khỏi campaign mặc định vì không trực tiếp củng cố claim chính;
 - correctness preflight còn 36 non-measured rows trên ba tiny instances bằng
@@ -106,28 +120,18 @@ hiện tại có 24 instance quy mô U30 và 32 instance functional quy mô U8. 
 pilot sinh trước khi có witness được chuyển nguyên trạng vào
 `experiments/archive/pre_witness_20260808/`; không được dùng làm kết quả paper.
 
-### Campaign corrected-v2 và screening đã khóa
+### Campaign corrected-v2 hiện hành
 
-Suite rút gọn có 160 calibration-critical instance (seed 1–10) và 160
-evaluation-critical instance (seed 1001–1010). Giai đoạn screen:
+Publication runner chỉ lấy 80 evaluation-critical instances: đủ 16 strata và
+seeds 1001--1005 cho mỗi stratum. Mỗi instance chạy weighted và LEX-COS bằng R,
+tổng 160 runs ở timeout 300 s. Calibration, relaxed/saturated load stress,
+multiobjective screen và weight screen không nằm trong measured compact
+campaign. Chúng chỉ được giữ làm functional/development assets.
 
-| Phase | Instance | Phương pháp/cấu hình | Run | Timeout |
-|---|---:|---|---:|---:|
-| factorial ablation | 160 original | weighted × 8 cấu hình | 1.280 | 120 s |
-| multiobjective screen | 32 critical (seed 1–2) | LEX-COS + delta `0,.05,.10` | 128 | 60 s |
-| weight screen | 32 critical (seed 1–2) | bốn cặp `(1,1),(1,4),(4,1),(8,8)` | 128 | 60 s |
-| lex scalability gate | 80 original (5 seed/lớp) | weighted + LEX-COS × 2 config | 320 | 300 s |
-| **Tổng** |  |  | **1.856** | tối đa 73,6 core-hour |
-
-Publication runner dùng đúng một worker được pin vào một vCPU. Sau screening
-phải **đóng băng** cấu hình và timeout rồi mới chạy evaluation seed; không chọn
-tham số trên evaluation set. Cổng tự động yêu cầu
-LEX-COS hoàn tất ít nhất 60% B0-optimal instances trên ít nhất một cấu hình,
-peak RSS không quá 12 GB và không có lỗi/mismatch.
-
-Corrected-v2 confirmatory chỉ chạy 160 evaluation-critical instances bằng
-proposed configuration, mỗi instance có weighted và LEX-COS, tổng 320 runs.
-Relaxed/saturated load stress đã hoãn.
+Factorial 640 runs trên 80 original instances là hard gate duy nhất: peak RSS
+không quá 12 GB, không có technical/validation error, unverified optimum hoặc
+weighted-objective mismatch. Không dùng evaluation results để chọn lại sample,
+policy hoặc cấu hình.
 
 ## 4. Pilot mới đã chạy
 
@@ -239,7 +243,7 @@ deduplication.
 Trước campaign chính còn phải:
 
 - commit/tag một release sạch; không dùng worktree dirty làm artifact cuối;
-- build Open-WBO Linux tại commit đã khóa và lưu binary hash;
+- dùng EvalMaxSAT Linux x86-64 đúng SHA-256 đã khóa và lưu hash trong artifact;
 - lưu compiler/version/flags và image/OS ID;
 - dùng cùng timeout, 1 solver thread/run, cùng VM family;
 - không chạy workload khác đồng thời;
@@ -249,14 +253,34 @@ Trước campaign chính còn phải:
 
 ## 9. GCP C4 execution
 
-Runbook đầy đủ nằm ở `docs/GCP_EXPERIMENT_RUNBOOK.md`. Ma trận rút gọn được khóa
-trong `experiments/configs/reduced_campaign_manifest.json`: 4.896 measured runs,
-tối đa 326,93 core-hour hay 13,62 ngày tuần tự, giảm khoảng 69,5% so với ma trận
-cũ. Script một lệnh là `experiments/run_iciit2027_reduced_campaign.sh`.
+Runbook đầy đủ nằm ở `docs/GCP_EXPERIMENT_RUNBOOK.md`. Ma trận compact được khóa
+trong `experiments/configs/reduced_campaign_manifest.json`: 1.270 measured runs,
+105,83 core-hour hay 4,41 ngày tuần tự worst case. Script một lệnh là
+`experiments/run_all_remaining_publication.sh`.
 
-Thứ tự bắt buộc vẫn là `preflight -> screen -> GO/NO-GO -> publication phases
--> package`. Các script đã có exact expected counts, blocked-instance order,
-resume, CPU affinity, one-thread publication mode, hard-error rejection,
-factorial/lex/screening analysis và artifact checksum. Commercial campaign còn
-cần Gurobi/CPLEX SDK + license thật trên VM; preflight giải tiny instances bằng
-Gurobi MIP, CPLEX MIP và reference enumerator trước khi chạy 400 measured rows.
+Thứ tự bắt buộc là `preflight -> commercial-preflight -> factorial hard gate ->
+original policy -> corrected-v2 -> commercial -> package`. Các script đã có
+exact expected counts, blocked-instance order, resume, CPU affinity, one-thread
+publication mode, hard-error rejection và artifact checksum. Commercial
+campaign cần Gurobi/CPLEX SDK + license thật trên VM; preflight giải 18 tiny
+smoke runs trước khi chạy 80 measured MIP và 40 MaxSAT validation rows.
+
+## 10. Khóa cấu trúc trình bày Results
+
+Main paper không cần thêm figure. Ba visual đã dùng hết ngân sách 5 trang: một
+bảng taxonomy ở Related Work và hai bảng full-width trong Results. Bảng Results
+thứ nhất chứa đủ tám factorial cells, bốn direct-factor contrasts cần để đọc
+interaction, full 12 contrasts trong artifact, và một dòng end-to-end B--R tái
+sử dụng cùng 80 instances. Bảng thứ hai chứa policy effects, corrected-v2 và
+20-instance exact-objective agreement. Cấu trúc prose là RQ1 -> RQ2 -> RQ3 ->
+validation/scope; epsilon, weight, uncertainty và routing chỉ xuất hiện ở scope
+limitations, không có exploratory plot.
+
+Pipeline đã bổ sung `factorial_contrasts.csv`,
+`weighted_composite_{pairs,summary,paired_summary}.csv`,
+`lex_policy_sensitivity_summary.csv`, corrected-v2 summaries và
+`generate_manuscript_results.py`. Submission guard chỉ chấp nhận fragments khi
+`manuscript-provenance.json` còn khớp SHA-256 của mọi CSV/JSON nguồn, các branch
+scope khớp screening decision, worktree sạch và commit khớp publication commit.
+Như vậy kết quả lịch sử trong `results_addition/` không thể vô tình lọt vào bản
+submission chỉ vì một file LaTeX tồn tại.

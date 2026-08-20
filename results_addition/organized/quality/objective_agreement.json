@@ -1,0 +1,332 @@
+[
+  {
+    "all_optimum_instances": 0,
+    "analysis_unit": "commercial_30_15_4_40_25_5",
+    "delta": "0.05",
+    "examples": [],
+    "method": "weighted",
+    "multi_configuration_instances": 71,
+    "objective_disagreements": 0,
+    "proved_status_disagreements": 0
+  },
+  {
+    "all_optimum_instances": 1,
+    "analysis_unit": "commercial_all_modes_30_15_4_40_25_5/epsilon_delta_0",
+    "delta": "0",
+    "examples": [],
+    "method": "epsilon",
+    "multi_configuration_instances": 100,
+    "objective_disagreements": 0,
+    "proved_status_disagreements": 0
+  },
+  {
+    "all_optimum_instances": 0,
+    "analysis_unit": "commercial_all_modes_30_15_4_40_25_5/epsilon_delta_0p01",
+    "delta": "0.01",
+    "examples": [],
+    "method": "epsilon",
+    "multi_configuration_instances": 100,
+    "objective_disagreements": 0,
+    "proved_status_disagreements": 0
+  },
+  {
+    "all_optimum_instances": 0,
+    "analysis_unit": "commercial_all_modes_30_15_4_40_25_5/epsilon_delta_0p025",
+    "delta": "0.025",
+    "examples": [],
+    "method": "epsilon",
+    "multi_configuration_instances": 100,
+    "objective_disagreements": 0,
+    "proved_status_disagreements": 0
+  },
+  {
+    "all_optimum_instances": 0,
+    "analysis_unit": "commercial_all_modes_30_15_4_40_25_5/epsilon_delta_0p05",
+    "delta": "0.05",
+    "examples": [],
+    "method": "epsilon",
+    "multi_configuration_instances": 100,
+    "objective_disagreements": 0,
+    "proved_status_disagreements": 0
+  },
+  {
+    "all_optimum_instances": 19,
+    "analysis_unit": "commercial_all_modes_30_15_4_40_25_5/epsilon_delta_0p10",
+    "delta": "0.10",
+    "examples": [],
+    "method": "epsilon",
+    "multi_configuration_instances": 100,
+    "objective_disagreements": 0,
+    "proved_status_disagreements": 0
+  },
+  {
+    "all_optimum_instances": 0,
+    "analysis_unit": "commercial_all_modes_30_15_4_40_25_5/lex-continuity",
+    "delta": "0.05",
+    "examples": [],
+    "method": "lex-continuity",
+    "multi_configuration_instances": 100,
+    "objective_disagreements": 0,
+    "proved_status_disagreements": 0
+  },
+  {
+    "all_optimum_instances": 0,
+    "analysis_unit": "commercial_all_modes_30_15_4_40_25_5/lex-overtime",
+    "delta": "0.05",
+    "examples": [],
+    "method": "lex-overtime",
+    "multi_configuration_instances": 100,
+    "objective_disagreements": 0,
+    "proved_status_disagreements": 0
+  },
+  {
+    "all_optimum_instances": 0,
+    "analysis_unit": "commercial_all_modes_30_15_4_40_25_5/weighted",
+    "delta": "0.05",
+    "examples": [],
+    "method": "weighted",
+    "multi_configuration_instances": 100,
+    "objective_disagreements": 0,
+    "proved_status_disagreements": 0
+  },
+  {
+    "all_optimum_instances": 3,
+    "analysis_unit": "commercial_main",
+    "delta": "0",
+    "examples": [],
+    "method": "epsilon",
+    "multi_configuration_instances": 5,
+    "objective_disagreements": 0,
+    "proved_status_disagreements": 0
+  },
+  {
+    "all_optimum_instances": 3,
+    "analysis_unit": "commercial_main",
+    "delta": "0.01",
+    "examples": [],
+    "method": "epsilon",
+    "multi_configuration_instances": 5,
+    "objective_disagreements": 0,
+    "proved_status_disagreements": 0
+  },
+  {
+    "all_optimum_instances": 3,
+    "analysis_unit": "commercial_main",
+    "delta": "0.025",
+    "examples": [],
+    "method": "epsilon",
+    "multi_configuration_instances": 5,
+    "objective_disagreements": 0,
+    "proved_status_disagreements": 0
+  },
+  {
+    "all_optimum_instances": 3,
+    "analysis_unit": "commercial_main",
+    "delta": "0.05",
+    "examples": [],
+    "method": "epsilon",
+    "multi_configuration_instances": 5,
+    "objective_disagreements": 0,
+    "proved_status_disagreements": 0
+  },
+  {
+    "all_optimum_instances": 3,
+    "analysis_unit": "commercial_main",
+    "delta": "0.10",
+    "examples": [],
+    "method": "epsilon",
+    "multi_configuration_instances": 5,
+    "objective_disagreements": 0,
+    "proved_status_disagreements": 0
+  },
+  {
+    "all_optimum_instances": 3,
+    "analysis_unit": "commercial_main",
+    "delta": "0.05",
+    "examples": [],
+    "method": "lex-continuity",
+    "multi_configuration_instances": 5,
+    "objective_disagreements": 0,
+    "proved_status_disagreements": 0
+  },
+  {
+    "all_optimum_instances": 3,
+    "analysis_unit": "commercial_main",
+    "delta": "0.05",
+    "examples": [],
+    "method": "lex-overtime",
+    "multi_configuration_instances": 5,
+    "objective_disagreements": 0,
+    "proved_status_disagreements": 0
+  },
+  {
+    "all_optimum_instances": 3,
+    "analysis_unit": "commercial_main",
+    "delta": "0.05",
+    "examples": [],
+    "method": "weighted",
+    "multi_configuration_instances": 5,
+    "objective_disagreements": 0,
+    "proved_status_disagreements": 0
+  },
+  {
+    "all_optimum_instances": 0,
+    "analysis_unit": "epsilon_8cfg_evalmaxsat/delta_0",
+    "delta": "0",
+    "examples": [],
+    "method": "epsilon",
+    "multi_configuration_instances": 45,
+    "objective_disagreements": 0,
+    "proved_status_disagreements": 0
+  },
+  {
+    "all_optimum_instances": 0,
+    "analysis_unit": "epsilon_8cfg_evalmaxsat/delta_0p01",
+    "delta": "0.01",
+    "examples": [],
+    "method": "epsilon",
+    "multi_configuration_instances": 45,
+    "objective_disagreements": 0,
+    "proved_status_disagreements": 0
+  },
+  {
+    "all_optimum_instances": 0,
+    "analysis_unit": "epsilon_8cfg_evalmaxsat/delta_0p025",
+    "delta": "0.025",
+    "examples": [],
+    "method": "epsilon",
+    "multi_configuration_instances": 45,
+    "objective_disagreements": 0,
+    "proved_status_disagreements": 0
+  },
+  {
+    "all_optimum_instances": 1,
+    "analysis_unit": "epsilon_8cfg_evalmaxsat/delta_0p05",
+    "delta": "0.05",
+    "examples": [],
+    "method": "epsilon",
+    "multi_configuration_instances": 47,
+    "objective_disagreements": 0,
+    "proved_status_disagreements": 0
+  },
+  {
+    "all_optimum_instances": 2,
+    "analysis_unit": "epsilon_8cfg_evalmaxsat/delta_0p10",
+    "delta": "0.10",
+    "examples": [],
+    "method": "epsilon",
+    "multi_configuration_instances": 49,
+    "objective_disagreements": 0,
+    "proved_status_disagreements": 0
+  },
+  {
+    "all_optimum_instances": 0,
+    "analysis_unit": "lex_8cfg_evalmaxsat/lex-continuity",
+    "delta": "0.05",
+    "examples": [],
+    "method": "lex-continuity",
+    "multi_configuration_instances": 45,
+    "objective_disagreements": 0,
+    "proved_status_disagreements": 0
+  },
+  {
+    "all_optimum_instances": 106,
+    "analysis_unit": "lex_8cfg_evalmaxsat/lex-overtime",
+    "delta": "0.05",
+    "examples": [],
+    "method": "lex-overtime",
+    "multi_configuration_instances": 167,
+    "objective_disagreements": 0,
+    "proved_status_disagreements": 0
+  },
+  {
+    "all_optimum_instances": 157,
+    "analysis_unit": "main_8cfg_evalmaxsat",
+    "delta": "0.05",
+    "examples": [],
+    "method": "weighted",
+    "multi_configuration_instances": 250,
+    "objective_disagreements": 0,
+    "proved_status_disagreements": 0
+  },
+  {
+    "all_optimum_instances": 1,
+    "analysis_unit": "paper_test",
+    "delta": "0",
+    "examples": [],
+    "method": "epsilon",
+    "multi_configuration_instances": 1,
+    "objective_disagreements": 0,
+    "proved_status_disagreements": 0
+  },
+  {
+    "all_optimum_instances": 1,
+    "analysis_unit": "paper_test",
+    "delta": "0.01",
+    "examples": [],
+    "method": "epsilon",
+    "multi_configuration_instances": 1,
+    "objective_disagreements": 0,
+    "proved_status_disagreements": 0
+  },
+  {
+    "all_optimum_instances": 1,
+    "analysis_unit": "paper_test",
+    "delta": "0.025",
+    "examples": [],
+    "method": "epsilon",
+    "multi_configuration_instances": 1,
+    "objective_disagreements": 0,
+    "proved_status_disagreements": 0
+  },
+  {
+    "all_optimum_instances": 1,
+    "analysis_unit": "paper_test",
+    "delta": "0.05",
+    "examples": [],
+    "method": "epsilon",
+    "multi_configuration_instances": 1,
+    "objective_disagreements": 0,
+    "proved_status_disagreements": 0
+  },
+  {
+    "all_optimum_instances": 1,
+    "analysis_unit": "paper_test",
+    "delta": "0.10",
+    "examples": [],
+    "method": "epsilon",
+    "multi_configuration_instances": 1,
+    "objective_disagreements": 0,
+    "proved_status_disagreements": 0
+  },
+  {
+    "all_optimum_instances": 1,
+    "analysis_unit": "paper_test",
+    "delta": "0.05",
+    "examples": [],
+    "method": "lex-continuity",
+    "multi_configuration_instances": 1,
+    "objective_disagreements": 0,
+    "proved_status_disagreements": 0
+  },
+  {
+    "all_optimum_instances": 1,
+    "analysis_unit": "paper_test",
+    "delta": "0.05",
+    "examples": [],
+    "method": "lex-overtime",
+    "multi_configuration_instances": 1,
+    "objective_disagreements": 0,
+    "proved_status_disagreements": 0
+  },
+  {
+    "all_optimum_instances": 0,
+    "analysis_unit": "paper_test",
+    "delta": "0.05",
+    "examples": [],
+    "method": "weighted",
+    "multi_configuration_instances": 1,
+    "objective_disagreements": 0,
+    "proved_status_disagreements": 0
+  }
+]

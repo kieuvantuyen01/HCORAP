@@ -40,7 +40,7 @@ struct Options {
     bool printAssignments;
 
     Options()
-        : method("weighted"), solverPath("open-wbo"), delta("0.05"),
+        : method("weighted"), solverPath("EvalMaxSAT_bin"), delta("0.05"),
           timeoutSeconds(3600.0), continuityWeight(1), overtimeWeight(1),
           cardinalityEncoding(HCORAP_SORTING_NETWORK),
           impliedConfig(HCORAP_IMPLIED_NONE),
@@ -96,7 +96,7 @@ static void usage(const char *program) {
     cerr
         << "Usage: " << program << " INSTANCE [options]\n"
         << "  --method weighted|lex-continuity|lex-cos|lex-overtime|epsilon\n"
-        << "  --solver PATH             Open-WBO-compatible C++ solver\n"
+        << "  --solver PATH             external MaxSAT solver with s/v output\n"
         << "  --timeout SECONDS         cumulative encode+solve timeout\n"
         << "  --wc INTEGER              continuity weight (weighted)\n"
         << "  --wo INTEGER              overtime multiplier (weighted)\n"

@@ -1,0 +1,111 @@
+% generated/results.tex  — EvalMaxSAT exploratory campaign
+% DATA PROVENANCE — MANDATORY NOTE:
+%   Solver: EvalMaxSAT (EXPLORATORY). Primary campaign requires a fresh frozen run.
+%   Weighted factorial: 250 total instances, 176 feasible, class 30_10_4, 8 configs, T=300s.
+%   LEX-OCS: 166 instances/config, 108 unique feasible, 8 configs.
+%   LEX-COS: 45 instances/config, 0 OPTIMUM (all timeout with EvalMaxSAT).
+%   Commercial: 94 instances, class 30_15_4, Gurobi + CPLEX, weighted + lex methods.
+%   Replace this file with fresh publication-campaign outputs before submission.
+
+\section{Results}
+\label{sec:results}
+
+\subsection{RQ2--RQ3: Encoding size and factorial effects}
+
+Table~\ref{tab:factorial} reports solved counts and PAR-2 across all eight
+cells of a $2{\times}2{\times}2$ factorial on 176 feasible instances
+(250 total; 74 independently verified \textsc{Unsatisfiable}).
+All runs used EvalMaxSAT with a 300-second timeout.
+
+\begin{table}[t]
+  \centering
+  \caption{Eight-cell factorial results (weighted, EvalMaxSAT,
+  $n=176$ feasible, $T=300$\,s).
+  \textsc{Opt}: solver-reported optimum; PAR-2: $2T$ for timeouts.
+  Card.\ = cardinality encoding; IC = implied constraints;
+  SB = symmetry breaking.
+  \textit{Exploratory; not publication evidence.}}
+  \label{tab:factorial}
+  \scriptsize
+  \begin{tabular}{@{}lccrrr@{}}
+    \toprule
+    Configuration & Card. & IC & SB & \textsc{Opt} & PAR-2 (s) \\
+    \midrule
+    ORIGINAL      & SN  & \textemdash & \textemdash & 161 & 100.0 \\
+    SN-none-ss    & SN  & \textemdash & ss           & 160 & 102.0 \\
+    SN-both-none  & SN  & both        & \textemdash & 158 & 108.2 \\
+    SN-both-ss    & SN  & both        & ss           & 159 & 108.7 \\
+    \midrule
+    TOT-none-none & TOT & \textemdash & \textemdash & 163 &  90.4 \\
+    TOT-none-ss   & TOT & \textemdash & ss           & 163 &  91.7 \\
+    TOT-both-none & TOT & both        & \textemdash & 162 &  96.6 \\
+    TOT-both-ss   & TOT & both        & ss           & 162 &  96.3 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\paragraph{Encoding (RQ2).}
+Switching from sorting networks to Totalizer reduces the median variable count
+from 57,518 to 20,650 ($-$64\%); the hard-clause count increases from 222,629
+to 263,634 ($+$19\%), while the soft-clause count is identical (median 4,081).
+On the 161 instances solved under both ORIGINAL and TOT-none-none, Totalizer
+is faster on 113 and slower on 48 (median paired speedup~1.12; TOT-none-none:
+163~solved, PAR-2 90.4\,s vs.\ ORIGINAL: 161~solved, 100.0\,s).
+
+\paragraph{Implied constraints (RQ3).}
+Adding \texttt{both} to a sorting-network base (SN-both-none vs.\ ORIGINAL)
+raises PAR-2 from 100.0 to 108.2\,s and lowers the solved count by~3.
+On 156 matched pairs, \texttt{both} is slower on 115 and faster on 41
+(median ratio 0.90, i.e., $\approx$10\% slower).
+On a Totalizer base the cost is smaller (TOT-both-none: PAR-2 96.6\,s vs.\
+TOT-none-none: 90.4\,s, $-$1 solved), indicating a negative encoding
+interaction whose magnitude depends on the cardinality base.
+
+\paragraph{Symmetry breaking (RQ3).}
+Slot-service symmetry breaking (ss) has a small, non-monotone effect:
+PAR-2 increases by 1.3--1.7\,s on SN and 1.3\,s on TOT, with no consistent
+direction of change in solved count.  Stratification by instance class is
+needed before attributing the effect to symmetry breaking alone.
+
+\subsection{RQ1: Weighted and lexicographic policies}
+
+\paragraph{LEX-OCS order-sensitivity (exploratory).}
+Across eight configurations on 108 unique feasible instances (class
+\texttt{30\_10\_4}), the LEX-OCS policy (OT$\to$CONT$\to$SIM) reaches
+\textsc{Optimum} on 841 of 849 feasible runs (99\%),
+with at most~1 timeout per configuration.
+On the 208 run-pairs solved to \textsc{Optimum} under both B0 and LEX-OCS
+(same configuration and instance), LEX-OCS yields median
+$\Delta\mathrm{CONT}=-4$ (all 208 pairs strictly negative),
+$\Delta\mathrm{OT}=0$ (all 208 pairs zero), and
+$\Delta\mathrm{SIM}=-12$ (all 208 pairs strictly negative).
+Optimizing OT first eliminates overtime on this benchmark but reduces the
+similarity score, reflecting the expected policy trade-off.
+
+\paragraph{LEX-COS (EvalMaxSAT, exploratory).}
+The LEX-COS policy produced 0~\textsc{Optimum} completions across
+45~instances and 8~configurations (192 feasible runs) under EvalMaxSAT
+within 300\,s; all feasible runs timed out.
+This reflects one incomplete historical EvalMaxSAT campaign and does not
+characterize LEX-COS performance under the fresh, pre-specified publication
+protocol.
+
+\subsection{Cross-solver validation}
+
+On 94 instances (class \texttt{30\_15\_4}) solved to \textsc{Optimum} by both
+Gurobi and CPLEX under the weighted MIP formulation, the two backends agree on
+all 94~weighted scores.  On 19 instances overlapping with the EvalMaxSAT pilot,
+EvalMaxSAT also agrees on all 19~scores, confirming cross-paradigm consistency
+for the weighted policy.
+
+On the same 94~Gurobi-optimal instances, Gurobi's LEX-COS (lex-continuity)
+solution lowers CONT in 91 of 94~pairs (3~ties, 0~worse; median
+$\Delta\mathrm{CONT}=-4$).  OT increases in 7~pairs and is unchanged in~87.
+SIM decreases in 91 pairs (median $\Delta\mathrm{SIM}=-10$).
+This pattern is consistent with the continuity-first policy on a benchmark with
+sparse excess workload.
+
+\outlineblock{Results above are historical EvalMaxSAT exploratory data and
+Gurobi/CPLEX development data on class 30\_15\_4.  Before submission replace
+them with the fresh 1,270-row EvalMaxSAT/Gurobi/CPLEX publication campaign and
+update all numbers from the frozen artifact.}

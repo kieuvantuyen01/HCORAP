@@ -1,0 +1,243 @@
+from __future__ import annotations
+
+import argparse
+import csv
+import json
+from pathlib import Path
+
+from experiments.freeze_manuscript_bundle import validate_and_render_marker
+from experiments.generate_manuscript_results import FACTORIAL_ORDER, generate
+
+
+def _write_csv(path: Path, rows: list[dict[str, object]]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", newline="", encoding="utf-8") as stream:
+        writer = csv.DictWriter(stream, fieldnames=list(rows[0]))
+        writer.writeheader()
+        writer.writerows(rows)
+
+
+def _configuration(configuration: tuple[str, str, str]) -> dict[str, str]:
+    return dict(zip(("cardinality", "implied", "symmetry"), configuration))
+
+
+def test_generate_complete_branch_aware_manuscript_bundle(tmp_path: Path) -> None:
+    primary = tmp_path / "primary"
+    corrected = tmp_path / "corrected"
+    cross = tmp_path / "cross"
+    output = tmp_path / "generated"
+    primary.mkdir()
+    corrected.mkdir()
+    cross.mkdir()
+    screening = tmp_path / "screening.json"
+    screening.write_text(
+        json.dumps(
+            {
+                "decision": "GO",
+                "expected_measured_runs": 1270,
+                "branches": {
+                    "original_lexicographic": {"enabled": True},
+                    "corrected_v2_lexicographic": {"enabled": True},
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    (primary / "analysis_validation.json").write_text(
+        json.dumps({"valid": True, "scope": "compact"}), encoding="utf-8"
+    )
+    (corrected / "corrected_validation.json").write_text(
+        json.dumps({"valid": True}), encoding="utf-8"
+    )
+    (cross / "cross_paradigm_validation.json").write_text(
+        json.dumps({"valid": True, "scope": "full"}), encoding="utf-8"
+    )
+
+    _write_csv(
+        primary / "factorial_summary.csv",
+        [
+            {
+                **_configuration(configuration),
+                "runs": 80,
+                "optimum_runs": 120,
+                "unsat_runs": 20,
+                "timeout_runs": 20,
+                "par2_seconds": 35,
+                "median_peak_rss_mb": 140,
+            }
+            for configuration in FACTORIAL_ORDER
+        ],
+    )
+    contrasts = []
+    for implied in ("none", "both"):
+        for symmetry in ("none", "slot-service"):
+            contrasts.append(
+                {
+                    "factor": "encoding",
+                    "condition": f"IC={implied};SB={symmetry}",
+                    "both_proved_pairs": 70,
+                    "right_faster": 40,
+                    "ties": 0,
+                    "left_faster": 30,
+                    "median_speedup_left_over_right": 1.2,
+                    "bootstrap_95_ci_low": 1.05,
+                    "bootstrap_95_ci_high": 1.35,
+                    "median_variables_difference": -200,
+                    "median_hard_clauses_difference": 300,
+                }
+            )
+    for cardinality in ("sorting-network", "totalizer"):
+        for symmetry in ("none", "slot-service"):
+            contrasts.append(
+                {
+                    "factor": "implied",
+                    "condition": f"Enc={cardinality};SB={symmetry}",
+                    "both_proved_pairs": 68,
+                    "right_faster": 35,
+                    "ties": 1,
+                    "left_faster": 32,
+                    "median_speedup_left_over_right": 1.1,
+                    "bootstrap_95_ci_low": 0.95,
+                    "bootstrap_95_ci_high": 1.25,
+                    "median_variables_difference": 25,
+                    "median_hard_clauses_difference": 50,
+                }
+            )
+    for cardinality in ("sorting-network", "totalizer"):
+        for implied in ("none", "both"):
+            contrasts.append(
+                {
+                    "factor": "symmetry",
+                    "condition": f"Enc={cardinality};IC={implied}",
+                    "both_proved_pairs": 65,
+                    "right_faster": 30,
+                    "ties": 2,
+                    "left_faster": 33,
+                    "median_speedup_left_over_right": 0.98,
+                    "bootstrap_95_ci_low": 0.85,
+                    "bootstrap_95_ci_high": 1.12,
+                    "median_variables_difference": 0,
+                    "median_hard_clauses_difference": 40,
+                }
+            )
+    _write_csv(primary / "factorial_contrasts.csv", contrasts)
+    _write_csv(
+        primary / "weighted_composite_paired_summary.csv",
+        [
+            {
+                "both_proved_pairs": 70,
+                "reference_faster": 40,
+                "ties": 0,
+                "baseline_faster": 30,
+                "median_speedup_baseline_over_reference": 1.18,
+                "bootstrap_95_ci_low": 1.08,
+                "bootstrap_95_ci_high": 1.28,
+            }
+        ],
+    )
+    policy_rows = []
+    sensitivity_rows = []
+    for configuration in (FACTORIAL_ORDER[-1],):
+        policy_rows.append(
+            {
+                **_configuration(configuration),
+                "pairs": 140,
+                "weighted_proved_runs": 125,
+                "lex_cos_proved_runs": 120,
+                "both_optimum_pairs": 110,
+                "median_similarity_change": -5,
+                "median_continuity_change": -2,
+                "median_overtime_change": 0,
+                "weighted_par2_seconds": 80,
+                "lex_cos_par2_seconds": 110,
+            }
+        )
+        sensitivity_rows.append(
+            {
+                **_configuration(configuration),
+                "pairs": 70,
+                "lex_cos_proved_runs": 70,
+                "lex_ocs_proved_runs": 68,
+                "both_optimum_pairs": 60,
+                "same_objective_vector_pairs": 55,
+                "median_similarity_change": -1,
+                "median_continuity_change": 1,
+                "median_overtime_change": -1,
+                "lex_cos_par2_seconds": 95,
+                "lex_ocs_par2_seconds": 100,
+            }
+        )
+    _write_csv(primary / "lex_confirmatory_summary.csv", policy_rows)
+    _write_csv(
+        primary / "lex_policy_sensitivity_summary.csv", sensitivity_rows
+    )
+    _write_csv(
+        corrected / "corrected_policy_summary.csv",
+        [
+            {
+                "method": method,
+                "runs": 80,
+                "optimum_runs": 70,
+                "timeout_runs": 10,
+                "median_similarity": 90 if method == "weighted" else 85,
+                "median_continuity": 4 if method == "weighted" else 2,
+                "median_overtime": 2 if method == "weighted" else 1,
+                "par2_seconds": 75 if method == "weighted" else 105,
+            }
+            for method in ("weighted", "lex-cos")
+        ],
+    )
+    _write_csv(
+        corrected / "corrected_paired_summary.csv",
+        [
+            {
+                "both_optimum_pairs": 65,
+                "median_similarity_change": -5,
+                "median_continuity_change": -2,
+                "median_overtime_change": -1,
+            }
+        ],
+    )
+    _write_csv(
+        cross / "cross_paradigm_agreement.csv",
+        [
+            {
+                "method": method,
+                "all_exact_optimum": "True",
+                "objective_agreement": "True",
+            }
+            for method in ("weighted", "lex-cos")
+            for _ in range(20)
+        ],
+    )
+
+    provenance = generate(
+        argparse.Namespace(
+            screening_decision=screening,
+            primary_dir=primary,
+            corrected_dir=corrected,
+            cross_dir=cross,
+            output_dir=output,
+        )
+    )
+    assert provenance["valid"]
+    assert provenance["expected_measured_runs"] == 1270
+    results = (output / "results.tex").read_text(encoding="utf-8")
+    assert results.count(r"\begin{table*}") == 2
+    assert "end-to-end, $n=80$" in results
+    assert "80 original instances" in results
+    assert r"\resultplaceholder" not in results
+    assert "EvalMaxSAT / Gurobi / CPLEX" in results
+    assert (output / "manuscript-provenance.json").is_file()
+    marker = validate_and_render_marker(
+        generated_dir=output,
+        primary_validation=primary / "analysis_validation.json",
+        cross_validation=cross / "cross_paradigm_validation.json",
+        corrected_validation=corrected / "corrected_validation.json",
+        generation_provenance=output / "manuscript-provenance.json",
+        screening_decision=screening,
+        source_commit="publication-commit",
+        expected_commit="publication-commit",
+        source_clean=True,
+    )
+    assert r"\def\HCORAPFrozenValidationStatus{VALID}" in marker

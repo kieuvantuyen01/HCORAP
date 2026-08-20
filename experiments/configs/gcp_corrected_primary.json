@@ -1,12 +1,16 @@
 {
   "binary": "../../bin/release/hcorap_multi",
-  "solver": "${OPEN_WBO_BIN}",
+  "solver": "${EVALMAXSAT_BIN}",
   "result_dir": "../results/gcp_corrected_primary",
   "instances": [
     "../../instances/corrected_v2_reduced_suite/evaluation_critical/evaluation/critical/*.txt"
   ],
-  "expected_instances": 160,
-  "expected_runs": 320,
+  "instance_filters": {
+    "seeds": [1001,1002,1003,1004,1005],
+    "load_profiles": ["critical"]
+  },
+  "expected_instances": 80,
+  "expected_runs": 160,
   "timeout_seconds": 300,
   "hard_grace_seconds": 60,
   "workers": 1,

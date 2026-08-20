@@ -10,9 +10,9 @@ if [ "${CONFIRM_REDUCED_CAMPAIGN:-}" != "YES" ]; then
 fi
 
 required_variables=(
-    OPEN_WBO_SOURCE_DIR
-    OPEN_WBO_BIN
-    OPEN_WBO_COMMIT
+    EVALMAXSAT_BIN
+    HCORAP_EXPECTED_COMMIT
+    HCORAP_BACKUP_DIR
     GUROBI_HOME
     CPLEX_STUDIO_DIR
 )
@@ -25,13 +25,7 @@ done
 
 export WORKERS=1
 export HCORAP_CPU_CORE=${HCORAP_CPU_CORE:-0}
-export CONFIRM_FULL_CAMPAIGN=YES
+export CONFIRM_PUBLICATION_CAMPAIGN=YES
 
-LOG_ROOT=${HCORAP_VM_LOG_ROOT:-vm-logs}
-mkdir -p "$LOG_ROOT"
-STAMP=$(date -u '+%Y%m%dT%H%M%SZ')
-LOG_PATH="$LOG_ROOT/reduced-campaign-$STAMP.log"
-
-echo "Running the reduced ICIIT campaign with one pinned worker."
-echo "Log: $LOG_PATH"
-bash experiments/gcp_prepare_and_run.sh all 2>&1 | tee "$LOG_PATH"
+echo "Compatibility wrapper: delegating to run_all_remaining_publication.sh."
+exec bash experiments/run_all_remaining_publication.sh run

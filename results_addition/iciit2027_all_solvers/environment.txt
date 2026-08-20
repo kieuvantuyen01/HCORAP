@@ -1,0 +1,15 @@
+created_utc=2026-08-09T02:49:39Z
+uname=Linux instance-temp-3 6.8.0-1064-gcp #72~22.04.1-Ubuntu SMP Sat Jul 11 00:27:00 UTC 2026 x86_64 x86_64 x86_64 GNU/Linux
+binary_maxsat=./bin/release/hcorap_multi
+binary_commercial=./bin/release/hcorap_commercial
+evalmaxsat_solver=./solver/EvalMaxSAT_bin
+timeout=300
+wc=1
+wo=1
+methods=weighted lex-continuity lex-overtime
+run_epsilon=1
+deltas=0 0.01 0.025 0.05 0.10
+cardinality_encoding=sorting-network
+implied_constraints=none
+symmetry_breaking=none
+git_commit=98e40564ffa129cc03f2c10fd38c9d2f56ab55b0

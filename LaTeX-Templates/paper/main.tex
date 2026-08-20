@@ -1,0 +1,562 @@
+% Clean pre-results source for the ICIIT 2027 manuscript.
+% The default build never prints editorial notes or result placeholders:
+%   TEXINPUTS=..: latexmk -pdf -interaction=nonstopmode -halt-on-error main.tex
+% Build review.tex instead when collaborators need the internal result outline.
+%
+% TITLE DECISION LOG
+% Recommended and currently selected:
+%   Lexicographic MaxSAT for Home-Care Resource Allocation:
+%   Encoding and Constraint Strengthening
+% Rationale:
+%   - "Lexicographic MaxSAT" foregrounds the objective policy and formalism.
+%   - "Home-Care Resource Allocation" retains the application and relationship
+%     to the original HCORAP study.
+%   - The subtitle groups Totalizer, implied constraints, and symmetry breaking
+%     without turning the title into a list or claiming a uniform speedup.
+%
+% Shorter alternatives, in decreasing order of preference:
+%   1. Lexicographic MaxSAT for Home-Care Resource Allocation: Evaluating
+%      Totalizer Encoding and Constraint Enhancements
+%   2. From Weighted to Lexicographic MaxSAT for Home-Care Resource Allocation
+%   3. A Reproducible Evaluation of Lexicographic MaxSAT for Home-Care Resource
+%      Allocation
+% Avoid before data freeze: "faster", "superior", "robust", "Pareto-optimal",
+% "routing-aware", and "state of the art".  The implemented model and frozen
+% campaign do not currently support those title-level claims.
+
+% The locally supplied acmart v1.90a loads hyperxmp before hyperref.  Current
+% hyperxmp releases reject that legacy order, so preload hyperref without
+% modifying the conference class.  Remove this compatibility line if a newer
+% official template is supplied.
+\RequirePackage[bookmarksnumbered,unicode]{hyperref}
+\documentclass[sigconf,nonacm]{acmart}
+
+\usepackage{booktabs}
+\usepackage{etoolbox}
+\usepackage{placeins}
+\usepackage{tabularx}
+
+% The default manuscript is visually clean.  review.tex defines
+% \HCORAPInternalReview before loading this file and therefore exposes the
+% editorial outline in a separate PDF.
+\newif\ifinternaloutline
+\ifdefined\HCORAPInternalReview
+  \internaloutlinetrue
+\else
+  \internaloutlinefalse
+\fi
+
+% File existence alone is not evidence of a validated data freeze.  The marker
+% is generated only by experiments/freeze_manuscript_bundle.py after it checks
+% the primary analysis, every enabled corrected-v2 branch, cross-paradigm
+% validation, screening decision, clean publication commit, and all three
+% manuscript fragments.
+\newif\iffrozenresults
+\frozenresultsfalse
+\IfFileExists{generated/freeze-manifest.tex}{%
+  \input{generated/freeze-manifest}%
+  \ifdefstring{\HCORAPFrozenValidationStatus}{VALID}{%
+    \ifcsdef{HCORAPFrozenEvidenceDigest}{%
+      \ifcsdef{HCORAPFrozenSourceCommit}{%
+        \IfFileExists{generated/abstract-findings.tex}{%
+          \IfFileExists{generated/results.tex}{%
+            \IfFileExists{generated/conclusion.tex}{%
+              \frozenresultstrue
+            }{}%
+          }{}%
+        }{}%
+      }{}%
+    }{}%
+  }{}%
+}{}
+
+% submission.tex activates a hard guard: a release build must never succeed
+% without the complete, frozen evidence bundle.
+\ifdefined\HCORAPSubmissionBuild
+  \iffrozenresults\else
+    \PackageError{hcorap-manuscript}{Submission build requires frozen results}{%
+      Generate the three manuscript fragments from validated primary evidence,
+      then run experiments/freeze_manuscript_bundle.py to issue the marker.}%
+  \fi
+\fi
+
+\newcommand{\outlineblock}[1]{%
+  \ifinternaloutline
+    \par
+    {\small\color{blue}\noindent\textbf{Outline note.} #1\par}
+  \fi
+}
+% The argument identifies the expected frozen result (for example, n, x, or a
+% generated visual) so that collaborators can distinguish pending artifacts.
+\newcommand{\resultplaceholder}[1]{%
+  \ifinternaloutline
+    \textcolor{red}{[#1]}%
+  \fi
+}
+\newcommand{\citationplaceholder}[1]{%
+  \ifinternaloutline
+    \textcolor{red}{[citation pending]}%
+  \fi
+}
+
+% The conference has not supplied rights metadata yet.  Do not add DOI, ISBN,
+% price, copyright, or proceedings metadata until the official instructions do.
+\settopmatter{printacmref=false}
+\renewcommand\footnotetextcopyrightpermission[1]{}
+
+\begin{document}
+
+\title[Lexicographic MaxSAT for HCORAP]{%
+  Lexicographic MaxSAT for Home-Care Resource Allocation:
+  Encoding and Constraint Strengthening}
+
+% TODO by 2026-08-31: obtain all co-authors' confirmation of author order,
+% corresponding author, ASCII spellings, and ORCIDs.  Keep these forms
+% identical in the PDF, submission system, ORCID records, and artifact metadata.
+\author{Tuyen Van Kieu}
+\email{tuyenkv@vnu.edu.vn}
+
+\author{Khanh Ngoc Do}
+\email{2302061@vnu.edu.vn}
+
+\author{Khanh Van To}
+\email{khanhtv@vnu.edu.vn}
+% Consecutive \author entries followed by one \affiliation form a shared
+% affiliation group in acmart while retaining separate author metadata.
+\affiliation{%
+  \department{Faculty of Information Technology}
+  \institution{VNU University of Engineering and Technology}
+  \city{Hanoi}
+  \country{Vietnam}}
+\renewcommand{\shortauthors}{Kieu et al.}
+
+\begin{abstract}
+Home-care resource allocation assigns qualified caregivers to requested
+services and time slots under coverage, availability, and workload constraints.
+The existing MaxSAT formulation uses a weighted aggregate that can conceal
+trade-offs among caregiver fragmentation, excess workload, and assignment
+similarity.  We introduce LEX-COS, an exact staged policy that lexicographically
+minimizes caregiver fragmentation and excess workload before maximizing
+assignment similarity.  We combine it with bidirectional Totalizer encodings,
+logically implied constraints, and symmetry breaking for detected slot and
+service equivalences.  A pre-specified paired campaign separates
+objective-policy effects from encoding interactions on the original and
+corrected-v2 benchmarks.  It uses cumulative stage budgets, independent
+solution verification, and optimal-objective checks against Gurobi and CPLEX.
+\iffrozenresults
+  \input{generated/abstract-findings}
+\else
+  \outlineblock{Insert two or three quantitative findings generated from the
+  frozen tables: verified OPTIMUM counts, a paired objective change, and
+  cross-framework objective agreement.  Do not use legacy or pilot values.}
+\fi
+\end{abstract}
+
+\keywords{home health care scheduling, MaxSAT, lexicographic optimization,
+Totalizer encoding, implied constraints, symmetry breaking}
+
+\maketitle
+
+\section{Introduction}
+\label{sec:introduction}
+
+Home-care planning must match requested services with qualified caregivers and
+feasible time slots under coverage, availability, workload, and slot-conflict
+constraints.  Schedule quality also depends on caregiver--service suitability,
+continuity of care across related services, and excess workload.
+We study the assignment-and-scheduling scope of the Home Care Optimal Resource
+Allocation Problem (HCORAP): locations may inform assignment-suitability
+rewards, but travel times, routes, and visit-to-visit transitions are not
+decision variables.
+
+Unceta et al.~\cite{UncetaEtAl2024} encode HCORAP as weighted partial MaxSAT.\@
+A
+weighted scalar score is useful when its coefficients faithfully encode the
+intended exchange rates.  It does not, however, express a strict managerial
+priority unless the weights are chosen to dominate every possible change in
+lower-priority criteria.  Objective vectors with different CONT, OT, and SIM
+components can consequently receive the same scalar score.  At the encoding
+level, threshold variables used for workload and continuity can be represented by
+different CNF cardinality encodings.  These representations preserve the
+scheduling semantics but may differ materially in formula size, propagation,
+and search behavior~\cite{BailleuxBoufkhad2003,AsinEtAl2011}.
+
+This work makes four contributions.  First, it specifies an exact full-coverage
+lexicographic policy, LEX-COS, and an alternative Overtime--Continuity--Similarity
+order (LEX-OCS) for sensitivity analysis.  Second, it implements bidirectional
+Totalizer reifications and two
+families of logically implied constraints.  Third, it detects exact equivalence
+classes of slots and services and adds symmetry-breaking constraints that retain
+a canonical representative from every detected orbit, and hence at least one
+optimal solution.  Fourth, it pre-specifies a paired evaluation on the original
+and corrected-v2 benchmarks, with independent solution verification and
+checks of optimal objective agreement against Gurobi and CPLEX.\@ We ask:
+\emph{RQ1}, how do weighted and lexicographic policies differ in independently
+recomputed objective vectors and performance in establishing optimality?
+\emph{RQ2}, how does Totalizer encoding affect formula size, memory, and
+performance in establishing optimality relative to sorting networks?
+\emph{RQ3}, how do the encoding, implied-constraint, and symmetry-breaking
+factors interact?
+
+% RQ-to-evidence map (keep in source; express compactly in final prose):
+% RQ1 weighted vs. LEX-COS/LEX-OCS -> paired objective vectors, solved, PAR-2.
+% RQ2 sorting network vs. Totalizer -> size, RSS, solved, PAR-2, time to optimality.
+% RQ3 implied x symmetry interactions -> paired 2x2x2 factorial analysis.
+% Validation -> corrected-v2 evaluation set and three-backend objective agreement.
+
+\section{Related Work}
+\label{sec:related-work}
+
+Home-care optimization spans assignment, scheduling, routing, and uncertainty.
+Joint models can coordinate caregiver assignment with schedules and
+routes~\cite{CappaneraScutella2015}, whereas stochastic assignment models address
+uncertain service requirements~\cite{ErrarhoutEtAl2016}.  These richer scopes
+motivate important extensions, but they are distinct from the deterministic,
+time-slotted HCORAP studied here.  In Boolean optimization, weighted partial
+MaxSAT has supported staff scheduling~\cite{DemirovicEtAl2019}, and Unceta et
+al.~\cite{UncetaEtAl2024} give the MaxSAT formulation and benchmark on which our
+study builds.
+
+Lexicographic Boolean optimization and multi-objective MaxSAT are established
+research areas~\cite{MarquesSilvaEtAl2011,JabsEtAl2024}.  Likewise, Totalizers
+and cardinality networks provide alternative CNF representations of counting
+constraints~\cite{BailleuxBoufkhad2003,BailleuxBoufkhad2004,AsinEtAl2011};
+cardinality structure also matters inside MaxSAT
+algorithms~\cite{MorgadoEtAl2014,JahrenAsin2018}.  Implied constraints can alter
+propagation while preserving the feasible set, whereas symmetry breaking may
+discard labeled solutions while retaining a representative of every detected
+orbit~\cite{BofillEtAl2022,BogaertsEtAl2022}.  Our contribution is not to
+introduce these general techniques, but to define their HCORAP semantics,
+verify their safety conditions, and evaluate their interactions with a
+domain-specific lexicographic policy.
+
+\begin{table*}[t]
+  \caption{Methodological scope of representative related-work streams.  A/S
+  denotes assignment or scheduling; IC/SB denotes implied constraints or
+  symmetry breaking; N/A means that cardinality encoding is not a study factor.}
+  \label{tab:related-work}
+  \centering
+  \footnotesize
+  \begin{tabularx}{\textwidth}{@{}Xccccccc@{}}
+    \toprule
+    Research stream & A/S & Routing & Uncertainty & Lex. & MaxSAT & Cardinality & IC/SB \\
+    \midrule
+    Joint home-care models~\cite{CappaneraScutella2015} & Yes & Yes & No & No & No & No & No \\
+    Uncertain home-care assignment~\cite{ErrarhoutEtAl2016} & Yes & No & Yes & No & No & No & No \\
+    MaxSAT staff scheduling~\cite{DemirovicEtAl2019} & Yes & No & No & No & Yes & Varies & No \\
+    Original HCORAP~\cite{UncetaEtAl2024} & Yes & No & No & No & Yes & Sorting & No \\
+    Boolean lexicographic and bi-objective MaxSAT~\cite{MarquesSilvaEtAl2011,JabsEtAl2024} & No & No & No & Yes & Yes & N/A & No \\
+    Cardinality encodings in MaxSAT~\cite{BailleuxBoufkhad2003,BailleuxBoufkhad2004,MorgadoEtAl2014,JahrenAsin2018,AsinEtAl2011} & No & No & No & No & Yes & Yes & No \\
+    Implied constraints and symmetry breaking~\cite{BofillEtAl2022,BogaertsEtAl2022} & No & No & No & No & Yes & No & Yes \\
+    This work & Yes & No & No & Yes & Yes & Sorting/Totalizer & Yes \\
+    \bottomrule
+  \end{tabularx}
+\end{table*}
+
+\section{Problem Formulation and Objective Policies}
+\label{sec:problem}
+
+\subsection{HCORAP model and quality measures}
+
+Let $\mathcal A$, $\mathcal S$, $\mathcal H$, $\mathcal U$, and $\mathcal Q$
+denote caregivers, requested services, time slots, users, and continuity sets,
+respectively.  A caregiver is called an \emph{agent} in the benchmark files,
+and the benchmark field \texttt{SEQ} calls each continuity set a service
+sequence even though no temporal ordering is modeled within it.  Each service
+is assigned to one slot and contributes one workload unit.  A reward
+$r_{as}\in\{0,\ldots,4\}$ measures the suitability of assigning caregiver $a$
+to service $s$ and is the original HCORAP \emph{similarity score}; a zero reward
+denotes a forbidden or unqualified assignment.
+Availability, service-slot suitability, and qualification define the feasible
+triples $E\subseteq\mathcal A\times\mathcal S\times\mathcal H$.  We create
+$x_{ash}$ only for $(a,s,h)\in E$ and channel
+$y_{as}\leftrightarrow\bigvee_{h:(a,s,h)\in E}x_{ash}$.
+
+The hard model assigns every service exactly once.  At most one service may be
+assigned to a caregiver in a slot, and at most one of a user's services may
+occupy that slot.  If $L_a=\sum_s y_{as}$ is caregiver $a$'s workload, then
+$L_a\le HN_a+HE_a$, where $HN_a$ and $HE_a$ are the regular and permitted
+excess-workload limits in the same unit as assigned services.  The model does
+not represent heterogeneous service durations, so it does not interpret these
+units as clock hours.  Thus full coverage---every requested service is assigned
+exactly once---is a hard requirement in every primary experiment; partial
+schedules are not compared as policy outcomes.
+
+Let $\mathcal S_u$ and $\mathcal S_q$ be the services of user $u$ and continuity
+set $q$, respectively, and let
+$n_q=|\{a:\exists s\in\mathcal S_q,\ y_{as}=1\}|$.  The measures are
+\begin{align}
+  \mathrm{SIM}  &= \sum_{a\in\mathcal A}\sum_{s\in\mathcal S} r_{as}y_{as}, \\
+  \mathrm{CONT} &= \sum_{q\in\mathcal Q}\max(0,n_q-1), \\
+  \mathrm{OT}   &= \sum_{a\in\mathcal A}\max(0,L_a-HN_a).
+\end{align}
+Here SIM is the assignment-suitability reward and is maximized; CONT counts the
+additional distinct caregivers beyond the first in each continuity set and is
+a caregiver-fragmentation penalty; and OT counts excess-workload units.  Both
+CONT and OT are minimized.  Under full coverage, the stability reward in the
+original HCORAP formulation is
+\begin{equation}
+  \mathrm{STAB}
+  = \sum_{q\in\mathcal Q}(|\mathcal S_q|-n_q)
+  = \sum_{q\in\mathcal Q}(|\mathcal S_q|-1)-\mathrm{CONT}.
+  \label{eq:stability-continuity}
+\end{equation}
+Equation~\eqref{eq:stability-continuity} shows that maximizing the original
+stability reward is equivalent to minimizing CONT.  For compatibility with the
+released result schema, the
+artifact fields remain named \texttt{similarity}, \texttt{continuity}, and
+\texttt{overtime}; throughout this paper, however, CONT denotes the penalty,
+not the desirable continuity-of-care level.
+
+\subsection{Weighted baseline and lexicographic policies}
+
+With $p=|P|$ denoting the non-negative magnitude of the per-instance signed
+penalty field $P\leq0$, policy B0 maximizes
+\begin{equation}
+  \mathrm{SIM}-w_c\mathrm{CONT}-w_o\,p\,\mathrm{OT},
+  \label{eq:weighted}
+\end{equation}
+where $w_c,w_o\in\mathbb Z_{\geq0}$ multiply CONT and OT; the primary experiments
+use $(w_c,w_o)=(1,1)$.  The main policy solves
+\begin{equation}
+  \text{LEX-COS:}\qquad
+  \min\mathrm{CONT}\ \longrightarrow\ \min\mathrm{OT}\
+  \longrightarrow\ \max\mathrm{SIM}.
+  \label{eq:lex-cos}
+\end{equation}
+LEX-OCS swaps the first two stages and is used only as an order-sensitivity
+analysis.
+
+Let $(f_1,f_2,f_3)=(\mathrm{CONT},\mathrm{OT},-\mathrm{SIM})$ and let $F_0$
+be the schedules satisfying all hard constraints.  For $i=1,2,3$, the staged
+solver constructs
+\begin{equation}
+  z_i=\min_{x\in F_{i-1}} f_i(x),\qquad
+  F_i=\{x\in F_{i-1}:f_i(x)=z_i\}.
+  \label{eq:lex-stages}
+\end{equation}
+Each stage rebuilds the WCNF over $F_{i-1}$, receives only the unused part of
+one cumulative timeout, and passes its assignment to the independent verifier.
+The next stage is entered only after EvalMaxSAT reports \textsc{Optimum}; the
+next-stage WCNF preserves CONT and OT optima with upper pseudo-Boolean bounds
+and the SIM optimum with a lower pseudo-Boolean bound.  Because each $z_i$ is
+solver-established, the corresponding one-sided bound is equivalent to
+$f_i(x)=z_i$ over $F_{i-1}$.  Thus $F_i$ contains precisely the schedules
+attaining prefix $(z_1,\ldots,z_i)$, and a verified assignment in $F_3$ is
+lexicographically optimal for the encoded model.  Any incomplete stage is a
+policy timeout, not an optimum.  LEX-COS removes weight calibration for the
+stated priority order; it does not dominate every stakeholder weighting.
+
+\section{Encoding and Constraint Enhancements}
+\label{sec:encoding}
+
+\subsection{Sorting-network and Totalizer cardinality encodings}
+
+The reified threshold vectors encode caregiver workload and the number of distinct
+caregivers per continuity set.  The baseline uses a bidirectional sorting
+network~\cite{AsinEtAl2011}.  The alternative uses the standard Totalizer tree
+of Bailleux and Boufkhad~\cite{BailleuxBoufkhad2003}, completed with both merge
+clause families from their full-CNF treatment~\cite{BailleuxBoufkhad2004}.
+Thus, this is a full threshold reification rather than a truncated
+forward-only at-most-$k$ encoding.  When child vectors $L$ and $R$, of lengths
+$m$ and $n$, are merged into $O$, use $L_0=R_0=\top$ and
+$L_{m+1}=R_{n+1}=\bot$ and add
+\begin{align}
+  \neg L_{\alpha}\lor\neg R_{\beta}\lor O_{\alpha+\beta},\qquad
+  L_{\alpha+1}\lor R_{\beta+1}\lor\neg O_{\alpha+\beta+1},
+\end{align}
+for $0\leq\alpha\leq m$ and $0\leq\beta\leq n$; the first clause is included
+when $\alpha+\beta\geq1$ and the second when $\alpha+\beta<m+n$.  Together they enforce
+$O_k\leftrightarrow(\sum_j x_j\ge k)$.  Exact threshold semantics matter here
+because these auxiliary literals occur directly in objectives and stage-fixing
+equality bounds; a one-directional implication would not suffice.  Formula
+size, memory, and runtime are therefore measured empirically in RQ2 rather than
+inferred from asymptotic size alone.
+
+\subsection{Implied constraints}
+
+The primary treatment \texttt{both} combines two logically implied constraints
+intended to strengthen propagation.  First, let $t_{sh}$ denote that service $s$
+uses slot $h$, and let $v_{uh}$ denote that user $u$ uses $h$.  We channel
+$t_{sh}\leftrightarrow\bigvee_a x_{ash}$ and
+$v_{uh}\leftrightarrow\bigvee_{s\in\mathcal S_u}t_{sh}$.  Because the benchmark
+service lists form a user partition, full coverage and the user-slot at-most-one
+constraints imply
+\begin{equation}
+  \sum_{h\in\mathcal H}v_{uh}=|\mathcal S_u|,
+  \qquad \forall u\in\mathcal U.
+\end{equation}
+
+Second, for each slot $h$ we construct a bipartite candidate graph between
+caregivers and users.  Edge $(a,u)$ exists when caregiver $a$ can perform at
+least one service in $\mathcal S_u$ at $h$.  The assignments made in one slot
+form a matching because of the caregiver-slot and user-slot constraints;
+therefore
+\begin{equation}
+  \sum_{s\in\mathcal S}t_{sh}\le \nu(G_h),
+\end{equation}
+where $\nu(G_h)$ is the maximum matching size computed once during formula
+construction.  Both constraints are logical consequences of the hard model and
+remove no feasible schedule.  The bundled \texttt{both-plus} treatment is
+excluded because, beyond \texttt{both}, it adds equivalent service-level projection,
+workload-cap tightening, and service-slot clustering; all preserve feasible
+schedules.
+
+\subsection{Detected equivalences and safe symmetry breaking}
+
+We group slots only when their binary feasibility vectors over every
+caregiver--service pair are identical.  We group two services only when each
+has one well-defined user and continuity set and they share that user,
+continuity set, caregiver reward vector, and caregiver--slot feasibility
+vector.  Swapping two members of either class consequently preserves all hard constraints and all
+three objective values.
+
+For consecutive equivalent values, $\mathit{earlier}_i$ and
+$\mathit{later}_j$ denote assigning the earlier and later value to ordered
+positions $i$ and $j$; we impose
+$\mathit{later}_j\rightarrow\bigvee_{i<j}\mathit{earlier}_i$.  Positions are
+services for slot classes and ordered caregiver--slot pairs for service classes.
+These clauses retain a canonical representative of every
+detected orbit.  In contrast to
+implied constraints, they may remove labeled schedules, but they preserve
+satisfiability and an optimal solution because each removed schedule has an
+objective-equivalent canonical representative~\cite{BogaertsEtAl2022}.
+Regression tests cover both
+cardinality encodings, full and soft coverage, satisfiable and infeasible cases,
+and all symmetry modes; the campaign verifier separately reconstructs
+feasibility and objective values from every reported assignment.
+
+\section{Experimental Design}
+\label{sec:experiments}
+
+\subsection{Configurations, benchmarks, and campaign}
+
+Baseline configuration $B$ uses sorting networks without implied constraints
+or symmetry breaking.  Reference configuration $R$ combines Totalizer,
+the \texttt{both} implied-constraint treatment, and symmetry breaking for
+detected slot and service equivalences; the label does not assume a speedup.
+Here $B$ denotes an encoding configuration and B0 the weighted policy in
+Eq.~\eqref{eq:weighted}.  A weighted $2\times2\times2$ factorial on 80 original
+instances (16 classes, seeds 1--5) crosses encoding, \texttt{both}, and symmetry
+factors.  Only this factorial, rather than the bundled $B$--$R$ contrast,
+supports factor-level attribution.
+
+The end-to-end $B$--$R$ contrast reuses the corresponding two cells of this
+factorial, yielding 80 paired instances without a duplicate campaign.  Policy
+evaluation uses only $R$: B0 and LEX-COS are run on 140 original instances (14
+classes, seeds 1--10) under the same 300-s budget.  The two classes inspected
+during commercial development are excluded.  LEX-OCS
+(OT${\to}$CONT${\to}$SIM) is evaluated as an order-sensitivity analysis on the
+pre-specified 70-instance subset with seeds 1--5.
+
+Validation uses 80 evaluation-critical corrected-v2 instances (16 strata,
+five evaluation seeds per stratum) under B0 and LEX-COS with $R$.  A separate
+20-instance commercial subset compares exact objectives from EvalMaxSAT, Gurobi
+MIP, and CPLEX MIP under both policies; commercial runtimes are not used to
+attribute MaxSAT encoding effects.  The $\varepsilon$-constraint, weight,
+uncertainty, and routing branches are outside the measured compact campaign.
+
+\subsection{Protocol, measures, and analysis}
+
+Experiments run on one non-Spot GCP \texttt{c4-highcpu-8} VM (8 vCPUs, 16\,GB
+RAM, Ubuntu 24.04 LTS).  We use the same EvalMaxSAT solver family selected by
+the earlier study and pin the Linux x86-64 binary by SHA-256 in the artifact.
+Every measured run uses one solver process restricted to one pinned vCPU, with
+one campaign worker and no concurrent workload; Gurobi and CPLEX additionally
+use one native solver thread.  The C++ encoder uses
+\texttt{-O3 -DNDEBUG -std=c++11}.  Ten fixed warm-up instances from the
+disjoint calibration set are unmeasured; a seeded, instance-major blocked order
+interleaves configurations thereafter.  Every measured run has a 300\,s
+end-to-end timeout; a lexicographic timeout is
+cumulative across all stages.  Gurobi and CPLEX use one thread, seed~0, and zero
+relative and absolute optimality gaps.  The earlier study used a 3600\,s limit
+on a different processor, so we do not compare absolute runtimes across studies.
+
+We record formula size, encoding/solver/end-to-end time, peak RSS, termination,
+verifier outcome, and independently recomputed SIM, CONT, and OT.  Solved count
+includes solver-reported \textsc{Optimum} and established infeasibility; PAR-2
+assigns $2T$ to every other run under timeout $T$.  Objective deltas and
+secondary runtime ratios use matched pairs only when both assignments are
+optimality-reported and verifier-passing.  All eight factorial cells are
+reported; the artifact retains all 12 direct factor contrasts, while the main
+table displays the contrasts needed to expose encoding contexts and interaction
+claims.  We stratify by instance class when aggregate effects reverse.  Timeouts
+remain in solved-count and PAR-2 summaries.
+
+The artifact retains source, instance, binary, and solver hashes; exact
+commands; raw JSON and native logs; manifests; environment metadata; and
+verifier status.  Pinned analysis scripts regenerate every result table and the
+frozen-evidence marker.  Runtime claims are limited to this EvalMaxSAT and GCP
+protocol.
+
+\iffrozenresults
+  % Generated only from the validated, frozen campaign artifact.
+  \input{generated/results}
+\else
+  \ifinternaloutline
+    \input{internal-results-outline}
+  \fi
+\fi
+
+\section{Threats to Validity}
+\label{sec:threats}
+
+The original benchmark contains limited excess-workload variation, so it may
+understate differences involving OT.\@ Corrected-v2 supplies feasible witnesses
+and stronger excess-workload pressure, but remains synthetic rather than
+operational data.  Its disjoint calibration and evaluation sets limit tuning
+leakage, not this external-validity threat.  Routing and uncertain availability
+are outside the implemented decision model, and no claim about either extension
+follows from the present experiments.
+
+LEX-COS restarts EvalMaxSAT at each stage and shares one cumulative time budget.
+Thus its runtime combines objective policy and staged implementation, and a
+partial prefix is never counted as a lexicographic optimum.  Runtime evidence
+also comes from one pinned MaxSAT solver version.  The Linux EvalMaxSAT binary
+must pass weighted and three-stage LEX-COS WCNF smoke tests before any measured
+run; this controls compatibility but does not establish solver generality.
+Gurobi and CPLEX solve
+the same exact MIP formulation to check objective agreement across paradigms on
+a pre-specified 20-instance subset; that formulation differs from the MaxSAT
+encoding, so they are validation backends, not a basis for claiming
+solver-independent MaxSAT speedups.
+
+Timeout censoring and class heterogeneity can distort solved-only averages.
+We therefore retain timeouts in solved counts and PAR-2, restrict paired time
+ratios to mutually optimal, verifier-passing cases, and stratify reversals by
+instance class.  Finally, $B$ is intentionally an unstrengthened baseline
+comparator, while $R$
+bundles three changes.  The paired factorial, rather than that bundled contrast,
+supports statements about individual factors.  Independent solution
+verification, held-out instances, raw logs, and cryptographic hashes mitigate
+implementation and provenance errors but cannot eliminate the scope limitations
+above.  The verifier checks feasibility, inherited bounds, and objective values;
+it does not check an independently generated MaxSAT proof trace, so optimality
+labels remain backend-reported.
+
+% Keep the two full-width Results tables ahead of the Conclusion heading.  In
+% double-column mode they otherwise may leapfrog a short conclusion while
+% waiting for the next top-of-page float slot.
+\FloatBarrier
+\iffrozenresults
+  \input{generated/conclusion}
+\else
+  \ifinternaloutline
+    \section{Conclusion}
+    \label{sec:conclusion}
+    \outlineblock{Target 0.15--0.20 page.  Answer RQ1--RQ3 in result order using
+    only frozen evidence.  Report mixed or conditional encoding effects as such.
+    Close with incremental/native lexicographic solving and validation on
+    operational data; routing and uncertainty remain model extensions.}
+  \fi
+\fi
+
+% Artifact statement to activate after release creation:
+% \section*{Data and Code Availability}
+% Source, instances, manifests, raw results, and checksums are archived at
+% \url{PERSISTENT-ARTIFACT-URL} for commit/tag \texttt{FROZEN-TAG}.
+
+\bibliographystyle{ACM-Reference-Format}
+\bibliography{references}
+
+\end{document}

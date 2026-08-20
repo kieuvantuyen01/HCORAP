@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "status": "TIMEOUT",
+  "method": "epsilon",
+  "language": "C++",
+  "instance": "instances/paperInstances/TXT_10-25_4-5_U30/instance_30_10_4_1.txt",
+  "solver": "./solver/EvalMaxSAT_bin",
+  "wcnf_format": "legacy-top-weight",
+  "timing_scope": "parse+encode+serialize+solve+verify",
+  "timeout_seconds": 300,
+  "elapsed_seconds": 300.1285261,
+  "full_coverage": true,
+  "continuity_weight": 1,
+  "overtime_weight": 1,
+  "cardinality_encoding": "sorting-network",
+  "implied_constraints": "none",
+  "symmetry_breaking": "none",
+  "delta": "0",
+  "stages": [
+    {"objective": "similarity_reference", "sense": "max", "optimum": 421, "encode_seconds": 0.020296014, "solve_seconds": 8.691269973, "variables": 15458, "hard_clauses": 60139, "soft_clauses": 532}
+  ],
+  "metrics": null
+}

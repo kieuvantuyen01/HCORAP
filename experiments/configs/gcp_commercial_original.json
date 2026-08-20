@@ -5,8 +5,9 @@
     "../../instances/paperInstances/TXT_10-25_4-5_U30/instance_30_15_4_*.txt",
     "../../instances/paperInstances/TXT_10-25_4-5_U40/instance_40_25_5_*.txt"
   ],
-  "expected_instances": 100,
-  "expected_runs": 400,
+  "instance_filters": {"seeds": [1,2,3,4,5,6,7,8,9,10]},
+  "expected_instances": 20,
+  "expected_runs": 80,
   "timeout_seconds": 300,
   "preflight_timeout_seconds": 30,
   "hard_grace_seconds": 60,

@@ -1,0 +1,13 @@
+created_utc=2026-08-12T12:21:12Z
+uname=Linux instance-temp-3 6.8.0-1064-gcp #72~22.04.1-Ubuntu SMP Sat Jul 11 00:27:00 UTC 2026 x86_64 x86_64 x86_64 GNU/Linux
+hcorap_binary=./bin/release/hcorap_multi
+hcorap_sha256=4af393cfe7da90b5fe20c8b67da3eda94c1f8235d14d330c18abb57c4e40e3de
+solver_used=./solver/EvalMaxSAT_bin
+solver_sha256=97614c996e1173ca0672ec46da153656046db1d84b9362a8561161ee750779f7
+timeout=300
+total_campaign_limit=7200
+wc=1
+wo=1
+method=epsilon
+delta=0.05
+git_commit=98e40564ffa129cc03f2c10fd38c9d2f56ab55b0

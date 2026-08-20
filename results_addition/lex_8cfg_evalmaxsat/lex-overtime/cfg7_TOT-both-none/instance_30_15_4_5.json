@@ -1,0 +1,33 @@
+{
+  "schema_version": 2,
+  "status": "OPTIMUM",
+  "method": "lex-overtime",
+  "objective_mode": "lexicographic",
+  "objective_policy": "overtime-priority",
+  "language": "C++",
+  "instance": "instances/paperInstances/TXT_10-25_4-5_U30/instance_30_15_4_5.txt",
+  "solver": "./solver/EvalMaxSAT_bin",
+  "wcnf_format": "legacy-top-weight",
+  "timing_scope": "parse+encode+serialize+solve+verify",
+  "timeout_seconds": 300,
+  "elapsed_seconds": 62.71807498,
+  "solver_calls": 3,
+  "full_coverage": true,
+  "continuity_weight": 1,
+  "overtime_weight": 1,
+  "overtime_penalty_per_hour": 1,
+  "cardinality_encoding": "totalizer",
+  "implied_constraints": "both",
+  "symmetry_breaking": "none",
+  "delta": "0.05",
+  "similarity_reference_optimum": null,
+  "similarity_lower_bound": null,
+  "similarity_realized_loss_absolute": null,
+  "similarity_realized_loss_fraction": null,
+  "stages": [
+    {"objective": "overtime", "sense": "min", "optimum": 0, "encode_seconds": 0.028128085, "solve_seconds": 0.050610491, "variables": 11026, "hard_clauses": 93121, "soft_clauses": 50},
+    {"objective": "continuity", "sense": "min", "optimum": 1, "encode_seconds": 0.0208981, "solve_seconds": 61.68964994, "variables": 11026, "hard_clauses": 93171, "soft_clauses": 1152},
+    {"objective": "similarity", "sense": "max", "optimum": 401, "encode_seconds": 0.091144027, "solve_seconds": 0.746023301, "variables": 90873, "hard_clauses": 252865, "soft_clauses": 661}
+  ],
+  "metrics": {"coverage": 120, "similarity": 401, "continuity": 1, "overtime": 0, "overtime_cost": 0, "weighted_reference_score": 400, "verified": true}
+}

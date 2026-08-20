@@ -1,0 +1,19 @@
+created_utc=2026-07-24T08:01:43Z
+uname=Linux instance-temp-3 6.8.0-1064-gcp #72~22.04.1-Ubuntu SMP Sat Jul 11 00:27:00 UTC 2026 x86_64 x86_64 x86_64 GNU/Linux
+binary=./bin/release/hcorap_commercial
+binary_sha256=d26147661027a3718ba3c0895fe230715a9913d9c4e1de155154ff4ff095930e
+timeout=300
+wc=1
+wo=1
+method=weighted
+git_commit=3c7e0c94b3992d99e1266c300b7723e2263f64c6
+
+backend_inventory=
+{
+  "backends": [
+    {"name": "gurobi-mip", "formulations": ["mip-e"], "compiled": true},
+    {"name": "cplex-mip", "formulations": ["mip-e"], "compiled": true},
+    {"name": "cplex-cp", "formulations": ["cp-t", "cp-i"], "compiled": true},
+    {"name": "reference-enumerator", "formulations": ["direct-schedule-enumeration"], "compiled": true}
+  ]
+}

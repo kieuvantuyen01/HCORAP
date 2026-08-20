@@ -1,0 +1,10 @@
+﻿cfg_id;label;method;objective_mode;objective_policy;delta;cardinality;ic;sb;total_runs;optimum_n;timeout_n;unsat_n;error_n;optimum_pct;mean_elapsed_s;median_elapsed_s;par2_s;mean_solve_s;mean_solver_calls;mean_variables;mean_hard_clauses;mean_soft_clauses;mean_similarity_reference;mean_similarity_lower_bound;mean_similarity_realized_loss;mean_similarity_realized_loss_ratio;mean_best_value;mean_similarity;mean_continuity;mean_overtime;std_best_value
+1;ORIGINAL;epsilon;epsilon-constraint;similarity-budget;0;sorting-network;none;none;2;0;2;0;0;0.0;;;600.0;;1.0;16283.5;59936.0;532.5;;;;;;;;;
+1;TOT-none-none;epsilon;epsilon-constraint;similarity-budget;0;totalizer;none;none;45;0;24;21;0;0.0;;;320.0165;;1.5333;5771.375;56060.1667;512.8333;;;;;;;;;
+2;TOT-none-ss;epsilon;epsilon-constraint;similarity-budget;0;totalizer;none;slot-service;45;0;24;21;0;0.0;;;320.0173;;1.5333;6140.4583;57527.0;512.8333;;;;;;;;;
+3;TOT-both-none;epsilon;epsilon-constraint;similarity-budget;0;totalizer;both;none;45;0;24;21;0;0.0;;;320.0229;;1.5333;9200.4167;72426.9167;512.8333;;;;;;;;;
+4;TOT-both-ss;epsilon;epsilon-constraint;similarity-budget;0;totalizer;both;slot-service;45;0;24;21;0;0.0;;;320.0231;;1.5333;9206.75;72456.2917;512.8333;;;;;;;;;
+5;ORIGINAL;epsilon;epsilon-constraint;similarity-budget;0;sorting-network;none;none;45;0;24;21;0;0.0;;;320.0182;;1.5333;14813.0833;53500.9167;512.8333;;;;;;;;;
+6;SN-none-ss;epsilon;epsilon-constraint;similarity-budget;0;sorting-network;none;slot-service;45;0;24;21;0;0.0;;;320.019;;1.5333;15182.1667;54967.75;512.8333;;;;;;;;;
+7;SN-both-none;epsilon;epsilon-constraint;similarity-budget;0;sorting-network;both;none;45;0;24;21;0;0.0;;;320.0296;;1.5333;21900.75;74944.9167;512.8333;;;;;;;;;
+8;SN-both-ss;epsilon;epsilon-constraint;similarity-budget;0;sorting-network;both;slot-service;45;0;24;21;0;0.0;;;320.0306;;1.5333;21907.0833;74974.2917;512.8333;;;;;;;;;

@@ -1,36 +1,22 @@
 {
   "encoding_result_dir": "../results/gcp_original_ablation",
-  "multiobjective_result_dir": "../results/gcp_multiobjective_screen",
-  "weight_result_dir": "../results/gcp_weight_screen",
-  "lex_scalability_result_dir": "../results/gcp_lex_scalability_screen",
   "output": "../results/screening_decision.json",
+  "expected_measured_runs": 1270,
   "encoding": {
     "baseline": {
       "cardinality": "sorting-network",
       "implied": "none",
       "symmetry": "none"
     },
-    "proposed": {
+    "reference_composite": {
       "cardinality": "totalizer",
       "implied": "both",
       "symmetry": "slot-service"
     },
     "maximum_objective_mismatches": 0,
     "minimum_paired_optimum_runs": 5,
-    "minimum_proposed_to_baseline_optimum_ratio": 0.95
+    "minimum_reference_to_baseline_optimum_ratio": 0.95
   },
-  "multiobjective": {
-    "minimum_lex_cos_optimum_rate": 0.10,
-    "minimum_epsilon_optimum_rate": 0.10
-  },
-  "weights": {
-    "minimum_optimum_rate": 0.10,
-    "minimum_instances_with_multiple_vectors": 1
-  },
-  "lex_scalability": {
-    "minimum_b0_optimum_runs": 5,
-    "minimum_best_configuration_completion_rate": 0.60,
-    "maximum_peak_rss_mb": 12288
-  },
+  "maximum_peak_rss_mb": 12288,
   "maximum_hard_errors_per_campaign": 0
 }

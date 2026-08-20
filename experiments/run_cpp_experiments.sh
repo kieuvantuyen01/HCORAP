@@ -5,7 +5,7 @@
 set -u
 
 if [ "$#" -lt 3 ]; then
-    echo "Usage: $0 OPEN_WBO_BIN RESULT_DIR INSTANCE [INSTANCE ...]" >&2
+    echo "Usage: $0 MAXSAT_SOLVER_BIN RESULT_DIR INSTANCE [INSTANCE ...]" >&2
     exit 2
 fi
 
