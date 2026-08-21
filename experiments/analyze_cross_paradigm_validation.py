@@ -11,9 +11,26 @@ from decimal import Decimal, InvalidOperation
 from pathlib import Path
 from typing import Any
 
+try:
+    from .publication_contract import REFERENCE_CONFIGURATION
+except ImportError:
+    from publication_contract import REFERENCE_CONFIGURATION
 
-REFERENCE = ("totalizer", "both", "slot-service")
-TECHNICAL_OK = {"OPTIMUM", "TIMEOUT", "TIMEOUT_FEASIBLE"}
+
+REFERENCE = REFERENCE_CONFIGURATION
+OPTIMUM = {"OPTIMUM"}
+INFEASIBLE = {"UNSAT", "UNSATISFIABLE", "INFEASIBLE"}
+TECHNICAL_OK = OPTIMUM | INFEASIBLE | {"TIMEOUT", "TIMEOUT_FEASIBLE"}
+
+
+def _status_class(status: str) -> str:
+    if status in OPTIMUM:
+        return "OPTIMUM"
+    if status in INFEASIBLE:
+        return "INFEASIBLE"
+    if status in {"TIMEOUT", "TIMEOUT_FEASIBLE"}:
+        return "TIMEOUT"
+    return "TECHNICAL_ERROR"
 
 
 def _read_rows(result_dir: Path) -> list[dict[str, str]]:
@@ -86,7 +103,10 @@ def analyze(arguments: argparse.Namespace) -> dict[str, Any]:
                 missing_groups += 1
                 continue
             rows = (maxsat_row, gurobi, cplex)
-            all_exact = all(row["status"] == "OPTIMUM" for row in rows)
+            status_classes = {_status_class(row["status"]) for row in rows}
+            status_agreement = len(status_classes) == 1
+            all_exact = status_classes == {"OPTIMUM"}
+            all_infeasible = status_classes == {"INFEASIBLE"}
             if method == "weighted":
                 keys = ("coverage", "weighted_reference_score")
             else:
@@ -103,7 +123,9 @@ def analyze(arguments: argparse.Namespace) -> dict[str, Any]:
                     "maxsat_status": maxsat_row["status"],
                     "gurobi_status": gurobi["status"],
                     "cplex_status": cplex["status"],
+                    "status_agreement": status_agreement,
                     "all_exact_optimum": all_exact,
+                    "all_exact_infeasible": all_infeasible,
                     "objective_agreement": agreement,
                     "comparison_fields": "|".join(keys),
                     "maxsat_objective": str(tuple(maxsat_row[field] for field in keys)),
@@ -122,6 +144,17 @@ def analyze(arguments: argparse.Namespace) -> dict[str, Any]:
         "complete_groups": len(output),
         "missing_groups": missing_groups,
         "all_exact_groups": sum(_true(row["all_exact_optimum"]) for row in output),
+        "all_infeasible_groups": sum(
+            _true(row["all_exact_infeasible"]) for row in output
+        ),
+        "unresolved_groups": sum(
+            not _true(row["all_exact_optimum"])
+            and not _true(row["all_exact_infeasible"])
+            for row in output
+        ),
+        "status_disagreements": sum(
+            not _true(row["status_agreement"]) for row in output
+        ),
         "agreement_groups": sum(_true(row["objective_agreement"]) for row in output),
         "objective_disagreements": sum(
             str(row["objective_agreement"]).lower() == "false" for row in output
@@ -140,6 +173,8 @@ def analyze(arguments: argparse.Namespace) -> dict[str, Any]:
         and result["complete_groups"] == expected_groups
         and result["missing_groups"] == 0
         and result["technical_errors"] == 0
+        and result["status_disagreements"] == 0
+        and result["unresolved_groups"] == 0
         and result["unverified_optima"] == 0
         and result["objective_disagreements"] == 0
     )

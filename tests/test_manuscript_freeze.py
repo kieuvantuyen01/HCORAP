@@ -25,12 +25,15 @@ def _inputs(tmp_path: Path) -> tuple[Path, Path, Path, Path, Path, Path]:
     cross.write_text(
         json.dumps({"valid": True, "scope": "full"}), encoding="utf-8"
     )
-    corrected.write_text(json.dumps({"valid": True}), encoding="utf-8")
+    corrected.write_text(
+        json.dumps({"valid": True, "manuscript_eligible": True}),
+        encoding="utf-8",
+    )
     screen.write_text(
         json.dumps(
             {
                 "decision": "GO",
-                "expected_measured_runs": 732,
+                "expected_measured_runs": 924,
                 "branches": {
                     "original_lexicographic": {"enabled": True},
                     "corrected_v2_lexicographic": {"enabled": True},
@@ -49,7 +52,7 @@ def _inputs(tmp_path: Path) -> tuple[Path, Path, Path, Path, Path, Path]:
                 "cross_scope": "full",
                 "original_lexicographic_enabled": True,
                 "corrected_v2_lexicographic_enabled": True,
-                "expected_measured_runs": 732,
+                "expected_measured_runs": 924,
                 "source_sha256": {
                     str(path): hashlib.sha256(path.read_bytes()).hexdigest()
                     for path in sources
@@ -80,7 +83,7 @@ def test_valid_evidence_emits_valid_marker(tmp_path: Path) -> None:
     )
     assert r"\def\HCORAPFrozenValidationStatus{VALID}" in marker
     assert r"\def\HCORAPFrozenAnalysisScope{compact}" in marker
-    assert r"\def\HCORAPFrozenMeasuredRuns{732}" in marker
+    assert r"\def\HCORAPFrozenMeasuredRuns{924}" in marker
 
 
 @pytest.mark.parametrize(
@@ -90,7 +93,7 @@ def test_valid_evidence_emits_valid_marker(tmp_path: Path) -> None:
         ("dirty", "worktree is not clean"),
         ("wrong-commit", "does not match expected"),
         ("draft-token", "draft token"),
-        ("invalid-corrected", "corrected-v2 analysis is not valid"),
+        ("invalid-corrected", "not manuscript-eligible"),
     ],
 )
 def test_freeze_rejects_unvalidated_or_draft_inputs(
@@ -110,7 +113,10 @@ def test_freeze_rejects_unvalidated_or_draft_inputs(
             r"\resultplaceholder{n}", encoding="utf-8"
         )
     elif mutation == "invalid-corrected":
-        corrected.write_text(json.dumps({"valid": False}), encoding="utf-8")
+        corrected.write_text(
+            json.dumps({"valid": False, "manuscript_eligible": False}),
+            encoding="utf-8",
+        )
     with pytest.raises(ValueError, match=message):
         validate_and_render_marker(
             generated_dir=generated,
@@ -139,7 +145,7 @@ def test_freeze_rejects_disabled_compact_branches(tmp_path: Path) -> None:
         json.dumps(
             {
                 "decision": "GO",
-                "expected_measured_runs": 732,
+                "expected_measured_runs": 924,
                 "branches": {
                     "original_lexicographic": {"enabled": False},
                     "corrected_v2_lexicographic": {"enabled": False},
@@ -157,7 +163,7 @@ def test_freeze_rejects_disabled_compact_branches(tmp_path: Path) -> None:
                 "cross_scope": "full",
                 "original_lexicographic_enabled": False,
                 "corrected_v2_lexicographic_enabled": False,
-                "expected_measured_runs": 732,
+                "expected_measured_runs": 924,
                 "source_sha256": {
                     str(path): hashlib.sha256(path.read_bytes()).hexdigest()
                     for path in sources

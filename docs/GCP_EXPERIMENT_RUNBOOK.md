@@ -1,9 +1,11 @@
 # Runbook thực nghiệm compact HCORAP trên GCP — ICIIT 2027
 
-Cập nhật ngày 20/08/2026. Manifest chuẩn là
+Cập nhật ngày 22/08/2026. Manifest chuẩn là
 `experiments/configs/reduced_campaign_manifest.json`; giải thích khoa học và
 audit dữ liệu cũ nằm tại
 [`COMPACT_EXPERIMENT_MATRIX_20260820.md`](COMPACT_EXPERIMENT_MATRIX_20260820.md).
+Ma trận bằng chứng thực tế và phần còn thiếu nằm tại
+[`EXPERIMENT_SUPPLEMENT_MATRIX_20260822.md`](EXPERIMENT_SUPPLEMENT_MATRIX_20260822.md).
 
 ## 1. Phạm vi chạy
 
@@ -15,14 +17,17 @@ agreement.
 |---|---:|---:|---:|
 | original factorial: 48 × 8 × weighted | 384 | 300 s | 32,00 |
 | original policy: 42 × R × weighted/LEX-COS | 84 | 300 s | 7,00 |
-| corrected-v2 policy and priority: 48 × R × 3 policies | 144 | 300 s | 12,00 |
+| corrected-v2 EvalMaxSAT scalability: 48 × R × 3 policies | 144 | 300 s | 12,00 |
 | Gurobi/CPLEX: 20 × 2 backends × 2 policies | 80 | 300 s | 6,67 |
 | EvalMaxSAT commercial: 20 × R × weighted/LEX-COS | 40 | 300 s | 3,33 |
-| **Tổng measured** | **732** |  | **61,00** |
+| corrected-v2 Gurobi policy primary: 48 × 3 policies | 144 | 300 s | 12,00 |
+| corrected-v2 CPLEX audit: 16 × 3 policies | 48 | 300 s | 4,00 |
+| **Tổng measured** | **924** |  | **77,00** |
 
-Ngoài bảng có 4 EvalMaxSAT LEX-COS scalability-calibration runs ở timeout 300 s
-và 18 commercial correctness-smoke runs ở timeout 30 s; không đưa timing của
-chúng vào bài. Pareto/epsilon, weight confirmation, uncertainty, routing và
+Ngoài bảng có 4 EvalMaxSAT LEX-COS calibration và 48 corrected exact-solver
+calibration runs ở timeout 300 s, cùng 18 commercial correctness-smoke runs ở
+timeout 30 s; không đưa timing của chúng vào bài. Pareto/epsilon, weight
+confirmation, uncertainty, routing và
 corrected load stress không được gọi bởi phase `all`.
 
 ### Căn cứ chọn timeout
@@ -120,8 +125,8 @@ python3 experiments/validate_campaign_manifest.py
 python3 experiments/validate_publication_campaign.py
 ```
 
-Expected output của validator phải là 732 measured runs, 219.600 worst-case
-seconds, 61 core-hour và contract `valid: true`.
+Expected output của validator phải là 924 measured runs, 277.200 worst-case
+seconds, 77 core-hour và contract `valid: true`.
 
 ## 4. Preflight
 
@@ -170,6 +175,8 @@ build/test/benchmark/task-count checks
 -> C2 original weighted/LEX-COS
 -> C3 corrected-v2 weighted/LEX-COS/LEX-OCS
 -> C4 commercial MIP + C5 EvalMaxSAT commercial weighted/LEX
+-> corrected exact-solver calibration
+-> C6 Gurobi corrected primary + C7 CPLEX stratum audit
 -> analysis -> package -> checkpoint
 ```
 
@@ -177,6 +184,22 @@ Factorial vừa là evidence vừa là hard gate. Pipeline dừng nếu thiếu 
 technical/validation error, unverified optimum, paired weighted-objective
 mismatch hoặc peak RSS vượt 12 GB. Gate không yêu cầu R nhanh hơn B và không có
 evidence branch hậu nghiệm cho epsilon/weight/LEX.
+
+### Chỉ chạy phần còn thiếu sau audit 22/08
+
+Nếu `experiments/results` đã chứa đủ 732 measured rows C1--C5, không gọi phase
+`all`. Khôi phục source commit ghi trong `environment.json`, checkout clean
+publication commit mới, rồi chạy:
+
+```bash
+bash experiments/run_remaining_corrected_evidence.sh --check-only
+export CONFIRM_PUBLICATION_CAMPAIGN=YES
+bash experiments/run_remaining_corrected_evidence.sh
+```
+
+Wrapper này kiểm tra 732 rows cũ, chạy 48 calibration rows không đo, sau đó chỉ
+chạy/resume C6--C7 (192 measured rows, 16 core-hours worst case). Nó dừng trước
+solver nếu source commit của dữ liệu cũ không resolve trong clone.
 
 ## 6. Chạy theo phase và resume
 
@@ -192,6 +215,8 @@ bash experiments/gcp_prepare_and_run.sh corrected-primary \
   2>&1 | tee vm-logs/corrected-primary.log
 bash experiments/gcp_prepare_and_run.sh commercial \
   2>&1 | tee vm-logs/commercial.log
+bash experiments/gcp_prepare_and_run.sh corrected-commercial-evidence \
+  2>&1 | tee vm-logs/corrected-commercial-evidence.log
 bash experiments/gcp_prepare_and_run.sh analyze \
   2>&1 | tee vm-logs/analyze.log
 bash experiments/gcp_prepare_and_run.sh package \
@@ -224,10 +249,14 @@ chưa đủ expected rows.
 | `gcp_evalmaxsat_lex_calibration` | 4 non-measured LEX-COS rows; ít nhất 2 optimum |
 | `gcp_original_lex_primary` | 84 rows; 42/policy under R |
 | `gcp_corrected_primary` | 144 rows; 48/policy for weighted/LEX-COS/LEX-OCS |
+| `gcp_commercial_corrected_calibration` | 48 non-measured rows; calibration gate pass |
+| `gcp_commercial_corrected_primary` | 144 rows; 48 Gurobi rows/policy |
+| `gcp_commercial_corrected_audit` | 48 rows; 16 CPLEX rows/policy on seed 1002 |
 | `gcp_commercial_original` | 80 rows; 20/backend/policy |
 | `gcp_maxsat_commercial_validation` | 40 rows; 20/policy under R |
 | `gcp_primary_analysis` | valid; 8 cells, 12 contrasts, 48 B--R, 42 original policy pairs, 48 corrected sensitivity pairs |
-| `gcp_corrected_analysis` | valid; 48 instances/policy |
+| `gcp_corrected_analysis` | structurally valid; EvalMaxSAT scalability only |
+| `gcp_corrected_exact_analysis` | `manuscript_eligible=true`; exact policy evidence |
 | `gcp_cross_paradigm_analysis` | valid; 20 groups/policy |
 
 Objective deltas chỉ dùng jointly-optimum, verifier-passing pairs. Solved count
@@ -238,6 +267,7 @@ khi cả EvalMaxSAT, Gurobi và CPLEX đều chứng minh optimum.
 
 ```bash
 python3 experiments/generate_manuscript_results.py
+python3 experiments/audit_publication_evidence.py
 bash experiments/package_experiment_artifacts.sh
 ```
 

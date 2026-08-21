@@ -1,0 +1,30 @@
+{
+  "binary": "../../bin/release/hcorap_commercial",
+  "result_dir": "../results/gcp_commercial_corrected_primary",
+  "instances": [
+    "../../instances/corrected_v2_reduced_suite/evaluation_critical/evaluation/critical/*.txt"
+  ],
+  "instance_filters": {
+    "seeds": [1001, 1002, 1003],
+    "load_profiles": ["critical"]
+  },
+  "expected_instances": 48,
+  "expected_runs": 144,
+  "timeout_seconds": 300,
+  "preflight_timeout_seconds": 30,
+  "hard_grace_seconds": 60,
+  "threads": 1,
+  "seed": 0,
+  "mip_gap": 0,
+  "absolute_mip_gap": 0,
+  "workers": 1,
+  "order_seed": 20270825,
+  "commercial_configurations": [
+    {"backend": "gurobi-mip", "formulation": "mip-e"}
+  ],
+  "runs": [
+    {"method": "weighted", "print_assignments": true, "native_log": true},
+    {"method": "lex-cos", "print_assignments": true, "native_log": true},
+    {"method": "lex-overtime", "print_assignments": true, "native_log": true}
+  ]
+}

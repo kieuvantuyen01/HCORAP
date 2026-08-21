@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "expected_instances": 8,
+  "expected_runs": 48,
+  "expected_methods": ["weighted", "lex-cos", "lex-overtime"],
+  "expected_backends": ["gurobi-mip", "cplex-mip"],
+  "minimum_all_policy_optimum_instances_per_backend": 6,
+  "maximum_status_disagreements": 0,
+  "maximum_objective_disagreements": 0,
+  "maximum_technical_errors": 0,
+  "maximum_unverified_optima": 0
+}

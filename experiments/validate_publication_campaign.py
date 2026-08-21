@@ -15,49 +15,42 @@ from typing import Any
 
 try:
     from .validate_campaign_manifest import validate as validate_manifest
+    from .publication_contract import (
+        CONTRACT_REVISION,
+        CORRECTED_COMMERCIAL_CALIBRATION_GATES,
+        CORRECTED_EXACT_EVIDENCE_GATES,
+        DEFAULT_MANIFEST,
+        EXPECTED_MEASURED_RUNS,
+        EXPECTED_WORST_CASE_SECONDS,
+        FACTORIAL_CONFIGURATIONS_JSON,
+        MAXSAT_SOLVER,
+        MEASURED_CAMPAIGNS,
+        NON_MEASURED_CAMPAIGNS,
+        REFERENCE_CONFIGURATION_JSON,
+    )
 except ImportError:  # Executed directly rather than imported as a package.
     from validate_campaign_manifest import validate as validate_manifest
-
-
-ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_MANIFEST = ROOT / "experiments/configs/reduced_campaign_manifest.json"
-REFERENCE = {
-    "cardinality": "totalizer",
-    "implied": "both",
-    "symmetry": "slot-service",
-}
-FACTORIAL = [
-    {"cardinality": cardinality, "implied": implied, "symmetry": symmetry}
-    for cardinality in ("sorting-network", "totalizer")
-    for implied in ("none", "both")
-    for symmetry in ("none", "slot-service")
-]
-EXPECTED_MEASURED = [
-    ("original_factorial_ablation", "gcp_original_ablation.json", 384, 300),
-    ("original_lex_cos_primary", "gcp_original_lex_primary.json", 84, 300),
-    ("corrected_v2_policy_and_priority", "gcp_corrected_primary.json", 144, 300),
-    ("commercial_exact_validation", "gcp_commercial_original.json", 80, 300),
-    (
-        "maxsat_commercial_validation",
-        "gcp_maxsat_commercial_validation.json",
-        40,
-        300,
-    ),
-]
-EXPECTED_NON_MEASURED = [
-    (
-        "evalmaxsat_lex_calibration",
-        "gcp_evalmaxsat_lex_calibration.json",
-        4,
-        300,
-    ),
-    (
-        "commercial_correctness_smoke",
-        "gcp_commercial_correctness_smoke.json",
-        18,
-        30,
+    from publication_contract import (
+        CONTRACT_REVISION,
+        CORRECTED_COMMERCIAL_CALIBRATION_GATES,
+        CORRECTED_EXACT_EVIDENCE_GATES,
+        DEFAULT_MANIFEST,
+        EXPECTED_MEASURED_RUNS,
+        EXPECTED_WORST_CASE_SECONDS,
+        FACTORIAL_CONFIGURATIONS_JSON,
+        MAXSAT_SOLVER,
+        MEASURED_CAMPAIGNS,
+        NON_MEASURED_CAMPAIGNS,
+        REFERENCE_CONFIGURATION_JSON,
     )
-]
+
+
+REFERENCE = REFERENCE_CONFIGURATION_JSON
+FACTORIAL = FACTORIAL_CONFIGURATIONS_JSON
+EXPECTED_MEASURED = list(MEASURED_CAMPAIGNS)
+EXPECTED_NON_MEASURED = list(NON_MEASURED_CAMPAIGNS)
+EXPECTED_CALIBRATION_GATES = CORRECTED_COMMERCIAL_CALIBRATION_GATES
+EXPECTED_EXACT_EVIDENCE_GATES = CORRECTED_EXACT_EVIDENCE_GATES
 
 
 def _load(path: Path) -> dict[str, Any]:
@@ -104,22 +97,23 @@ def validate(manifest_path: Path = DEFAULT_MANIFEST) -> dict[str, Any]:
     _check_equal(
         errors, "non-measured campaign matrix", smoke_rows, EXPECTED_NON_MEASURED
     )
-    _check_equal(errors, "measured run total", manifest.get("expected_measured_runs"), 732)
+    _check_equal(
+        errors,
+        "measured run total",
+        manifest.get("expected_measured_runs"),
+        EXPECTED_MEASURED_RUNS,
+    )
     _check_equal(
         errors,
         "MaxSAT solver identity",
         manifest.get("maxsat_solver"),
-        {
-            "name": "EvalMaxSAT",
-            "platform": "linux-x86_64",
-            "sha256": "97614c996e1173ca0672ec46da153656046db1d84b9362a8561161ee750779f7",
-        },
+        MAXSAT_SOLVER,
     )
     _check_equal(
         errors,
         "worst-case measured seconds",
         manifest.get("expected_worst_case_seconds"),
-        219600,
+        EXPECTED_WORST_CASE_SECONDS,
     )
 
     configs: dict[str, dict[str, Any]] = {}
@@ -131,7 +125,12 @@ def validate(manifest_path: Path = DEFAULT_MANIFEST) -> dict[str, Any]:
             errors.append(f"cannot read {path}: {exc}")
             continue
         configs[filename] = config
-        _check_equal(errors, f"{filename} expected_runs", config.get("expected_runs"), expected_runs)
+        _check_equal(
+            errors,
+            f"{filename} expected_runs",
+            config.get("expected_runs"),
+            expected_runs,
+        )
         _check_equal(errors, f"{filename} timeout", config.get("timeout_seconds"), timeout)
         _check_equal(errors, f"{filename} workers", config.get("workers"), 1)
 
@@ -173,7 +172,12 @@ def validate(manifest_path: Path = DEFAULT_MANIFEST) -> dict[str, Any]:
     for filename, (instances, methods) in maxsat_specs.items():
         config = configs.get(filename, {})
         _check_equal(errors, f"{filename} instances", config.get("expected_instances"), instances)
-        _check_equal(errors, f"{filename} reference configuration", config.get("configurations"), [REFERENCE])
+        _check_equal(
+            errors,
+            f"{filename} reference configuration",
+            config.get("configurations"),
+            [REFERENCE],
+        )
         _check_equal(errors, f"{filename} methods", _methods(config), methods)
 
     seed_specs = {
@@ -182,6 +186,9 @@ def validate(manifest_path: Path = DEFAULT_MANIFEST) -> dict[str, Any]:
         "gcp_corrected_primary.json": [1001, 1002, 1003],
         "gcp_maxsat_commercial_validation.json": list(range(1, 11)),
         "gcp_commercial_original.json": list(range(1, 11)),
+        "gcp_commercial_corrected_primary.json": [1001, 1002, 1003],
+        "gcp_commercial_corrected_audit.json": [1002],
+        "gcp_commercial_corrected_calibration.json": [4],
     }
     for filename, seeds in seed_specs.items():
         observed = configs.get(filename, {}).get("instance_filters", {}).get("seeds")
@@ -200,11 +207,31 @@ def validate(manifest_path: Path = DEFAULT_MANIFEST) -> dict[str, Any]:
                 "formulation": "direct-schedule-enumeration",
             },
         ],
+        "gcp_commercial_corrected_calibration.json": [
+            {"backend": "gurobi-mip", "formulation": "mip-e"},
+            {"backend": "cplex-mip", "formulation": "mip-e"},
+        ],
+        "gcp_commercial_corrected_primary.json": [
+            {"backend": "gurobi-mip", "formulation": "mip-e"},
+        ],
+        "gcp_commercial_corrected_audit.json": [
+            {"backend": "cplex-mip", "formulation": "mip-e"},
+        ],
     }
     for filename, backends in commercial_specs.items():
         config = configs.get(filename, {})
-        _check_equal(errors, f"{filename} backends", config.get("commercial_configurations"), backends)
-        _check_equal(errors, f"{filename} methods", _methods(config), ["weighted", "lex-cos"])
+        _check_equal(
+            errors,
+            f"{filename} backends",
+            config.get("commercial_configurations"),
+            backends,
+        )
+        expected_methods = (
+            ["weighted", "lex-cos", "lex-overtime"]
+            if filename.startswith("gcp_commercial_corrected_")
+            else ["weighted", "lex-cos"]
+        )
+        _check_equal(errors, f"{filename} methods", _methods(config), expected_methods)
         for key, expected in (
             ("threads", 1),
             ("seed", 0),
@@ -213,10 +240,47 @@ def validate(manifest_path: Path = DEFAULT_MANIFEST) -> dict[str, Any]:
         ):
             _check_equal(errors, f"{filename} {key}", config.get(key), expected)
 
+    corrected_commercial_specs = {
+        "gcp_commercial_corrected_calibration.json": (8, 48),
+        "gcp_commercial_corrected_primary.json": (48, 144),
+        "gcp_commercial_corrected_audit.json": (16, 48),
+    }
+    for filename, (instances, runs) in corrected_commercial_specs.items():
+        config = configs.get(filename, {})
+        _check_equal(errors, f"{filename} instances", config.get("expected_instances"), instances)
+        _check_equal(errors, f"{filename} runs", config.get("expected_runs"), runs)
+        _check_equal(
+            errors,
+            f"{filename} load profile",
+            config.get("instance_filters", {}).get("load_profiles"),
+            ["critical"],
+        )
+        _check_equal(
+            errors,
+            f"{filename} stores assignments and native logs",
+            [
+                (run.get("print_assignments"), run.get("native_log"))
+                for run in config.get("runs", [])
+            ],
+            [(True, True), (True, True), (True, True)],
+        )
+
+    gate_specs = {
+        "corrected_commercial_calibration_gates.json": EXPECTED_CALIBRATION_GATES,
+        "corrected_exact_evidence_gates.json": EXPECTED_EXACT_EVIDENCE_GATES,
+    }
+    for filename, expected in gate_specs.items():
+        try:
+            observed = _load(config_root / filename)
+        except (OSError, json.JSONDecodeError) as exc:
+            errors.append(f"cannot read {config_root / filename}: {exc}")
+            continue
+        _check_equal(errors, f"{filename} locked thresholds", observed, expected)
+
     return {
         **arithmetic,
         "valid": not errors,
-        "contract": "ICIIT 2027 compact campaign, revision 2026-08-20-v3",
+        "contract": CONTRACT_REVISION,
         "measured_timeout_seconds": 300,
         "smoke_timeout_seconds": 30,
         "maxsat_solver": manifest.get("maxsat_solver"),

@@ -6,6 +6,7 @@ cd "$PROJECT_ROOT"
 
 STAMP=$(date -u '+%Y%m%dT%H%M%SZ')
 OUTPUT_ROOT=${ARTIFACT_OUTPUT_ROOT:-artifacts}
+RESULTS_ROOT=${HCORAP_RESULTS_ROOT:-experiments/results}
 PACKAGE_DIR="$OUTPUT_ROOT/hcorap_iciit2027_$STAMP"
 
 if [ -n "$(git status --porcelain)" ] && [ "${ALLOW_DIRTY_ARTIFACT:-0}" != "1" ]; then
@@ -27,62 +28,72 @@ if [ "${ALLOW_DIRTY_ARTIFACT:-0}" != "1" ]; then
 fi
 mkdir -p "$PACKAGE_DIR"
 
-python3 - <<'PY'
+python3 experiments/audit_publication_evidence.py \
+    --results-root "$RESULTS_ROOT" \
+    --output "$RESULTS_ROOT/publication_evidence_audit.json"
+
+python3 - "$RESULTS_ROOT" <<'PY'
 import csv
 import json
+import sys
 from pathlib import Path
 
-for path in sorted(Path("experiments/results").glob("gcp_*/validation.json")):
+root = Path(sys.argv[1])
+config_root = Path("experiments/configs")
+manifest = json.loads((config_root / "reduced_campaign_manifest.json").read_text())
+
+
+def campaign_directory(declaration):
+    config = json.loads((config_root / declaration["config"]).read_text())
+    return root / Path(config["result_dir"]).name
+
+
+for path in sorted(root.glob("gcp_*/validation.json")):
     payload = json.loads(path.read_text())
     if not payload.get("complete"):
         raise SystemExit(f"refusing to package incomplete campaign: {path}")
-for path in sorted(Path("experiments/results").glob("gcp_*/analysis.json")):
+for path in sorted(root.glob("gcp_*/analysis.json")):
     payload = json.loads(path.read_text())
     if payload.get("valid") is False or payload.get("complete_analysis") is False:
         raise SystemExit(f"refusing to package invalid/incomplete analysis: {path}")
-primary = Path("experiments/results/gcp_primary_analysis/analysis_validation.json")
+primary = root / "gcp_primary_analysis/analysis_validation.json"
 if not primary.exists() or not json.loads(primary.read_text()).get("valid"):
     raise SystemExit(f"refusing to package invalid primary analysis: {primary}")
-cross = Path(
-    "experiments/results/gcp_cross_paradigm_analysis/cross_paradigm_validation.json"
-)
+cross = root / "gcp_cross_paradigm_analysis/cross_paradigm_validation.json"
 if not cross.exists() or not json.loads(cross.read_text()).get("valid"):
     raise SystemExit(f"refusing to package missing/invalid cross-paradigm analysis: {cross}")
-screen = Path("experiments/results/screening_decision.json")
+screen = root / "screening_decision.json"
 if not screen.exists():
     raise SystemExit(f"refusing to package without a screening decision: {screen}")
 decision = json.loads(screen.read_text())
 if decision.get("decision") != "GO":
     raise SystemExit(f"refusing to package a NO-GO campaign: {screen}")
 
-corrected = Path(
-    "experiments/results/gcp_corrected_analysis/corrected_validation.json"
+corrected = root / (
+    "gcp_corrected_exact_analysis/corrected_exact_validation.json"
 )
 for branch in ("original_lexicographic", "corrected_v2_lexicographic"):
     if decision["branches"][branch]["enabled"] is not True:
         raise SystemExit(f"compact publication branch is not enabled: {branch}")
-if not corrected.exists() or not json.loads(corrected.read_text()).get("valid"):
+if not corrected.exists() or not json.loads(corrected.read_text()).get(
+    "manuscript_eligible"
+):
     raise SystemExit(
         f"refusing to package missing/invalid corrected-v2 analysis: {corrected}"
     )
 
-selected = {
-    "gcp_original_ablation": 384,
-    "gcp_original_lex_primary": 84,
-    "gcp_corrected_primary": 144,
-    "gcp_maxsat_commercial_validation": 40,
-    "gcp_commercial_original": 80,
-}
-
 observed_rows = 0
-for name, expected_rows in selected.items():
-    path = Path("experiments/results") / name / "runs.csv"
+for declaration in manifest["measured_campaigns"]:
+    expected_rows = int(declaration["expected_runs"])
+    path = campaign_directory(declaration) / "runs.csv"
     if not path.exists():
         raise SystemExit(f"missing selected campaign: {path}")
     with path.open(newline="", encoding="utf-8") as stream:
         count = sum(1 for _ in csv.DictReader(stream))
     if count != expected_rows:
-        raise SystemExit(f"unexpected row count for {name}: {count}/{expected_rows}")
+        raise SystemExit(
+            f"unexpected row count for {declaration['name']}: {count}/{expected_rows}"
+        )
     observed_rows += count
 expected_total = int(decision["expected_measured_runs"])
 if observed_rows != expected_total:
@@ -90,9 +101,13 @@ if observed_rows != expected_total:
         f"selected measured rows do not match decision: {observed_rows}/{expected_total}"
     )
 
-calibration = Path(
-    "experiments/results/gcp_evalmaxsat_lex_calibration/runs.csv"
-)
+non_measured = {
+    declaration["name"]: declaration
+    for declaration in manifest["non_measured_campaigns"]
+}
+calibration = campaign_directory(
+    non_measured["evalmaxsat_lex_calibration"]
+) / "runs.csv"
 if not calibration.exists():
     raise SystemExit(f"missing EvalMaxSAT scalability calibration: {calibration}")
 with calibration.open(newline="", encoding="utf-8") as stream:
@@ -102,6 +117,17 @@ if len(calibration_rows) != 4 or calibration_optimum < 2:
     raise SystemExit(
         "EvalMaxSAT scalability calibration did not pass: "
         f"rows={len(calibration_rows)}/4, optimum={calibration_optimum}/4"
+    )
+
+commercial_calibration = campaign_directory(
+    non_measured["corrected_v2_commercial_calibration"]
+) / "calibration_decision.json"
+if not commercial_calibration.exists() or not json.loads(
+    commercial_calibration.read_text()
+).get("pass"):
+    raise SystemExit(
+        "corrected commercial calibration did not pass: "
+        f"{commercial_calibration}"
     )
 PY
 
@@ -146,6 +172,7 @@ fi
 
 include_paths=(
     Makefile pyproject.toml README.md
+    experiments/README.md
     src/proposed src/hcorap_multi.cpp src/hcorap_commercial.cpp
     experiments/configs
     experiments/run_reproducible_campaign.py
@@ -158,6 +185,12 @@ include_paths=(
     experiments/analyze_primary_campaigns.py
     experiments/analyze_cross_paradigm_validation.py
     experiments/analyze_corrected_validation.py
+    experiments/analyze_corrected_exact_evidence.py
+    experiments/evaluate_corrected_commercial_calibration.py
+    experiments/evaluate_commercial_correctness_smoke.py
+    experiments/evaluate_evalmaxsat_calibration.py
+    experiments/audit_publication_evidence.py
+    experiments/publication_contract.py
     experiments/generate_manuscript_results.py
     experiments/freeze_manuscript_bundle.py
     experiments/analyze_weight_sensitivity.py
@@ -167,12 +200,13 @@ include_paths=(
     experiments/validate_publication_campaign.py
     experiments/gcp_prepare_and_run.sh
     experiments/run_all_remaining_publication.sh
+    experiments/run_remaining_corrected_evidence.sh
     experiments/run_iciit2027_reduced_campaign.sh
     experiments/prepare_benchmark_suite.sh
     experiments/prepare_uncertainty_screen.sh
     experiments/verify_benchmark_batch.py
     experiments/package_experiment_artifacts.sh
-    experiments/results
+    "$RESULTS_ROOT"
     bin/release/hcorap_multi
     bin/release/hcorap_commercial
     instances/paperInstances
@@ -180,6 +214,7 @@ include_paths=(
     instances/uncertainty_screen
     docs/EXPERIMENT_GAP_AUDIT_20260808.md
     docs/COMPACT_EXPERIMENT_MATRIX_20260820.md
+    docs/EXPERIMENT_SUPPLEMENT_MATRIX_20260822.md
     docs/FAIR_EXPERIMENT_PROTOCOL.md
     docs/GCP_EXPERIMENT_RUNBOOK.md
     tests

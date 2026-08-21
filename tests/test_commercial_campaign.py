@@ -78,11 +78,19 @@ def test_commercial_campaign_preflights_runs_collects_and_resumes(tmp_path: Path
     assert first["complete_runs"] == 2
     second = run_campaign(config_path, resume=True)
     assert second["complete"] is True
+    manifest_path = result_dir / "manifest.jsonl"
+    relocated = []
+    for line in manifest_path.read_text(encoding="utf-8").splitlines():
+        record = json.loads(line)
+        record["result"] = f"/retired-gcp/results/raw/{record['run_id']}.json"
+        record["instance"] = "/retired-gcp/tests/instances/sparse_users.txt"
+        relocated.append(json.dumps(record, sort_keys=True))
+    manifest_path.write_text("\n".join(relocated) + "\n", encoding="utf-8")
     summary = collect(result_dir)
     assert summary["runs"] == 2
     rows = [
         json.loads(line)
-        for line in (result_dir / "manifest.jsonl").read_text().splitlines()
+        for line in manifest_path.read_text().splitlines()
     ]
     assert {row["result_status"] for row in rows} == {"OPTIMUM"}
     assert all(not row["validation_errors"] for row in rows)

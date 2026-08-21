@@ -15,20 +15,22 @@ import json
 from pathlib import Path
 from typing import Any, Iterable
 
+try:
+    from .publication_contract import (
+        FACTORIAL_CONFIGURATIONS,
+        REFERENCE_CONFIGURATION,
+    )
+except ImportError:
+    from publication_contract import (
+        FACTORIAL_CONFIGURATIONS,
+        REFERENCE_CONFIGURATION,
+    )
+
 
 BASELINE = ("sorting-network", "none", "none")
-REFERENCE = ("totalizer", "both", "slot-service")
+REFERENCE = REFERENCE_CONFIGURATION
 CONFIG_KEYS = ("cardinality", "implied", "symmetry")
-FACTORIAL_ORDER = (
-    ("sorting-network", "none", "none"),
-    ("sorting-network", "none", "slot-service"),
-    ("sorting-network", "both", "none"),
-    ("sorting-network", "both", "slot-service"),
-    ("totalizer", "none", "none"),
-    ("totalizer", "none", "slot-service"),
-    ("totalizer", "both", "none"),
-    ("totalizer", "both", "slot-service"),
-)
+FACTORIAL_ORDER = FACTORIAL_CONFIGURATIONS
 SELECTED_CONTRASTS = (
     ("encoding", "IC=none;SB=none", "SN $\\to$ TOT", "IC off, SB off"),
     (
@@ -132,6 +134,25 @@ def _range_wording(value: tuple[str, str]) -> str:
     if value == ("--", "--"):
         return "are unavailable because no contrast has pairs proved by both configurations"
     return f"range from {value[0]} to {value[1]}"
+
+
+def _contrast_effect(
+    rows: list[dict[str, str]], *, left_name: str, right_name: str
+) -> str:
+    """Describe only effects resolved by all four predeclared bootstrap CIs."""
+    eligible = [
+        row
+        for row in rows
+        if row.get("bootstrap_95_ci_low") not in (None, "")
+        and row.get("bootstrap_95_ci_high") not in (None, "")
+    ]
+    if len(eligible) != 4:
+        return "is not resolved in every direct contrast"
+    if all(_float(row["bootstrap_95_ci_low"]) > 1 for row in eligible):
+        return f"consistently favors {right_name}"
+    if all(_float(row["bootstrap_95_ci_high"]) < 1 for row in eligible):
+        return f"consistently favors {left_name}"
+    return "is mixed or unresolved across contexts"
 
 
 def _factorial_table(
@@ -258,6 +279,7 @@ def _policy_table(
     lex_rows: list[dict[str, str]],
     sensitivity_rows: list[dict[str, str]],
     corrected_rows: list[dict[str, str]],
+    corrected_paired: dict[str, str] | None,
     cross_rows: list[dict[str, str]],
     original_enabled: bool,
     corrected_enabled: bool,
@@ -281,7 +303,7 @@ def _policy_table(
         lines.extend(
             (
                 r"    \multicolumn{9}{@{}l}{\textit{Panel A: paired objective-rule effects}} \\",
-                r"    Comparison & Encoding & $n$ & Proved 1/2 & Both optimal & $\Delta$SIM & $\Delta$CONT & $\Delta$OT & PAR-2 1/2 (s) \\",
+                r"    Comparison & Model/solver & $n$ & Proved 1/2 & Both optimal & $\Delta$SIM & $\Delta$CONT & $\Delta$OT & PAR-2 1/2 (s) \\",
                 r"    \midrule",
             )
         )
@@ -305,25 +327,43 @@ def _policy_table(
                 )
                 + r" \\"
             )
-        for row in sorted(
-            sensitivity_rows,
-            key=lambda item: _config_label(_configuration(item)),
-        ):
+        if corrected_enabled and corrected_paired is not None:
+            row = corrected_paired
+            lines.append(
+                "    "
+                + " & ".join(
+                    (
+                        r"Weighted $\to$ continuity-first (corrected)",
+                        row.get("solver", "Gurobi"),
+                        _count(row["pairs"]),
+                        f"{_count(row['left_proved_runs'])}/"
+                        f"{_count(row['right_proved_runs'])}",
+                        _count(row["both_optimum_pairs"]),
+                        _fmt(row["median_similarity_change"]),
+                        _fmt(row["median_continuity_change"]),
+                        _fmt(row["median_overtime_change"]),
+                        f"{_fmt(row['left_par2_seconds'])}/"
+                        f"{_fmt(row['right_par2_seconds'])}",
+                    )
+                )
+                + r" \\"
+            )
+        for row in sensitivity_rows:
             lines.append(
                 "    "
                 + " & ".join(
                     (
                         r"Continuity-first $\to$ overtime-first (corrected)",
-                        _config_label(_configuration(row)),
+                        row.get("solver", "Gurobi"),
                         _count(row["pairs"]),
-                        f"{_count(row['lex_cos_proved_runs'])}/"
-                        f"{_count(row['lex_ocs_proved_runs'])}",
+                        f"{_count(row['left_proved_runs'])}/"
+                        f"{_count(row['right_proved_runs'])}",
                         _count(row["both_optimum_pairs"]),
                         _fmt(row["median_similarity_change"]),
                         _fmt(row["median_continuity_change"]),
                         _fmt(row["median_overtime_change"]),
-                        f"{_fmt(row['lex_cos_par2_seconds'])}/"
-                        f"{_fmt(row['lex_ocs_par2_seconds'])}",
+                        f"{_fmt(row['left_par2_seconds'])}/"
+                        f"{_fmt(row['right_par2_seconds'])}",
                     )
                 )
                 + r" \\"
@@ -333,13 +373,17 @@ def _policy_table(
     if corrected_enabled:
         lines.extend(
             (
-                r"    \multicolumn{9}{@{}l}{\textit{Panel B: corrected-benchmark confirmatory set, enhanced encoding}} \\",
-                r"    Objective rule & Encoding & Runs & \textsc{Opt} & TO & Median SIM & Median CONT & Median OT & PAR-2 (s) \\",
+                r"    \multicolumn{9}{@{}l}{\textit{Panel B: exact corrected-benchmark policy evidence (Gurobi)}} \\",
+                r"    Objective rule & Solver & Runs & \textsc{Opt} & TO & Median SIM & Median CONT & Median OT & PAR-2 (s) \\",
                 r"    \midrule",
             )
         )
-        method_labels = {"weighted": "Weighted", "lex-cos": "Continuity-first"}
-        for method in ("weighted", "lex-cos"):
+        method_labels = {
+            "weighted": "Weighted",
+            "lex-cos": "Continuity-first",
+            "lex-overtime": "Overtime-first",
+        }
+        for method in ("weighted", "lex-cos", "lex-overtime"):
             row = _one(
                 corrected_rows,
                 lambda item, selected=method: item["method"] == selected,
@@ -350,7 +394,7 @@ def _policy_table(
                 + " & ".join(
                     (
                         method_labels[method],
-                        "Enhanced",
+                        row.get("solver", "Gurobi"),
                         _count(row["runs"]),
                         _count(row["optimum_runs"]),
                         _count(row["timeout_runs"]),
@@ -442,7 +486,7 @@ def _policy_prose(
     both = sum(_int(row["both_optimum_pairs"]) for row in sensitivity_rows)
     sentences.append(
         (
-            f"On the corrected benchmark, the continuity-first and overtime-first objectives yield the same "
+            f"In the exact Gurobi analysis of the corrected benchmark, the continuity-first and overtime-first objectives yield the same "
             f"objective vector on "
             f"{_count(same)}/{_count(both)} jointly optimum sensitivity pairs."
             if both
@@ -476,6 +520,14 @@ def _render(
     enc_hard = _range(encoding, "median_hard_clauses_difference")
     ic_speed = _range(implied, "median_speedup_left_over_right")
     sb_speed = _range(symmetry, "median_speedup_left_over_right")
+    ic_effect = _contrast_effect(
+        implied, left_name="omitting the implied constraints", right_name="adding them"
+    )
+    sb_effect = _contrast_effect(
+        symmetry,
+        left_name="omitting symmetry breaking",
+        right_name="adding symmetry breaking",
+    )
     enc_wins = sum(_int(row["right_faster"]) for row in encoding)
     enc_losses = sum(_int(row["left_faster"]) for row in encoding)
 
@@ -491,7 +543,7 @@ def _render(
             raise ValueError("enabled corrected-v2 branch lacks paired summary")
         if _int(corrected_paired["both_optimum_pairs"]) > 0:
             corrected_prose = (
-                "On the corrected benchmark, the continuity-first objective "
+                "In the exact Gurobi corrected-benchmark analysis, the continuity-first objective "
                 "changes median SIM, CONT, and OT by "
                 f"{_fmt(corrected_paired['median_similarity_change'])}, "
                 f"{_fmt(corrected_paired['median_continuity_change'])}, and "
@@ -501,7 +553,7 @@ def _render(
             )
         else:
             corrected_prose = (
-                "No corrected-benchmark pair completes both objective rules; "
+                "The exact corrected-benchmark campaign does not meet the paired-evidence gate; "
                 "paired objective deltas are unavailable.  "
             )
     else:
@@ -514,6 +566,7 @@ def _render(
         lex_rows=lex_rows,
         sensitivity_rows=sensitivity_rows,
         corrected_rows=corrected_rows,
+        corrected_paired=corrected_paired,
         cross_rows=cross_rows,
         original_enabled=original_enabled,
         corrected_enabled=corrected_enabled,
@@ -547,8 +600,9 @@ Table~\ref{{tab:factorial}}B.
 \label{{sec:rq3}}
 
 The four direct implied-constraint comparisons have median paired runtime ratios
-that {_range_wording(ic_speed)}, while the four symmetry-breaking comparisons
-{_range_wording(sb_speed)}.  The 48-instance end-to-end
+that {_range_wording(ic_speed)} and the CI evidence {ic_effect}; the four
+symmetry-breaking comparisons {_range_wording(sb_speed)}, and their effect
+{sb_effect}.  The 48-instance end-to-end
 baseline--enhanced comparison has a median ratio of
 {_fmt(composite['median_speedup_baseline_over_reference'])}
 (95\% bootstrap confidence interval [{_fmt(composite['bootstrap_95_ci_low'])},
@@ -644,8 +698,9 @@ agree and {_count(disagreements)} disagree.
 We evaluated lexicographic MaxSAT objectives together with Totalizer encoding,
 implied constraints, and symmetry breaking for HCORAP.  The encoding effect
 {effect}: median paired ratios
-{_range_wording(enc_speed)}, and the implied-constraint and symmetry effects
-also vary by context.  {policy_finding}  Objective vectors agree in
+{_range_wording(enc_speed)}.  The CI evidence for implied constraints
+{ic_effect}, whereas the symmetry-breaking effect {sb_effect}.  {policy_finding}
+Objective vectors agree in
 {_count(agreement_groups)}/{_count(exact_groups)} groups in which EvalMaxSAT,
 Gurobi, and CPLEX all prove optimum.  Future work will extend the model to
 routing and uncertainty and evaluate it on operational data.
@@ -693,33 +748,44 @@ def generate(arguments: argparse.Namespace) -> dict[str, Any]:
     sensitivity_rows: list[dict[str, str]] = []
     if original_enabled:
         lex_rows = primary_csv("lex_confirmatory_summary.csv")
-        sensitivity_rows = primary_csv("lex_policy_sensitivity_summary.csv")
-        if len(lex_rows) != 1 or len(sensitivity_rows) != 1:
+        if len(lex_rows) != 1:
             raise ValueError("compact policy scope requires one reference summary row")
 
     corrected_rows: list[dict[str, str]] = []
     corrected_paired: dict[str, str] | None = None
     if corrected_enabled:
         corrected_validation_path = (
-            arguments.corrected_dir / "corrected_validation.json"
+            arguments.corrected_dir / "corrected_exact_validation.json"
         ).resolve()
         corrected = _json(corrected_validation_path)
-        if corrected.get("valid") is not True:
-            raise ValueError("corrected-v2 analysis is invalid")
+        if corrected.get("manuscript_eligible") is not True:
+            raise ValueError("corrected-v2 exact policy evidence is not manuscript-eligible")
         corrected_summary_path = (
             arguments.corrected_dir / "corrected_policy_summary.csv"
         ).resolve()
         corrected_paired_path = (
-            arguments.corrected_dir / "corrected_paired_summary.csv"
+            arguments.corrected_dir / "corrected_pairwise_summary.csv"
         ).resolve()
         corrected_rows = _csv(corrected_summary_path)
         corrected_paired_rows = _csv(corrected_paired_path)
-        if len(corrected_paired_rows) != 1:
-            raise ValueError("corrected-v2 paired summary must have one row")
-        corrected_paired = corrected_paired_rows[0]
+        corrected_paired = _one(
+            corrected_paired_rows,
+            lambda row: row["comparison"] == "weighted-to-continuity-first",
+            "corrected weighted-to-continuity-first summary",
+        )
+        sensitivity_rows = [
+            _one(
+                corrected_paired_rows,
+                lambda row: row["comparison"]
+                == "continuity-first-to-overtime-first",
+                "corrected priority-order summary",
+            )
+        ]
         source_paths.extend(
             (corrected_validation_path, corrected_summary_path, corrected_paired_path)
         )
+    if original_enabled and len(sensitivity_rows) != 1:
+        raise ValueError("compact policy scope requires one exact sensitivity row")
 
     cross_agreement_path = (
         arguments.cross_dir / "cross_paradigm_agreement.csv"
@@ -790,7 +856,7 @@ def parse_arguments() -> argparse.Namespace:
     parser.add_argument(
         "--corrected-dir",
         type=Path,
-        default=Path("experiments/results/gcp_corrected_analysis"),
+        default=Path("experiments/results/gcp_corrected_exact_analysis"),
     )
     parser.add_argument(
         "--cross-dir",

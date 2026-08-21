@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "expected_primary_instances": 48,
+  "expected_primary_runs": 144,
+  "expected_audit_instances": 16,
+  "expected_audit_runs": 48,
+  "expected_strata": 16,
+  "expected_methods": ["weighted", "lex-cos", "lex-overtime"],
+  "minimum_all_policy_optimum_instances": 36,
+  "minimum_strata_with_two_all_policy_optimum_seeds": 12,
+  "required_audit_optimum_groups": 48,
+  "maximum_status_disagreements": 0,
+  "maximum_objective_disagreements": 0,
+  "maximum_technical_errors": 0,
+  "maximum_unverified_optima": 0
+}

@@ -1,5 +1,10 @@
 # Ma trận thực nghiệm compact cho ICIIT 2027
 
+> **Đã được cập nhật:** phần trạng thái dữ liệu và ma trận còn thiếu trong tài
+> liệu này đã được thay thế bởi
+> [`EXPERIMENT_SUPPLEMENT_MATRIX_20260822.md`](EXPERIMENT_SUPPLEMENT_MATRIX_20260822.md).
+> Không dùng kết luận “0/732” bên dưới để quyết định chạy lại.
+
 Cập nhật ngày 20/08/2026. File máy-đọc chuẩn là
 `experiments/configs/reduced_campaign_manifest.json`. Tài liệu này phân biệt ba
 loại dữ liệu: publication evidence cần chạy mới, dữ liệu lịch sử chỉ để chẩn

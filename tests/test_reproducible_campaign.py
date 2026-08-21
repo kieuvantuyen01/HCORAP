@@ -52,6 +52,13 @@ def test_reproducible_campaign_runs_validates_and_resumes(tmp_path: Path) -> Non
     assert len(records) == 2
     assert all(not record["validation_errors"] for record in records)
     assert {record["result_status"] for record in records} == {"OPTIMUM"}
+    manifest_path = result_dir / "manifest.jsonl"
+    relocated = []
+    for record in records:
+        record["result"] = f"/retired-gcp/results/raw/{record['run_id']}.json"
+        record["instance"] = "/retired-gcp/tests/instances/lex_cos_tie.txt"
+        relocated.append(json.dumps(record, sort_keys=True))
+    manifest_path.write_text("\n".join(relocated) + "\n", encoding="utf-8")
 
     collector_spec = importlib.util.spec_from_file_location(
         "campaign_collector", ROOT / "experiments" / "collect_reproducible_campaign.py"

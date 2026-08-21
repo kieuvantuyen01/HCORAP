@@ -34,7 +34,7 @@ def test_generate_complete_branch_aware_manuscript_bundle(tmp_path: Path) -> Non
         json.dumps(
             {
                 "decision": "GO",
-                "expected_measured_runs": 732,
+                "expected_measured_runs": 924,
                 "branches": {
                     "original_lexicographic": {"enabled": True},
                     "corrected_v2_lexicographic": {"enabled": True},
@@ -46,8 +46,9 @@ def test_generate_complete_branch_aware_manuscript_bundle(tmp_path: Path) -> Non
     (primary / "analysis_validation.json").write_text(
         json.dumps({"valid": True, "scope": "compact"}), encoding="utf-8"
     )
-    (corrected / "corrected_validation.json").write_text(
-        json.dumps({"valid": True}), encoding="utf-8"
+    (corrected / "corrected_exact_validation.json").write_text(
+        json.dumps({"valid": True, "manuscript_eligible": True}),
+        encoding="utf-8",
     )
     (cross / "cross_paradigm_validation.json").write_text(
         json.dumps({"valid": True, "scope": "full"}), encoding="utf-8"
@@ -136,7 +137,6 @@ def test_generate_complete_branch_aware_manuscript_bundle(tmp_path: Path) -> Non
         ],
     )
     policy_rows = []
-    sensitivity_rows = []
     for configuration in (FACTORIAL_ORDER[-1],):
         policy_rows.append(
             {
@@ -152,25 +152,7 @@ def test_generate_complete_branch_aware_manuscript_bundle(tmp_path: Path) -> Non
                 "lex_cos_par2_seconds": 110,
             }
         )
-        sensitivity_rows.append(
-            {
-                **_configuration(configuration),
-                "pairs": 48,
-                "lex_cos_proved_runs": 45,
-                "lex_ocs_proved_runs": 44,
-                "both_optimum_pairs": 40,
-                "same_objective_vector_pairs": 35,
-                "median_similarity_change": -1,
-                "median_continuity_change": 1,
-                "median_overtime_change": -1,
-                "lex_cos_par2_seconds": 95,
-                "lex_ocs_par2_seconds": 100,
-            }
-        )
     _write_csv(primary / "lex_confirmatory_summary.csv", policy_rows)
-    _write_csv(
-        primary / "lex_policy_sensitivity_summary.csv", sensitivity_rows
-    )
     _write_csv(
         corrected / "corrected_policy_summary.csv",
         [
@@ -184,18 +166,30 @@ def test_generate_complete_branch_aware_manuscript_bundle(tmp_path: Path) -> Non
                 "median_overtime": 2 if method == "weighted" else 1,
                 "par2_seconds": 75 if method == "weighted" else 105,
             }
-            for method in ("weighted", "lex-cos")
+            for method in ("weighted", "lex-cos", "lex-overtime")
         ],
     )
     _write_csv(
-        corrected / "corrected_paired_summary.csv",
+        corrected / "corrected_pairwise_summary.csv",
         [
             {
+                "solver": "Gurobi",
+                "comparison": comparison,
+                "pairs": 48,
+                "left_proved_runs": 45,
+                "right_proved_runs": 44,
                 "both_optimum_pairs": 38,
+                "same_objective_vector_pairs": 30,
                 "median_similarity_change": -5,
                 "median_continuity_change": -2,
                 "median_overtime_change": -1,
+                "left_par2_seconds": 95,
+                "right_par2_seconds": 100,
             }
+            for comparison in (
+                "weighted-to-continuity-first",
+                "continuity-first-to-overtime-first",
+            )
         ],
     )
     _write_csv(
@@ -221,7 +215,7 @@ def test_generate_complete_branch_aware_manuscript_bundle(tmp_path: Path) -> Non
         )
     )
     assert provenance["valid"]
-    assert provenance["expected_measured_runs"] == 732
+    assert provenance["expected_measured_runs"] == 924
     results = (output / "results.tex").read_text(encoding="utf-8")
     assert results.count(r"\begin{table*}") == 2
     assert "end-to-end, $n=48$" in results
@@ -233,7 +227,7 @@ def test_generate_complete_branch_aware_manuscript_bundle(tmp_path: Path) -> Non
         generated_dir=output,
         primary_validation=primary / "analysis_validation.json",
         cross_validation=cross / "cross_paradigm_validation.json",
-        corrected_validation=corrected / "corrected_validation.json",
+        corrected_validation=corrected / "corrected_exact_validation.json",
         generation_provenance=output / "manuscript-provenance.json",
         screening_decision=screening,
         source_commit="publication-commit",

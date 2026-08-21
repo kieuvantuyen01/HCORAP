@@ -37,6 +37,18 @@
       "config": "gcp_maxsat_commercial_validation.json",
       "expected_runs": 40,
       "timeout_seconds": 300
+    },
+    {
+      "name": "corrected_v2_gurobi_policy_evidence",
+      "config": "gcp_commercial_corrected_primary.json",
+      "expected_runs": 144,
+      "timeout_seconds": 300
+    },
+    {
+      "name": "corrected_v2_cplex_stratum_audit",
+      "config": "gcp_commercial_corrected_audit.json",
+      "expected_runs": 48,
+      "timeout_seconds": 300
     }
   ],
   "non_measured_campaigns": [
@@ -51,9 +63,15 @@
       "config": "gcp_commercial_correctness_smoke.json",
       "expected_runs": 18,
       "timeout_seconds": 30
+    },
+    {
+      "name": "corrected_v2_commercial_calibration",
+      "config": "gcp_commercial_corrected_calibration.json",
+      "expected_runs": 48,
+      "timeout_seconds": 300
     }
   ],
-  "expected_measured_runs": 732,
-  "expected_worst_case_seconds": 219600,
-  "expected_worst_case_core_hours": 61.0
+  "expected_measured_runs": 924,
+  "expected_worst_case_seconds": 277200,
+  "expected_worst_case_core_hours": 77.0
 }

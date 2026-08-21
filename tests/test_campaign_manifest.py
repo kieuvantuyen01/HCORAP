@@ -9,8 +9,8 @@ from experiments.validate_campaign_manifest import validate
 def test_reduced_campaign_manifest_matches_locked_budget() -> None:
     report = validate(Path("experiments/configs/reduced_campaign_manifest.json"))
     assert report["valid"] is True
-    assert report["measured_runs"] == 732
-    assert report["worst_case_seconds"] == 219_600
+    assert report["measured_runs"] == 924
+    assert report["worst_case_seconds"] == 277_200
 
 
 def test_campaign_manifest_rejects_config_drift(tmp_path: Path) -> None:

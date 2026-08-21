@@ -13,11 +13,16 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Any, Iterable
 
+try:
+    from .publication_contract import REFERENCE_CONFIGURATION
+except ImportError:
+    from publication_contract import REFERENCE_CONFIGURATION
+
 
 PROVED = {"OPTIMUM", "UNSAT", "UNSATISFIABLE"}
 ALLOWED = PROVED | {"TIMEOUT", "TIMEOUT_FEASIBLE"}
 BASELINE = ("sorting-network", "none", "none")
-REFERENCE_COMPOSITE = ("totalizer", "both", "slot-service")
+REFERENCE_COMPOSITE = REFERENCE_CONFIGURATION
 CONFIG_KEYS = ("cardinality", "implied", "symmetry")
 METRICS = ("coverage", "similarity", "continuity", "overtime")
 

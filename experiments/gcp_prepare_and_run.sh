@@ -26,8 +26,10 @@ Safe phases:
 Full manuscript phases (require CONFIRM_FULL_CAMPAIGN=YES):
   original-primary      Run 42 weighted + 42 LEX-COS rows under R
   corrected-primary     Run 48 weighted + 48 LEX-COS + 48 LEX-OCS rows
-  commercial            Run 80 MIP + 40 MaxSAT commercial validation rows
-  all                   Run the complete 732-row compact ICIIT campaign
+  commercial            Run 80 MIP + 40 MaxSAT original-benchmark validation rows
+  corrected-commercial-evidence
+                        Gate and run 144 Gurobi + 48 CPLEX corrected-v2 rows
+  all                   Run the complete manifest-locked ICIIT campaign
 
 Deferred research phases (outside the publication manifest; not called by all):
   pareto, weight-confirmation, uncertainty
@@ -301,24 +303,8 @@ validate_maxsat_configs() {
 run_evalmaxsat_calibration() {
     result_dir=experiments/results/gcp_evalmaxsat_lex_calibration
     run_maxsat experiments/configs/gcp_evalmaxsat_lex_calibration.json "$result_dir"
-    python3 - "$result_dir/runs.csv" <<'PY'
-import csv, sys
-from pathlib import Path
-
-path = Path(sys.argv[1])
-with path.open(newline="", encoding="utf-8") as stream:
-    rows = list(csv.DictReader(stream))
-optimum = sum(row["status"] == "OPTIMUM" for row in rows)
-unexpected = [row["run_id"] for row in rows if row["status"] not in {"OPTIMUM", "TIMEOUT", "TIMEOUT_FEASIBLE"}]
-if len(rows) != 4 or unexpected or optimum < 2:
-    raise SystemExit(
-        "EvalMaxSAT scalability calibration failed: "
-        f"rows={len(rows)}/4, optimum={optimum}/4, unexpected={len(unexpected)}. "
-        "Do not start the measured campaign; review timeout/solver suitability "
-        "on a new publication commit."
-    )
-print(f"EvalMaxSAT scalability calibration passed: {optimum}/4 LEX-COS optima.")
-PY
+    python3 experiments/evaluate_evalmaxsat_calibration.py \
+        --results "$result_dir"
 }
 
 run_maxsat() {
@@ -413,37 +399,8 @@ PY
 
 validate_commercial_smoke() {
     result_dir=$1
-    python3 - "$result_dir" <<'PY'
-import csv, sys
-from pathlib import Path
-
-root = Path(sys.argv[1])
-with (root / "runs.csv").open(newline="", encoding="utf-8") as stream:
-    runs = list(csv.DictReader(stream))
-with (root / "backend_agreement.csv").open(newline="", encoding="utf-8") as stream:
-    agreements = list(csv.DictReader(stream))
-
-expected_backends = {"gurobi-mip", "cplex-mip", "reference-enumerator"}
-problems = []
-if len(runs) != 18:
-    problems.append(f"runs={len(runs)}/18")
-if any(row["status"] != "OPTIMUM" for row in runs):
-    problems.append("not every smoke run reached OPTIMUM")
-if any(row["verified"] != "True" for row in runs):
-    problems.append("not every smoke optimum was verified")
-if len(agreements) != 6:
-    problems.append(f"agreement_groups={len(agreements)}/6")
-for row in agreements:
-    observed = {item.strip() for item in row["backends"].split("|")}
-    if observed != expected_backends:
-        problems.append(f"incomplete backend group: {sorted(observed)}")
-    if row["weighted_score_agreement"] != "True":
-        problems.append("weighted-score disagreement")
-    if row["method"] != "weighted" and row["objective_vector_agreement"] != "True":
-        problems.append("lex/epsilon vector disagreement")
-if problems:
-    raise SystemExit("commercial correctness smoke failed: " + "; ".join(problems))
-PY
+    python3 experiments/evaluate_commercial_correctness_smoke.py \
+        --results "$result_dir"
 }
 
 run_screen() {
@@ -523,7 +480,7 @@ run_uncertainty() {
         --output-dir experiments/results/gcp_uncertainty_analysis
 }
 
-commercial_preflight() {
+prepare_commercial_backends() {
     if [ -z "${GUROBI_HOME:-}" ] || [ -z "${CPLEX_STUDIO_DIR:-}" ]; then
         echo "GUROBI_HOME and CPLEX_STUDIO_DIR must be set." >&2
         exit 2
@@ -533,6 +490,17 @@ commercial_preflight() {
     make -B -j8 YICES=0 GUROBI=1 CPLEX=1 hcorap_commercial
     python3 experiments/run_commercial_campaign.py \
         experiments/configs/gcp_commercial_original.json --preflight-only
+    for name in \
+        gcp_commercial_corrected_calibration \
+        gcp_commercial_corrected_primary \
+        gcp_commercial_corrected_audit; do
+        python3 experiments/run_commercial_campaign.py \
+            "experiments/configs/$name.json" --dry-run
+    done
+}
+
+commercial_preflight() {
+    prepare_commercial_backends
     run_commercial experiments/configs/gcp_commercial_correctness_smoke.json \
         experiments/results/gcp_commercial_correctness_smoke
     validate_commercial_smoke experiments/results/gcp_commercial_correctness_smoke
@@ -555,6 +523,27 @@ run_commercial_primary() {
         experiments/results/gcp_commercial_original
     python3 experiments/analyze_cross_paradigm_validation.py \
         --scope full
+}
+
+run_corrected_commercial_evidence() {
+    if ! branch_enabled corrected_v2_lexicographic; then
+        echo "Corrected-v2 evidence cannot run after a failed factorial hard gate." >&2
+        exit 2
+    fi
+    calibration_dir=experiments/results/gcp_commercial_corrected_calibration
+    run_commercial \
+        experiments/configs/gcp_commercial_corrected_calibration.json \
+        "$calibration_dir"
+    python3 experiments/evaluate_corrected_commercial_calibration.py \
+        --results "$calibration_dir"
+    checkpoint_results corrected-commercial-calibration
+
+    run_commercial experiments/configs/gcp_commercial_corrected_primary.json \
+        experiments/results/gcp_commercial_corrected_primary
+    checkpoint_results corrected-commercial-gurobi-primary
+    run_commercial experiments/configs/gcp_commercial_corrected_audit.json \
+        experiments/results/gcp_commercial_corrected_audit
+    python3 experiments/analyze_corrected_exact_evidence.py
 }
 
 if [ "$PHASE" = "help" ] || [ "$PHASE" = "--help" ] || [ "$PHASE" = "-h" ]; then
@@ -646,11 +635,20 @@ case "$PHASE" in
         run_all_commercial
         checkpoint_results commercial
         ;;
+    corrected-commercial-evidence)
+        check_clean_for_full
+        build_and_test
+        prepare_suite
+        prepare_commercial_backends
+        run_corrected_commercial_evidence
+        checkpoint_results corrected-commercial-evidence
+        ;;
     analyze)
         branch_enabled original_lexicographic
         python3 experiments/analyze_primary_campaigns.py
         if branch_enabled corrected_v2_lexicographic; then
             python3 experiments/analyze_corrected_validation.py
+            python3 experiments/analyze_corrected_exact_evidence.py
         fi
         python3 experiments/analyze_cross_paradigm_validation.py --scope full
         ;;
@@ -676,6 +674,8 @@ case "$PHASE" in
         checkpoint_results corrected-primary
         run_commercial_primary
         checkpoint_results commercial
+        run_corrected_commercial_evidence
+        checkpoint_results corrected-commercial-evidence
         bash experiments/package_experiment_artifacts.sh
         checkpoint_results package
         ;;

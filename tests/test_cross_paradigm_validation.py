@@ -65,6 +65,15 @@ def test_cross_paradigm_analysis_detects_exact_objective_disagreement(
             for method in ("weighted", "lex-cos"):
                 commercial.append({**common, "method": method, "backend": backend})
 
+    for row in weighted + lex:
+        if row["instance_sha256"] == "sha-19":
+            row["status"] = "UNSAT"
+            row["verified"] = "False"
+    for row in commercial:
+        if row["instance_sha256"] == "sha-19":
+            row["status"] = "INFEASIBLE"
+            row["verified"] = "False"
+
     weighted_dir = tmp_path / "weighted"
     lex_dir = tmp_path / "lex"
     commercial_dir = tmp_path / "commercial"
@@ -83,6 +92,9 @@ def test_cross_paradigm_analysis_detects_exact_objective_disagreement(
     assert result["valid"]
     assert result["complete_groups"] == 40
     assert result["objective_disagreements"] == 0
+    assert result["all_infeasible_groups"] == 2
+    assert result["unresolved_groups"] == 0
+    assert result["status_disagreements"] == 0
 
     arguments.scope = "weighted-only"
     arguments.lex_maxsat_results = tmp_path / "intentionally-absent"

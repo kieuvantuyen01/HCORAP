@@ -18,6 +18,11 @@ import subprocess
 from pathlib import Path
 from typing import Any
 
+try:
+    from .publication_contract import EXPECTED_MEASURED_RUNS
+except ImportError:
+    from publication_contract import EXPECTED_MEASURED_RUNS
+
 
 FRAGMENTS = (
     "abstract-findings.tex",
@@ -122,14 +127,15 @@ def validate_and_render_marker(
         except (OSError, ValueError, json.JSONDecodeError) as error:
             errors.append(f"cannot read enabled corrected-v2 analysis: {error}")
         else:
-            if corrected.get("valid") is not True:
+            if corrected.get("manuscript_eligible") is not True:
                 errors.append(
-                    f"corrected-v2 analysis is not valid: {corrected_validation}"
+                    "corrected-v2 exact evidence is not manuscript-eligible: "
+                    f"{corrected_validation}"
                 )
 
     if not original_enabled or not corrected_enabled:
         errors.append("compact scope requires both policy-validation branches")
-    expected_measured = 732
+    expected_measured = EXPECTED_MEASURED_RUNS
     if screening.get("expected_measured_runs") != expected_measured:
         errors.append(
             "screening measured-run total is inconsistent with enabled branches: "
@@ -244,8 +250,8 @@ def parse_arguments() -> argparse.Namespace:
         "--corrected-validation",
         type=Path,
         default=Path(
-            "experiments/results/gcp_corrected_analysis/"
-            "corrected_validation.json"
+            "experiments/results/gcp_corrected_exact_analysis/"
+            "corrected_exact_validation.json"
         ),
     )
     parser.add_argument(

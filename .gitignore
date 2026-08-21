@@ -61,6 +61,7 @@ experiments/results/*
 /EvalMaxSAT
 /open-wbo_macos
 /experiments/archive/
+/results_reduced/
 
 # Local literature library (do not redistribute third-party PDFs)
 /docs/*.pdf

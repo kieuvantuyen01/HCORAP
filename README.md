@@ -22,6 +22,21 @@ Các thành phần chính:
 Kế hoạch nghiên cứu nằm trong `Ke_hoach_nghien_cuu_HCORAP.tex`; quy tắc benchmark
 chi tiết nằm trong `docs/FAIR_EXPERIMENT_PROTOCOL.md`.
 
+## Publication campaign ICIIT 2027
+
+Pipeline đang được khóa cho bản thảo nằm trong
+[`experiments/README.md`](experiments/README.md). Không dùng các legacy 8-config
+scripts bên dưới để bổ sung vào publication dataset. Kiểm tra contract bằng:
+
+```sh
+python3 experiments/validate_publication_campaign.py
+```
+
+Để chỉ chạy phần corrected-v2 exact-policy còn thiếu trên GCP, dùng
+`experiments/run_remaining_corrected_evidence.sh`; hướng dẫn môi trường,
+checkpoint và resume nằm trong
+[`docs/GCP_EXPERIMENT_RUNBOOK.md`](docs/GCP_EXPERIMENT_RUNBOOK.md).
+
 ## Build C++
 
 ```sh

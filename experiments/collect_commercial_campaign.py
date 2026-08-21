@@ -55,6 +55,26 @@ def _read_json(path: Path) -> dict[str, Any]:
         return {}
 
 
+def _relocated_path(path: Path, result_dir: Path, run_id: str) -> Path:
+    """Resolve raw payloads after a GCP artifact has been copied elsewhere."""
+    if path.is_file():
+        return path
+    local_raw = result_dir / "raw" / f"{run_id}.json"
+    return local_raw if local_raw.is_file() else path
+
+
+def _relocated_instance(path: Path) -> Path:
+    if path.is_file():
+        return path
+    text = path.as_posix()
+    for marker in ("/instances/", "/tests/"):
+        if marker in text:
+            candidate = SCRIPT_DIR.parent / marker.strip("/") / text.split(marker, 1)[1]
+            if candidate.is_file():
+                return candidate
+    return path
+
+
 def flatten(result_dir: Path) -> list[dict[str, Any]]:
     records = [
         json.loads(line)
@@ -63,7 +83,9 @@ def flatten(result_dir: Path) -> list[dict[str, Any]]:
     ]
     rows = []
     for record in records:
-        result_path = Path(record["result"])
+        result_path = _relocated_path(
+            Path(record["result"]), result_dir, record["run_id"]
+        )
         payload = _read_json(result_path)
         metrics = payload.get("metrics") or {}
         stages = payload.get("stages") or []
@@ -76,7 +98,9 @@ def flatten(result_dir: Path) -> list[dict[str, Any]]:
             else None
         )
         try:
-            dimensions = _instance_dimensions(Path(record["instance"]))
+            dimensions = _instance_dimensions(
+                _relocated_instance(Path(record["instance"]))
+            )
         except ValueError:
             dimensions = {
                 "users": None, "agents": None, "visits": None,

@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
-"""Analyze corrected-v2 objective and priority-order results."""
+"""Analyze corrected-v2 EvalMaxSAT scalability and limited paired evidence.
+
+This analyzer preserves the completed MaxSAT campaign.  Its structural
+``valid`` flag is distinct from ``manuscript_eligible``; exact corrected-v2
+policy claims are produced by ``analyze_corrected_exact_evidence.py``.
+"""
 
 from __future__ import annotations
 
@@ -10,11 +15,18 @@ import statistics
 from pathlib import Path
 from typing import Any, Iterable
 
+try:
+    from .publication_contract import REFERENCE_CONFIGURATION
+except ImportError:
+    from publication_contract import REFERENCE_CONFIGURATION
 
-REFERENCE = ("totalizer", "both", "slot-service")
+
+REFERENCE = REFERENCE_CONFIGURATION
 PROVED = {"OPTIMUM", "UNSAT", "UNSATISFIABLE"}
 ALLOWED = PROVED | {"TIMEOUT", "TIMEOUT_FEASIBLE"}
 METRICS = ("similarity", "continuity", "overtime")
+MINIMUM_WEIGHTED_LEX_PAIRS = 24
+MINIMUM_PRIORITY_ORDER_PAIRS = 24
 
 
 def _number(value: Any) -> float | None:
@@ -165,6 +177,7 @@ def analyze(result_dir: Path, output_dir: Path) -> dict[str, Any]:
     ]
 
     result = {
+        "scope": "corrected-v2-evalmaxsat-scalability",
         "runs": len(rows),
         "instances": len(indexed),
         "paired_instances": len(pairs),
@@ -181,8 +194,9 @@ def analyze(result_dir: Path, output_dir: Path) -> dict[str, Any]:
             method: sum(row["method"] == method for row in rows)
             for method in ("weighted", "lex-cos", "lex-overtime")
         },
+        "weighted_lex_both_optimum_pairs": len(optimum_pairs),
     }
-    result["valid"] = (
+    result["structurally_valid"] = (
         result["runs"] == 144
         and result["instances"] == 48
         and result["paired_instances"] == 48
@@ -195,6 +209,26 @@ def analyze(result_dir: Path, output_dir: Path) -> dict[str, Any]:
         and result["methods"]
         == {"weighted": 48, "lex-cos": 48, "lex-overtime": 48}
     )
+    priority_pairs = sum(
+        methods.get("lex-cos", {}).get("status") == "OPTIMUM"
+        and methods.get("lex-overtime", {}).get("status") == "OPTIMUM"
+        for methods in indexed.values()
+    )
+    result["priority_order_both_optimum_pairs"] = priority_pairs
+    result["evidence_thresholds"] = {
+        "minimum_weighted_lex_both_optimum_pairs": MINIMUM_WEIGHTED_LEX_PAIRS,
+        "minimum_priority_order_both_optimum_pairs": MINIMUM_PRIORITY_ORDER_PAIRS,
+    }
+    result["evidence_sufficient"] = (
+        len(optimum_pairs) >= MINIMUM_WEIGHTED_LEX_PAIRS
+        and priority_pairs >= MINIMUM_PRIORITY_ORDER_PAIRS
+    )
+    result["manuscript_eligible"] = (
+        result["structurally_valid"] and result["evidence_sufficient"]
+    )
+    # ``valid`` remains a structural/data-integrity signal for compatibility.
+    # Final manuscript generation must require ``manuscript_eligible``.
+    result["valid"] = result["structurally_valid"]
     output_dir.mkdir(parents=True, exist_ok=True)
     _write(output_dir / "corrected_policy_pairs.csv", pairs)
     _write(output_dir / "corrected_policy_summary.csv", policy_rows)

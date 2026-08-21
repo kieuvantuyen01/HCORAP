@@ -1,10 +1,12 @@
 # Kế hoạch hoàn thiện và nộp bài ICIIT 2027
 
-Cập nhật ngày 20/08/2026. Ma trận publication hiện hành là compact campaign
-732 measured runs trong
+Cập nhật ngày 22/08/2026. Ma trận publication hiện hành là compact campaign
+924 measured runs trong
 `experiments/configs/reduced_campaign_manifest.json`. Bản phân tích đầy đủ về
 cấu hình, kết quả cũ và lý do loại nhánh nằm tại
 [`docs/COMPACT_EXPERIMENT_MATRIX_20260820.md`](docs/COMPACT_EXPERIMENT_MATRIX_20260820.md).
+Trạng thái 732 rows đã có và đúng 192 rows còn thiếu được khóa tại
+[`docs/EXPERIMENT_SUPPLEMENT_MATRIX_20260822.md`](docs/EXPERIMENT_SUPPLEMENT_MATRIX_20260822.md).
 
 Không chạy measured phase cho tới khi code/config sau rà soát được commit,
 worktree sạch, publication tag mới được tạo và `HCORAP_EXPECTED_COMMIT` trỏ
@@ -85,17 +87,21 @@ measured top-level run dùng timeout 300 s.
 |---|---|---:|---:|---:|
 | original factorial ablation | 48 × 8 configs × weighted | 384 | 300 s | 32,00 |
 | original policy comparison | 42 × R × weighted/LEX-COS | 84 | 300 s | 7,00 |
-| corrected-v2 policy and priority | 48 × R × weighted/LEX-COS/LEX-OCS | 144 | 300 s | 12,00 |
+| corrected-v2 EvalMaxSAT scalability | 48 × R × weighted/LEX-COS/LEX-OCS | 144 | 300 s | 12,00 |
 | Gurobi/CPLEX validation | 20 × 2 backends × weighted/LEX-COS | 80 | 300 s | 6,67 |
 | EvalMaxSAT commercial validation | 20 × R × weighted/LEX-COS | 40 | 300 s | 3,33 |
-| **Tổng measured** |  | **732** |  | **61,00** |
+| corrected-v2 exact policy primary | 48 × Gurobi × weighted/LEX-COS/LEX-OCS | 144 | 300 s | 12,00 |
+| corrected-v2 CPLEX stratum audit | 16 × CPLEX × weighted/LEX-COS/LEX-OCS | 48 | 300 s | 4,00 |
+| **Tổng measured** |  | **924** |  | **77,00** |
 
-Ngoài measured matrix có 4 EvalMaxSAT LEX-COS scalability-calibration runs ở
-timeout 300 s và 18 commercial correctness-smoke runs ở timeout 30 s. Chúng
+Ngoài measured matrix có 4 EvalMaxSAT LEX-COS scalability-calibration runs,
+48 corrected-v2 exact-solver calibration runs ở timeout 300 s và 18 commercial
+correctness-smoke runs ở timeout 30 s. Chúng
 không được dùng trong runtime tables. Calibration phải đạt ít nhất 2/4 optimum
-trước khi measured campaign bắt đầu. Worst case measured tuần tự là 2,54 ngày.
-So với campaign 1.270 runs ngay trước lần rà soát này, thiết kế mới giảm 42,36%
-số run và 42,36% worst-case compute. Mỗi factorial contrast vẫn có 48 paired
+trước khi measured campaign bắt đầu. Worst case measured tuần tự là 3,21 ngày;
+với dữ liệu hiện có chỉ còn 192 measured rows, tối đa 16 core-hours.
+So với campaign 1.270 runs trước khi compact, thiết kế hiện tại giảm 27,24%
+số run và worst-case compute. Mỗi factorial contrast vẫn có 48 paired
 blocks trên đủ 16 lớp; kết quả theo từng lớp chỉ được trình bày mô tả vì mỗi lớp
 có ba seeds.
 
@@ -158,6 +164,8 @@ build/test/benchmark checks
 -> 42 weighted + 42 LEX-COS trên original
 -> 48 weighted + 48 LEX-COS + 48 LEX-OCS trên corrected-v2
 -> 80 commercial MIP + 40 MaxSAT commercial weighted/LEX
+-> 48-run corrected exact calibration
+-> 144 Gurobi corrected primary + 48 CPLEX stratum audit
 -> analysis -> package -> manuscript freeze
 ```
 
@@ -171,7 +179,7 @@ Chi tiết resume và checkpoint nằm trong
 - all tests và C++ builds pass;
 - solver source/binary đúng pinned commit;
 - corrected-v2 instances qua witness/hash/matrix verification;
-- manifest đúng 732 measured + 4 calibration + 18 smoke runs;
+- manifest đúng 924 measured + 52 calibration + 18 smoke runs;
 - mọi MaxSAT config resolve đúng instance/task count;
 - commercial preflight và 18/18 smoke runs qua verifier;
 - ba smoke backends agreement trên 6 instance-policy groups.
@@ -185,7 +193,7 @@ nhanh hơn B. Không còn branch gate hậu nghiệm cho epsilon, weight hoặc 
 
 ### G3 — Data freeze
 
-- chính xác 732 measured rows, không duplicate/unexpected run ID;
+- chính xác 924 measured rows, không duplicate/unexpected run ID;
 - mọi `OPTIMUM` qua independent verifier;
 - all analyzers trả `valid=true` với expected pair/group counts;
 - MaxSAT/Gurobi/CPLEX objective agreement được tính chỉ trên groups cả ba backend
@@ -200,8 +208,9 @@ nhanh hơn B. Không còn branch gate hậu nghiệm cho epsilon, weight hoặc 
 |---|---|
 | factorial RQ2/RQ3 và B--R 48 pairs | `gcp_primary_analysis/factorial_*`, `weighted_composite_*` |
 | original weighted--LEX-COS R, 42 pairs | `gcp_primary_analysis/lex_confirmatory_*` |
-| corrected LEX-COS--LEX-OCS R, 48 pairs | `lex_policy_sensitivity_{pairs,summary}.csv` |
-| corrected-v2, 48 instances/policy | `gcp_corrected_analysis/corrected_*` |
+| corrected EvalMaxSAT scalability | `gcp_corrected_analysis/corrected_*` |
+| corrected weighted--LEX-COS và LEX-COS--LEX-OCS exact pairs | `gcp_corrected_exact_analysis/corrected_pairwise_*` |
+| corrected-v2 exact policy, 48 instances/policy | `gcp_corrected_exact_analysis/corrected_policy_summary.csv` |
 | three-backend agreement, 20 groups/policy | `gcp_cross_paradigm_analysis/*` |
 | reproducibility | resolved configs, environment, manifests, hashes, validators |
 
@@ -226,7 +235,7 @@ exploratory plot.
 ## 11. Definition of done
 
 - [ ] Publication commit/tag sạch và `HCORAP_EXPECTED_COMMIT` đã khóa.
-- [ ] G1, G2, G3 pass; exact count là 732 measured rows.
+- [ ] G1, G2, G3 pass; exact count là 924 measured rows.
 - [ ] Tất cả bảng và prose định lượng sinh từ frozen raw data.
 - [ ] Mỗi con số trong Abstract/Conclusion truy về generated evidence.
 - [ ] Không dùng historical/development/pilot runtime làm publication evidence.

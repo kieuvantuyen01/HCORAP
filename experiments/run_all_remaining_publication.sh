@@ -4,6 +4,19 @@ set -Eeuo pipefail
 PROJECT_ROOT=$(cd "$(dirname "$0")/.." && pwd)
 cd "$PROJECT_ROOT"
 
+contract_values=$(python3 - <<'PY'
+import json
+from pathlib import Path
+manifest = json.loads(
+    Path("experiments/configs/reduced_campaign_manifest.json").read_text()
+)
+runs = int(manifest["expected_measured_runs"])
+seconds = int(manifest["expected_worst_case_seconds"])
+print(runs, seconds, f"{seconds / 3600:g}", f"{seconds / 86400:.4f}")
+PY
+)
+read -r measured_runs worst_seconds worst_hours worst_days <<< "$contract_values"
+
 MODE=${1:-run}
 case "$MODE" in
     run|--check-only|-h|--help) ;;
@@ -13,10 +26,10 @@ case "$MODE" in
         ;;
 esac
 if [ "$MODE" = "-h" ] || [ "$MODE" = "--help" ]; then
-    cat <<'EOF'
+    cat <<EOF
 Usage: experiments/run_all_remaining_publication.sh [run|--check-only]
 
-  run           Run/resume all 732 measured publication rows (default).
+  run           Run/resume all $measured_runs measured publication rows (default).
   --check-only  Validate the frozen campaign contract without running solvers.
 
 The measured timeout is locked to 300 seconds per top-level run.  Smoke tests
@@ -129,10 +142,10 @@ trap 'exit 143' TERM
     echo "UTC start: $(date -u '+%Y-%m-%dT%H:%M:%SZ')"
     echo "Source revision: $(git rev-parse HEAD)"
     echo "EvalMaxSAT SHA-256: $(sha256sum "$EVALMAXSAT_BIN" | awk '{print $1}')"
-    echo "Expected measured rows: 732"
-    echo "Non-measured gates: 4 EvalMaxSAT LEX-COS calibration + 18 commercial smoke rows"
+    echo "Expected measured rows: $measured_runs"
+    echo "Non-measured gates: 4 EvalMaxSAT calibration + 18 smoke + 48 corrected commercial calibration rows"
     echo "Measured timeout: 300 seconds per top-level run"
-    echo "Worst-case solver budget: 219600 seconds = 61 core-hours = 2.5417 sequential days"
+    echo "Worst-case solver budget: $worst_seconds seconds = $worst_hours core-hours = $worst_days sequential days"
     echo "Worker policy: one worker, one pinned vCPU, 12 GB peak-RSS gate"
     echo "Log: $LOG_PATH"
     python3 experiments/validate_publication_campaign.py

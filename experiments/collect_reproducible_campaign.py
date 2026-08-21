@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import Any, Iterable
 
 
+ROOT = Path(__file__).resolve().parents[1]
 INSTANCE_PATTERN = re.compile(
     r"(?:instance_)?u?(?P<users>\d+)_a?(?P<agents>\d+)_v?(?P<visits>\d+)"
     r"(?:_seed(?P<seed>\d+))?(?:_(?P<load>relaxed|critical|saturated))?"
@@ -66,6 +67,26 @@ def _read_json(path: Path) -> dict[str, Any]:
         return {}
 
 
+def _relocated_path(path: Path, result_dir: Path, run_id: str) -> Path:
+    """Resolve paths after a GCP result directory has been relocated."""
+    if path.is_file():
+        return path
+    local_raw = result_dir / "raw" / f"{run_id}.json"
+    return local_raw if local_raw.is_file() else path
+
+
+def _relocated_instance(path: Path) -> Path:
+    if path.is_file():
+        return path
+    text = path.as_posix()
+    for marker in ("/instances/", "/tests/"):
+        if marker in text:
+            candidate = ROOT / marker.strip("/") / text.split(marker, 1)[1]
+            if candidate.is_file():
+                return candidate
+    return path
+
+
 def _instance_fields(path: Path) -> dict[str, Any]:
     match = INSTANCE_PATTERN.search(path.stem)
     fields: dict[str, Any] = {
@@ -102,7 +123,9 @@ def flatten(result_dir: Path) -> list[dict[str, Any]]:
     ]
     rows = []
     for record in records:
-        result_path = Path(record["result"])
+        result_path = _relocated_path(
+            Path(record["result"]), result_dir, record["run_id"]
+        )
         payload = _read_json(result_path)
         specification = record["specification"]
         metrics = payload.get("metrics") or {}
@@ -115,7 +138,7 @@ def flatten(result_dir: Path) -> list[dict[str, Any]]:
             if assignments
             else None
         )
-        instance_path = Path(record["instance"])
+        instance_path = _relocated_instance(Path(record["instance"]))
         row = {
             "run_id": record["run_id"],
             "instance": str(instance_path),

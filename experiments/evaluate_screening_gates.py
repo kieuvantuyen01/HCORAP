@@ -4,7 +4,7 @@
 The compact design no longer spends measured runs on epsilon, weight, or
 lexicographic calibration screens.  The complete 8-cell factorial is run first;
 technical validity, weighted-objective agreement, and peak memory are hard
-stops.  A valid factorial releases the fixed 732-run publication matrix.
+stops.  A valid factorial releases the fixed 924-run publication matrix.
 """
 
 from __future__ import annotations
@@ -274,11 +274,20 @@ def _branch(passed: bool, pass_action: str, fail_action: str) -> dict[str, Any]:
     }
 
 
-def evaluate(config_path: Path) -> dict[str, Any]:
+def evaluate(
+    config_path: Path,
+    *,
+    encoding_result_dir: Path | None = None,
+    output_path: Path | None = None,
+) -> dict[str, Any]:
     config_path = config_path.resolve()
     config = json.loads(config_path.read_text(encoding="utf-8"))
     base = config_path.parent
-    directories = {"encoding": _resolve(base, config["encoding_result_dir"])}
+    directories = {
+        "encoding": encoding_result_dir.resolve()
+        if encoding_result_dir is not None
+        else _resolve(base, config["encoding_result_dir"])
+    }
     rows = {"encoding": _read_rows(directories["encoding"])}
     maximum_errors = int(config["maximum_hard_errors_per_campaign"])
     hard_errors = {name: _hard_errors(value) for name, value in rows.items()}
@@ -334,7 +343,11 @@ def evaluate(config_path: Path) -> dict[str, Any]:
     result["publication_scope"] = "COMPACT" if result["hard_stop_pass"] else "STOP"
     result["expected_measured_runs"] = int(config["expected_measured_runs"])
     result["decision"] = "GO" if result["hard_stop_pass"] else "NO-GO"
-    output = _resolve(base, config["output"])
+    output = (
+        output_path.resolve()
+        if output_path is not None
+        else _resolve(base, config["output"])
+    )
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(
         json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8"
@@ -351,9 +364,15 @@ def main() -> int:
         type=Path,
         default=Path("experiments/configs/screening_gates.json"),
     )
+    parser.add_argument("--encoding-results", type=Path)
+    parser.add_argument("--output", type=Path)
     arguments = parser.parse_args()
     try:
-        result = evaluate(arguments.config)
+        result = evaluate(
+            arguments.config,
+            encoding_result_dir=arguments.encoding_results,
+            output_path=arguments.output,
+        )
     except (OSError, ValueError, KeyError, json.JSONDecodeError) as exc:
         parser.error(str(exc))
     print(json.dumps(result, indent=2, sort_keys=True))
