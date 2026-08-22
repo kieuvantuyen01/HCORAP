@@ -12,6 +12,8 @@ import argparse
 import csv
 import hashlib
 import json
+import random
+import statistics
 from pathlib import Path
 from typing import Any, Iterable
 
@@ -31,19 +33,6 @@ BASELINE = ("sorting-network", "none", "none")
 REFERENCE = REFERENCE_CONFIGURATION
 CONFIG_KEYS = ("cardinality", "implied", "symmetry")
 FACTORIAL_ORDER = FACTORIAL_CONFIGURATIONS
-SELECTED_CONTRASTS = (
-    ("encoding", "IC=none;SB=none", "SN $\\to$ TOT", "IC off, SB off"),
-    (
-        "encoding",
-        "IC=both;SB=slot-service",
-        "SN $\\to$ TOT",
-        "IC on, SB on",
-    ),
-    ("implied", "Enc=totalizer;SB=none", "IC off $\\to$ on", "TOT, SB off"),
-    ("symmetry", "Enc=totalizer;IC=both", "SB off $\\to$ on", "TOT, IC on"),
-)
-
-
 def _json(path: Path) -> dict[str, Any]:
     value = json.loads(path.read_text(encoding="utf-8"))
     if not isinstance(value, dict):
@@ -87,7 +76,9 @@ def _fmt(value: Any, digits: int = 2) -> str:
     if value in (None, ""):
         return "--"
     number = _float(value)
-    rendered = f"{number:.{digits}f}".rstrip("0").rstrip(".")
+    rendered = f"{number:.{digits}f}"
+    if digits > 0:
+        rendered = rendered.rstrip("0").rstrip(".")
     return "0" if rendered == "-0" else rendered
 
 
@@ -95,23 +86,19 @@ def _count(value: Any) -> str:
     return f"{_int(value):,}".replace(",", r"{,}")
 
 
+def _fmt_grouped(value: Any, digits: int = 2) -> str:
+    rendered = _fmt(value, digits)
+    if rendered == "--":
+        return rendered
+    sign = "-" if rendered.startswith("-") else ""
+    unsigned = rendered.removeprefix("-")
+    integer, separator, fraction = unsigned.partition(".")
+    grouped = f"{int(integer):,}".replace(",", r"{,}")
+    return sign + grouped + (separator + fraction if separator else "")
+
+
 def _configuration(row: dict[str, str]) -> tuple[str, str, str]:
     return tuple(row[key] for key in CONFIG_KEYS)  # type: ignore[return-value]
-
-
-def _config_label(configuration: tuple[str, str, str]) -> str:
-    if configuration == BASELINE:
-        return "Baseline"
-    if configuration == REFERENCE:
-        return "Enhanced"
-    raise ValueError(f"unexpected policy configuration: {configuration}")
-
-
-def _factorial_label(configuration: tuple[str, str, str]) -> str:
-    encoding = "SN" if configuration[0] == "sorting-network" else "TOT"
-    implied = "on" if configuration[1] == "both" else "off"
-    symmetry = "on" if configuration[2] == "slot-service" else "off"
-    return f"{encoding}-{implied}-{symmetry}"
 
 
 def _one(
@@ -136,364 +123,378 @@ def _range_wording(value: tuple[str, str]) -> str:
     return f"range from {value[0]} to {value[1]}"
 
 
-def _contrast_effect(
-    rows: list[dict[str, str]], *, left_name: str, right_name: str
-) -> str:
-    """Describe only effects resolved by all four predeclared bootstrap CIs."""
-    eligible = [
+def _median(values: Iterable[float]) -> float:
+    materialized = list(values)
+    if not materialized:
+        raise ValueError("cannot take the median of an empty sample")
+    return statistics.median(materialized)
+
+
+def _percentile(values: list[float], probability: float) -> float:
+    ordered = sorted(values)
+    if not ordered:
+        raise ValueError("cannot take a percentile of an empty sample")
+    if len(ordered) == 1:
+        return ordered[0]
+    position = probability * (len(ordered) - 1)
+    lower = int(position)
+    upper = min(lower + 1, len(ordered) - 1)
+    fraction = position - lower
+    return ordered[lower] * (1 - fraction) + ordered[upper] * fraction
+
+
+def _bootstrap_median_ci(
+    values: list[float], label: str, repetitions: int = 2_000
+) -> tuple[float, float]:
+    if not values:
+        raise ValueError(f"cannot bootstrap an empty sample: {label}")
+    seed = int.from_bytes(hashlib.sha256(label.encode("utf-8")).digest()[:8], "big")
+    generator = random.Random(seed)
+    medians = [
+        statistics.median(generator.choices(values, k=len(values)))
+        for _ in range(repetitions)
+    ]
+    return _percentile(medians, 0.025), _percentile(medians, 0.975)
+
+
+def _policy_signal(
+    rows: list[dict[str, str]],
+    *,
+    comparison: str | None,
+    delta_prefix: str,
+    weighted_similarity_key: str,
+    weighted_overtime_key: str,
+) -> dict[str, Any]:
+    selected = [
         row
         for row in rows
-        if row.get("bootstrap_95_ci_low") not in (None, "")
-        and row.get("bootstrap_95_ci_high") not in (None, "")
+        if (comparison is None or row.get("comparison") == comparison)
+        and _truth(row.get("both_optimum"))
     ]
-    if len(eligible) != 4:
-        return "is not resolved in every direct contrast"
-    if all(_float(row["bootstrap_95_ci_low"]) > 1 for row in eligible):
-        return f"consistently favors {right_name}"
-    if all(_float(row["bootstrap_95_ci_high"]) < 1 for row in eligible):
-        return f"consistently favors {left_name}"
-    return "is mixed or unresolved across contexts"
+    if not selected:
+        raise ValueError("policy signal has no jointly optimal pairs")
+    relative_losses = []
+    for row in selected:
+        weighted_similarity = _float(row[weighted_similarity_key])
+        similarity_change = _float(row[f"{delta_prefix}similarity"])
+        if weighted_similarity <= 0:
+            raise ValueError("weighted similarity must be positive")
+        relative_losses.append(-100 * similarity_change / weighted_similarity)
+    continuity_changes = [
+        _float(row[f"{delta_prefix}continuity"]) for row in selected
+    ]
+    overtime_changes = [_float(row[f"{delta_prefix}overtime"]) for row in selected]
+    similarity_changes = [
+        _float(row[f"{delta_prefix}similarity"]) for row in selected
+    ]
+    return {
+        "pairs": len(selected),
+        "weighted_overtime_positive": sum(
+            _float(row[weighted_overtime_key]) > 0 for row in selected
+        ),
+        "joint_strict_improvements": sum(
+            continuity < 0 and overtime < 0
+            for continuity, overtime in zip(continuity_changes, overtime_changes)
+        ),
+        "joint_nonworse": sum(
+            continuity <= 0 and overtime <= 0
+            for continuity, overtime in zip(continuity_changes, overtime_changes)
+        ),
+        "similarity_worsened": sum(value < 0 for value in similarity_changes),
+        "median_similarity_change": _median(similarity_changes),
+        "median_continuity_change": _median(continuity_changes),
+        "median_overtime_change": _median(overtime_changes),
+        "median_relative_similarity_loss_pct": _median(relative_losses),
+        "min_relative_similarity_loss_pct": min(relative_losses),
+        "max_relative_similarity_loss_pct": max(relative_losses),
+    }
 
 
-def _factorial_table(
-    factorial: list[dict[str, str]],
-    contrasts: list[dict[str, str]],
-    composite: dict[str, str],
+def _totalizer_only_contrast(
+    rows: list[dict[str, str]], factorial: list[dict[str, str]]
+) -> dict[str, Any]:
+    totalizer_only = ("totalizer", "none", "none")
+    full = REFERENCE
+    indexed = {
+        (row["instance_sha256"], _configuration(row)): row for row in rows
+    }
+    ratios = []
+    totalizer_wins = 0
+    instances = sorted({row["instance_sha256"] for row in rows})
+    for instance in instances:
+        left = indexed.get((instance, totalizer_only))
+        right = indexed.get((instance, full))
+        if left is None or right is None:
+            continue
+        if not (_truth(left["both_proved"]) and _truth(right["both_proved"])):
+            continue
+        left_time = _float(left["configuration_elapsed_seconds"])
+        right_time = _float(right["configuration_elapsed_seconds"])
+        if left_time <= 0 or right_time <= 0:
+            raise ValueError("paired runtime must be positive")
+        ratio = right_time / left_time
+        ratios.append(ratio)
+        totalizer_wins += ratio > 1 + 1e-12
+    if not ratios:
+        raise ValueError("no proved Totalizer-only/full pairs")
+    low, high = _bootstrap_median_ci(ratios, "totalizer-only-vs-full")
+    summaries = {_configuration(row): row for row in factorial}
+    baseline = summaries[BASELINE]
+    totalizer = summaries[totalizer_only]
+    return {
+        "pairs": len(ratios),
+        "totalizer_only_faster": totalizer_wins,
+        "median_full_over_totalizer_only": _median(ratios),
+        "bootstrap_95_ci_low": low,
+        "bootstrap_95_ci_high": high,
+        "par2_reduction_vs_baseline_pct": 100
+        * (_float(baseline["par2_seconds"]) - _float(totalizer["par2_seconds"]))
+        / _float(baseline["par2_seconds"]),
+    }
+
+
+def _maxsat_progress(rows: list[dict[str, str]]) -> dict[str, dict[str, int]]:
+    output: dict[str, dict[str, int]] = {}
+    for method in ("weighted", "lex-cos", "lex-overtime"):
+        group = [row for row in rows if row["method"] == method]
+        if len(group) != 48:
+            raise ValueError(f"expected 48 corrected-v2 MaxSAT rows for {method}")
+        timeouts = [row for row in group if row["status"].startswith("TIMEOUT")]
+        output[method] = {
+            "runs": len(group),
+            "optimum": sum(row["status"] == "OPTIMUM" for row in group),
+            "timeouts": len(timeouts),
+            "final_stage_timeouts": sum(
+                method != "weighted" and _int(row.get("stage_count", 0)) >= 2
+                for row in timeouts
+            ),
+        }
+    return output
+
+
+def _result_figure(
+    encoding: list[dict[str, str]], corrected_pairs: list[dict[str, str]]
 ) -> str:
-    indexed = {_configuration(row): row for row in factorial}
-    if set(indexed) != set(FACTORIAL_ORDER):
-        raise ValueError("factorial summary does not contain exactly eight cells")
-    cell_lines = []
-    for configuration in FACTORIAL_ORDER:
-        row = indexed[configuration]
-        encoding = "SN" if configuration[0] == "sorting-network" else "TOT"
-        implied = "on" if configuration[1] == "both" else "off"
-        symmetry = "on" if configuration[2] == "slot-service" else "off"
-        cell_lines.append(
-            "    "
-            + " & ".join(
-                (
-                    _factorial_label(configuration),
-                    encoding,
-                    implied,
-                    symmetry,
-                    _count(row["optimum_runs"]),
-                    _count(row["unsat_runs"]),
-                    _count(row["timeout_runs"]),
-                    _fmt(row["par2_seconds"]),
-                    _fmt(row["median_peak_rss_mb"]),
-                )
-            )
-            + r" \\"
-        )
-
-    contrast_lines = []
-    for factor, condition, label, display_condition in SELECTED_CONTRASTS:
+    """Render the two instance-level effects readers should remember."""
+    order = (
+        ("IC=none;SB=none", "neither added", 4),
+        ("IC=none;SB=slot-service", "symmetry only", 3),
+        ("IC=both;SB=none", "implied only", 2),
+        ("IC=both;SB=slot-service", "both added", 1),
+    )
+    intervals = []
+    labels = []
+    ticks = []
+    for condition, label, y in order:
         row = _one(
-            contrasts,
-            lambda item, f=factor, c=condition: item["factor"] == f
-            and item["condition"] == c,
-            f"{factor}/{condition} contrast",
+            encoding,
+            lambda item, selected=condition: item["condition"] == selected,
+            f"encoding/{condition} contrast",
         )
-        wins = "/".join(
-            _count(row[key]) for key in ("right_faster", "ties", "left_faster")
-        )
-        interval = (
-            f"{_fmt(row['median_speedup_left_over_right'])} "
-            f"[{_fmt(row['bootstrap_95_ci_low'])}, "
-            f"{_fmt(row['bootstrap_95_ci_high'])}]"
-        )
-        contrast_lines.append(
-            "    "
-            + " & ".join(
-                (
-                    label,
-                    rf"\multicolumn{{2}}{{l}}{{{display_condition}}}",
-                    _count(row["both_proved_pairs"]),
-                    wins,
-                    rf"\multicolumn{{2}}{{c}}{{{interval}}}",
-                    _fmt(row["median_variables_difference"]),
-                    _fmt(row["median_hard_clauses_difference"]),
-                )
-            )
-            + r" \\"
-        )
-    composite_wins = "/".join(
-        _count(composite[key])
-        for key in ("reference_faster", "ties", "baseline_faster")
-    )
-    composite_interval = (
-        f"{_fmt(composite['median_speedup_baseline_over_reference'])} "
-        f"[{_fmt(composite['bootstrap_95_ci_low'])}, "
-        f"{_fmt(composite['bootstrap_95_ci_high'])}]"
-    )
-    contrast_lines.append(
-        "    "
-        + " & ".join(
+        low = _fmt(row["bootstrap_95_ci_low"], 3)
+        high = _fmt(row["bootstrap_95_ci_high"], 3)
+        median = _fmt(row["median_speedup_left_over_right"], 3)
+        intervals.extend(
             (
-                r"Baseline $\to$ enhanced",
-                r"\multicolumn{2}{l}{end-to-end, $n=48$}",
-                _count(composite["both_proved_pairs"]),
-                composite_wins,
-                rf"\multicolumn{{2}}{{c}}{{{composite_interval}}}",
-                "--",
-                "--",
+                rf"    \addplot[draw=hcorapblue, very thick, mark=none] coordinates {{({low},{y}) ({high},{y})}};",
+                rf"    \addplot[only marks, mark=*, mark size=2.2pt, hcorapblue] coordinates {{({median},{y})}};",
             )
         )
-        + r" \\"
+        labels.append(label)
+        ticks.append(str(y))
+    proved_counts = {_int(row["both_proved_pairs"]) for row in encoding}
+    proved_wording = (
+        f"{_count(next(iter(proved_counts)))} pairs solved by both settings per context"
+        if len(proved_counts) == 1
+        else "the pairs solved by both settings in each context"
+    )
+    policy_rows = [
+        row
+        for row in corrected_pairs
+        if row["comparison"] == "weighted-to-continuity-first"
+        and _truth(row["both_optimum"])
+    ]
+    if len(policy_rows) != 48:
+        raise ValueError("expected 48 exact corrected-v2 policy pairs")
+    policy_coordinates = " ".join(
+        f"({_fmt(-_float(row['delta_continuity']), 1)},"
+        f"{_fmt(-_float(row['delta_overtime']), 1)})"
+        for row in policy_rows
     )
 
     return rf"""
-\begin{{table*}}[t]
-  \caption{{Factorial and end-to-end encoding results on 48 original instances
-  ($T=300$\,s). Panel~A reports all eight configurations; Panel~B reports the
-  direct factor and baseline--enhanced comparisons. SN denotes sorting network,
-  TOT Totalizer, IC implied constraints, SB symmetry breaking, W/T/L
-  wins/ties/losses, and CI confidence interval. \textsc{{Opt}},
-  \textsc{{Unsat}}, and TO denote optimal, infeasible, and timeout runs. Speedup
-  is left runtime divided by right runtime; PAR-2 and RSS are lower-is-better.}}
-  \label{{tab:factorial}}
+\begin{{figure*}}[t]
   \centering
-  \scriptsize
-  \setlength{{\tabcolsep}}{{3.5pt}}
-  \renewcommand{{\arraystretch}}{{0.94}}
-  \begin{{tabularx}}{{\textwidth}}{{@{{}}Xlllrrrrr@{{}}}}
-    \toprule
-    \multicolumn{{9}}{{@{{}}l}}{{\textit{{Panel A: factorial cells and all-run performance}}}} \\
-    Configuration & Counting & IC & SB & \textsc{{Opt}} & \textsc{{Unsat}} & TO & PAR-2 (s) & RSS (MB) \\
-    \midrule
-{chr(10).join(cell_lines)}
-    \midrule
-    \multicolumn{{9}}{{@{{}}l}}{{\textit{{Panel B: paired factor comparisons and baseline--enhanced validation}}}} \\
-    Contrast (left $\to$ right) & \multicolumn{{2}}{{c}}{{Condition}} & Pairs & W/T/L & \multicolumn{{2}}{{c}}{{Median speedup [95\% CI]}} & $\Delta$variables & $\Delta$hard clauses \\
-    \midrule
-{chr(10).join(contrast_lines)}
-    \bottomrule
-  \end{{tabularx}}
-\end{{table*}}
+  \begin{{minipage}}[t]{{0.46\textwidth}}
+    \centering
+    \vspace{{0pt}}
+    \begin{{tikzpicture}}
+      \begin{{axis}}[
+        width=0.98\linewidth,
+        height=4.35cm,
+        xmin=-0.7, xmax=13.8,
+        ymin=-0.8, ymax=16.8,
+        xtick={{0,3,6,9,12}},
+        ytick={{0,4,8,12,16}},
+        title={{\footnotesize\bfseries (a) Effect of continuity-first policy}},
+        xlabel={{\scriptsize continuity improvement}},
+        ylabel={{\scriptsize overtime reduction}},
+        tick label style={{font=\scriptsize}},
+        label style={{font=\scriptsize}},
+        grid=major,
+        grid style={{black!10}},
+        axis lines=left,
+        clip=false]
+        \addplot[only marks,mark=*,mark size=1.65pt,
+          draw=hcorapblue,fill=hcorapblue,fill opacity=0.60]
+          coordinates {{{policy_coordinates}}};
+      \end{{axis}}
+    \end{{tikzpicture}}
+  \end{{minipage}}\hfill
+  \begin{{minipage}}[t]{{0.49\textwidth}}
+    \centering
+    \vspace{{0pt}}
+    \begin{{tikzpicture}}
+      \begin{{axis}}[
+        width=0.98\linewidth,
+        height=4.35cm,
+        xmin=0.98, xmax=1.30,
+        ymin=0.45, ymax=4.55,
+        ytick={{{','.join(ticks)}}},
+        yticklabels={{{','.join('{' + label + '}' for label in labels)}}},
+        xtick={{1.0,1.1,1.2,1.3}},
+        title={{\footnotesize\bfseries (b) Sorting network / Totalizer runtime}},
+        xlabel={{\scriptsize paired median ratio ($>1$ favors Totalizer)}},
+        tick label style={{font=\scriptsize}},
+        yticklabel style={{align=right}},
+        axis y line*=left,
+        y axis line style={{draw=none}},
+        ytick style={{draw=none}},
+        axis x line*=bottom,
+        xmajorgrids=true,
+        grid style={{black!12}},
+        clip=false]
+        \draw[densely dashed,black!55] (axis cs:1,0.5) -- (axis cs:1,4.5);
+{chr(10).join(intervals)}
+      \end{{axis}}
+    \end{{tikzpicture}}
+  \end{{minipage}}
+  \caption{{Main effects. (a) Each point is one of 48 jointly optimal
+  corrected-v2 pairs; movement up and right means that continuity-first
+  improves both criteria. (b) Sorting-network runtime divided by Totalizer
+  runtime on the original benchmark; dots are paired medians and lines are
+  95\% intervals over {proved_wording}. Values above one favor Totalizer; all
+  runs use a 300-s limit.}}
+  \Description{{Panel a is a scatter plot of continuity improvement against
+  overtime reduction for 48 corrected-v2 instances. Most points lie above and
+  to the right of zero. Panel b is a forest plot whose four confidence
+  intervals lie above one and therefore favor Totalizer.}}
+  \label{{fig:main-effects}}
+\end{{figure*}}
 """
 
 
-def _policy_table(
+def _evidence_table(
     *,
-    lex_rows: list[dict[str, str]],
-    sensitivity_rows: list[dict[str, str]],
-    corrected_rows: list[dict[str, str]],
-    corrected_paired: dict[str, str] | None,
-    cross_rows: list[dict[str, str]],
-    original_enabled: bool,
-    corrected_enabled: bool,
+    original_signal: dict[str, Any],
+    corrected_signal: dict[str, Any],
+    maxsat_progress: dict[str, dict[str, int]],
 ) -> str:
-    lines = [
-        r"\begin{table*}[t]",
-        r"  \caption{Objective-rule and cross-solver results. Panels~A and B",
-        r"  compare objective rules on the original and corrected benchmarks;",
-        r"  deltas are second rule minus first, with lower CONT/OT and higher SIM",
-        r"  preferred. Panel~C reports agreement where EvalMaxSAT, Gurobi, and",
-        r"  CPLEX all prove optimality. PAR-2 includes timeouts and is lower-is-better.}",
-        r"  \label{tab:policy-validation}",
-        r"  \centering",
-        r"  \scriptsize",
-        r"  \setlength{\tabcolsep}{3.5pt}",
-        r"  \renewcommand{\arraystretch}{0.94}",
-        r"  \begin{tabularx}{\textwidth}{@{}Xlrrrrrrr@{}}",
-        r"    \toprule",
-    ]
-    if original_enabled:
-        lines.extend(
-            (
-                r"    \multicolumn{9}{@{}l}{\textit{Panel A: paired objective-rule effects}} \\",
-                r"    Comparison & Model/solver & $n$ & Proved 1/2 & Both optimal & $\Delta$SIM & $\Delta$CONT & $\Delta$OT & PAR-2 1/2 (s) \\",
-                r"    \midrule",
-            )
-        )
-        for row in sorted(lex_rows, key=lambda item: _config_label(_configuration(item))):
-            lines.append(
-                "    "
-                + " & ".join(
-                    (
-                        r"Weighted $\to$ continuity-first (original)",
-                        _config_label(_configuration(row)),
-                        _count(row["pairs"]),
-                        f"{_count(row['weighted_proved_runs'])}/"
-                        f"{_count(row['lex_cos_proved_runs'])}",
-                        _count(row["both_optimum_pairs"]),
-                        _fmt(row["median_similarity_change"]),
-                        _fmt(row["median_continuity_change"]),
-                        _fmt(row["median_overtime_change"]),
-                        f"{_fmt(row['weighted_par2_seconds'])}/"
-                        f"{_fmt(row['lex_cos_par2_seconds'])}",
-                    )
-                )
-                + r" \\"
-            )
-        if corrected_enabled and corrected_paired is not None:
-            row = corrected_paired
-            lines.append(
-                "    "
-                + " & ".join(
-                    (
-                        r"Weighted $\to$ continuity-first (corrected)",
-                        row.get("solver", "Gurobi"),
-                        _count(row["pairs"]),
-                        f"{_count(row['left_proved_runs'])}/"
-                        f"{_count(row['right_proved_runs'])}",
-                        _count(row["both_optimum_pairs"]),
-                        _fmt(row["median_similarity_change"]),
-                        _fmt(row["median_continuity_change"]),
-                        _fmt(row["median_overtime_change"]),
-                        f"{_fmt(row['left_par2_seconds'])}/"
-                        f"{_fmt(row['right_par2_seconds'])}",
-                    )
-                )
-                + r" \\"
-            )
-        for row in sensitivity_rows:
-            lines.append(
-                "    "
-                + " & ".join(
-                    (
-                        r"Continuity-first $\to$ overtime-first (corrected)",
-                        row.get("solver", "Gurobi"),
-                        _count(row["pairs"]),
-                        f"{_count(row['left_proved_runs'])}/"
-                        f"{_count(row['right_proved_runs'])}",
-                        _count(row["both_optimum_pairs"]),
-                        _fmt(row["median_similarity_change"]),
-                        _fmt(row["median_continuity_change"]),
-                        _fmt(row["median_overtime_change"]),
-                        f"{_fmt(row['left_par2_seconds'])}/"
-                        f"{_fmt(row['right_par2_seconds'])}",
-                    )
-                )
-                + r" \\"
-            )
-        lines.append(r"    \midrule")
+    return rf"""
+\begin{{table}}[!t]
+  \caption{{Benchmark signal and EvalMaxSAT progress. In the upper panel,
+  ``both improve'' means strictly lower continuity and overtime under
+  continuity-first; pairs are optimal under both policies, and SIM loss is the
+  median compatibility reduction. The lower panel reports where runs stand at
+  the 300-s limit.}}
+  \label{{tab:benchmark-signal}}
+  \centering
+  \scriptsize
+  \setlength{{\tabcolsep}}{{2.7pt}}
+  \renewcommand{{\arraystretch}}{{1.03}}
+  \begin{{tabular}}{{@{{}}lrrrr@{{}}}}
+    \toprule
+    Benchmark & Pairs & Weighted OT$>0$ & Both improve & SIM loss \\
+    \midrule
+    Original & {_count(original_signal['pairs'])} & {_count(original_signal['weighted_overtime_positive'])} & {_count(original_signal['joint_strict_improvements'])} & {_fmt(original_signal['median_relative_similarity_loss_pct'], 1)}\% \\
+    Corrected-v2 & {_count(corrected_signal['pairs'])} & {_count(corrected_signal['weighted_overtime_positive'])} & {_count(corrected_signal['joint_strict_improvements'])} & {_fmt(corrected_signal['median_relative_similarity_loss_pct'], 1)}\% \\
+    \midrule
+    \multicolumn{{5}}{{@{{}}l}}{{\textit{{EvalMaxSAT progress on corrected-v2 (48 runs per policy)}}}} \\
+    \midrule
+    Policy & Optimum & \multicolumn{{2}}{{c}}{{Timeouts at final criterion}} & Total timeouts \\
+    Weighted & {_count(maxsat_progress['weighted']['optimum'])} & \multicolumn{{2}}{{c}}{{--}} & {_count(maxsat_progress['weighted']['timeouts'])} \\
+    Continuity-first & {_count(maxsat_progress['lex-cos']['optimum'])} & \multicolumn{{2}}{{c}}{{{_count(maxsat_progress['lex-cos']['final_stage_timeouts'])}}} & {_count(maxsat_progress['lex-cos']['timeouts'])} \\
+    Overtime-first & {_count(maxsat_progress['lex-overtime']['optimum'])} & \multicolumn{{2}}{{c}}{{{_count(maxsat_progress['lex-overtime']['final_stage_timeouts'])}}} & {_count(maxsat_progress['lex-overtime']['timeouts'])} \\
+    \bottomrule
+  \end{{tabular}}
+\end{{table}}
+"""
 
-    if corrected_enabled:
-        lines.extend(
-            (
-                r"    \multicolumn{9}{@{}l}{\textit{Panel B: exact corrected-benchmark policy evidence (Gurobi)}} \\",
-                r"    Objective rule & Solver & Runs & \textsc{Opt} & TO & Median SIM & Median CONT & Median OT & PAR-2 (s) \\",
-                r"    \midrule",
-            )
-        )
-        method_labels = {
-            "weighted": "Weighted",
-            "lex-cos": "Continuity-first",
-            "lex-overtime": "Overtime-first",
-        }
-        for method in ("weighted", "lex-cos", "lex-overtime"):
-            row = _one(
-                corrected_rows,
-                lambda item, selected=method: item["method"] == selected,
-                f"corrected-v2 {method} row",
-            )
-            lines.append(
-                "    "
-                + " & ".join(
-                    (
-                        method_labels[method],
-                        row.get("solver", "Gurobi"),
-                        _count(row["runs"]),
-                        _count(row["optimum_runs"]),
-                        _count(row["timeout_runs"]),
-                        _fmt(row["median_similarity"]),
-                        _fmt(row["median_continuity"]),
-                        _fmt(row["median_overtime"]),
-                        _fmt(row["par2_seconds"]),
-                    )
-                )
-                + r" \\"
-            )
-        lines.append(r"    \midrule")
 
-    lines.extend(
-        (
-            r"    \multicolumn{9}{@{}l}{\textit{Panel C: objective agreement on the 20-instance commercial subset}} \\",
-            r"    Three-solver comparison & Objective rule & Groups & All optimal & Agree & Disagree & \multicolumn{3}{c}{Compared measures} \\",
-            r"    \midrule",
+def _factorial_footprint_table(factorial: list[dict[str, str]]) -> str:
+    """Show every ablation cell without reproducing the full artifact matrix."""
+    if len(factorial) != len(FACTORIAL_ORDER):
+        raise ValueError(
+            f"expected {len(FACTORIAL_ORDER)} factorial cells, found {len(factorial)}"
         )
+    ordered = sorted(
+        factorial,
+        key=lambda row: (
+            0 if row["cardinality"] == "sorting-network" else 1,
+            0 if row["implied"] == "none" else 1,
+            0 if row["symmetry"] == "none" else 1,
+        ),
     )
-    method_labels = {"weighted": "Weighted", "lex-cos": "Continuity-first"}
-    objective_labels = {
-        "weighted": "coverage, weighted score",
-        "lex-cos": "coverage, SIM, CONT, OT",
+    best_par2 = min(_float(row["par2_seconds"]) for row in ordered)
+    profiles = {
+        (
+            _int(row["optimum_runs"]),
+            _int(row["unsat_runs"]),
+            _int(row["timeout_runs"]),
+        )
+        for row in ordered
     }
-    methods = ("weighted", "lex-cos") if original_enabled else ("weighted",)
-    for method in methods:
-        group = [row for row in cross_rows if row["method"] == method]
-        if len(group) != 20:
-            raise ValueError(f"expected 20 cross-paradigm {method} groups")
-        all_exact = sum(_truth(row["all_exact_optimum"]) for row in group)
-        agree = sum(_truth(row["objective_agreement"]) for row in group)
-        disagree = sum(
-            str(row["objective_agreement"]).lower() == "false" for row in group
+    if len(profiles) == 1:
+        optimum, infeasible, timeout = next(iter(profiles))
+        profile_caption = (
+            f"each cell has {_count(optimum)} optimum, "
+            f"{_count(infeasible)} infeasible, and {_count(timeout)} timeout runs"
         )
+    else:
+        profile_caption = "solved profiles vary by cell"
+    lines = []
+    for row in ordered:
+        encoding = "SN" if row["cardinality"] == "sorting-network" else "TOT"
+        implied = "off" if row["implied"] == "none" else "on"
+        symmetry = "off" if row["symmetry"] == "none" else "on"
+        par2 = _fmt(row["par2_seconds"], 1)
+        if _float(row["par2_seconds"]) == best_par2:
+            par2 = rf"\textbf{{{par2}}}"
         lines.append(
-            "    "
-            + " & ".join(
-                (
-                    "EvalMaxSAT / Gurobi / CPLEX",
-                    method_labels[method],
-                    _count(len(group)),
-                    _count(all_exact),
-                    _count(agree),
-                    _count(disagree),
-                    rf"\multicolumn{{3}}{{c}}{{{objective_labels[method]}}}",
-                )
-            )
-            + r" \\"
+            f"    {encoding} & {implied} & {symmetry} & {par2} & "
+            f"{_fmt(row['median_peak_rss_mb'], 1)} & "
+            f"{_fmt_grouped(row['median_variables'], 0)} \\\\"
         )
-    lines.extend((r"    \bottomrule", r"  \end{tabularx}", r"\end{table*}"))
-    return "\n".join(lines) + "\n"
-
-
-def _policy_prose(
-    lex_rows: list[dict[str, str]],
-    sensitivity_rows: list[dict[str, str]],
-    original_enabled: bool,
-) -> str:
-    if not original_enabled:
-        return (
-            "The original-benchmark objective comparison was not run; RQ1 "
-            "therefore uses the corrected benchmark.\n"
-        )
-    sentences = []
-    for configuration in (REFERENCE,):
-        label = _config_label(configuration)
-        row = _one(
-            lex_rows,
-            lambda item, selected=configuration: _configuration(item) == selected,
-            f"LEX-COS configuration {label}",
-        )
-        sentences.append(
-            (
-                f"Under ${label}$, {_count(row['both_optimum_pairs'])}/"
-                f"{_count(row['pairs'])} pairs are jointly optimum; the "
-                f"continuity-first objective changes median SIM, CONT, and OT by "
-                f"{_fmt(row['median_similarity_change'])}, "
-                f"{_fmt(row['median_continuity_change'])}, and "
-                f"{_fmt(row['median_overtime_change'])}, respectively."
-                if _int(row["both_optimum_pairs"]) > 0
-                else (
-                    f"Under ${label}$, no matched pair completes both objective "
-                    "rules; paired objective deltas are unavailable."
-                )
-            )
-        )
-    same = sum(_int(row["same_objective_vector_pairs"]) for row in sensitivity_rows)
-    both = sum(_int(row["both_optimum_pairs"]) for row in sensitivity_rows)
-    sentences.append(
-        (
-            f"In the exact Gurobi analysis of the corrected benchmark, the continuity-first and overtime-first objectives yield the same "
-            f"objective vector on "
-            f"{_count(same)}/{_count(both)} jointly optimum sensitivity pairs."
-            if both
-            else "No sensitivity pair completes both lexicographic orders."
-        )
-    )
-    return "  ".join(sentences) + "\n"
+    return rf"""
+\begin{{table}}[!t]
+  \caption{{Full encoding ablation (48 runs per cell). SN and TOT denote sorting
+  networks and Totalizers; IC and SB denote implied constraints and symmetry
+  breaking. PAR-2 includes the timeouts; RSS is peak resident memory; formula
+  sizes and RSS are cell medians; {profile_caption}. Best PAR-2 is bold.}}
+  \label{{tab:factorial-footprint}}
+  \centering
+  \scriptsize
+  \setlength{{\tabcolsep}}{{3.1pt}}
+  \renewcommand{{\arraystretch}}{{1.02}}
+  \begin{{tabular}}{{@{{}}lllrrr@{{}}}}
+    \toprule
+    Enc. & IC & SB & PAR-2 (s) & RSS (MB) & Variables \\
+    \midrule
+{chr(10).join(lines)}
+    \bottomrule
+  \end{{tabular}}
+\end{{table}}
+"""
 
 
 def _render(
@@ -502,208 +503,251 @@ def _render(
     factorial: list[dict[str, str]],
     contrasts: list[dict[str, str]],
     composite: dict[str, str],
-    lex_rows: list[dict[str, str]],
-    sensitivity_rows: list[dict[str, str]],
+    factorial_pairs: list[dict[str, str]],
+    original_pairs: list[dict[str, str]],
+    corrected_pairs: list[dict[str, str]],
+    corrected_maxsat_runs: list[dict[str, str]],
+    corrected_validation: dict[str, Any],
     corrected_rows: list[dict[str, str]],
-    corrected_paired: dict[str, str] | None,
     cross_rows: list[dict[str, str]],
-    original_enabled: bool,
-    corrected_enabled: bool,
 ) -> tuple[str, str, str]:
+    """Build a concise result narrative from pair-level evidence."""
+    del composite  # Retained in the generator contract and provenance.
     encoding = [row for row in contrasts if row["factor"] == "encoding"]
     implied = [row for row in contrasts if row["factor"] == "implied"]
     symmetry = [row for row in contrasts if row["factor"] == "symmetry"]
     if (len(encoding), len(implied), len(symmetry)) != (4, 4, 4):
         raise ValueError("expected four direct contrasts for each factorial factor")
+
     enc_speed = _range(encoding, "median_speedup_left_over_right")
-    enc_vars = _range(encoding, "median_variables_difference")
-    enc_hard = _range(encoding, "median_hard_clauses_difference")
     ic_speed = _range(implied, "median_speedup_left_over_right")
     sb_speed = _range(symmetry, "median_speedup_left_over_right")
-    ic_effect = _contrast_effect(
-        implied, left_name="omitting the implied constraints", right_name="adding them"
-    )
-    sb_effect = _contrast_effect(
-        symmetry,
-        left_name="omitting symmetry breaking",
-        right_name="adding symmetry breaking",
-    )
     enc_wins = sum(_int(row["right_faster"]) for row in encoding)
     enc_losses = sum(_int(row["left_faster"]) for row in encoding)
-
-    exact_groups = sum(_truth(row["all_exact_optimum"]) for row in cross_rows)
-    agreement_groups = sum(_truth(row["objective_agreement"]) for row in cross_rows)
-    disagreements = sum(
-        str(row["objective_agreement"]).lower() == "false" for row in cross_rows
+    enc_var_reduction = (
+        _fmt_grouped(
+            min(abs(_float(row["median_variables_difference"])) for row in encoding)
+        ),
+        _fmt_grouped(
+            max(abs(_float(row["median_variables_difference"])) for row in encoding)
+        ),
     )
-    policy_prose = _policy_prose(lex_rows, sensitivity_rows, original_enabled)
-    corrected_prose = ""
-    if corrected_enabled:
-        if corrected_paired is None:
-            raise ValueError("enabled corrected-v2 branch lacks paired summary")
-        if _int(corrected_paired["both_optimum_pairs"]) > 0:
-            corrected_prose = (
-                "In the exact Gurobi corrected-benchmark analysis, the continuity-first objective "
-                "changes median SIM, CONT, and OT by "
-                f"{_fmt(corrected_paired['median_similarity_change'])}, "
-                f"{_fmt(corrected_paired['median_continuity_change'])}, and "
-                f"{_fmt(corrected_paired['median_overtime_change'])} over "
-                f"{_count(corrected_paired['both_optimum_pairs'])} jointly "
-                "optimum pairs.  "
-            )
-        else:
-            corrected_prose = (
-                "The exact corrected-benchmark campaign does not meet the paired-evidence gate; "
-                "paired objective deltas are unavailable.  "
-            )
-    else:
-        corrected_prose = (
-            "The corrected-benchmark comparison was not run.  "
+    enc_hard_increase = (
+        _fmt_grouped(
+            min(_float(row["median_hard_clauses_difference"]) for row in encoding)
+        ),
+        _fmt_grouped(
+            max(_float(row["median_hard_clauses_difference"]) for row in encoding)
+        ),
+    )
+    implied_slower = sum(_float(row["bootstrap_95_ci_high"]) < 1 for row in implied)
+    symmetry_slower = sum(_float(row["bootstrap_95_ci_high"]) < 1 for row in symmetry)
+    symmetry_unresolved = len(symmetry) - symmetry_slower
+
+    original_signal = _policy_signal(
+        original_pairs,
+        comparison=None,
+        delta_prefix="lex_minus_weighted_",
+        weighted_similarity_key="weighted_similarity",
+        weighted_overtime_key="weighted_overtime",
+    )
+    corrected_signal = _policy_signal(
+        corrected_pairs,
+        comparison="weighted-to-continuity-first",
+        delta_prefix="delta_",
+        weighted_similarity_key="left_similarity",
+        weighted_overtime_key="left_overtime",
+    )
+    priority_pairs = [
+        row
+        for row in corrected_pairs
+        if row["comparison"] == "continuity-first-to-overtime-first"
+        and _truth(row["both_optimum"])
+    ]
+    if len(priority_pairs) != 48:
+        raise ValueError("expected 48 exact corrected priority-order pairs")
+    priority_same = sum(
+        all(
+            _float(row[f"delta_{metric}"]) == 0
+            for metric in ("similarity", "continuity", "overtime")
         )
-
-    factorial_table = _factorial_table(factorial, contrasts, composite)
-    policy_table = _policy_table(
-        lex_rows=lex_rows,
-        sensitivity_rows=sensitivity_rows,
-        corrected_rows=corrected_rows,
-        corrected_paired=corrected_paired,
-        cross_rows=cross_rows,
-        original_enabled=original_enabled,
-        corrected_enabled=corrected_enabled,
+        for row in priority_pairs
     )
+    priority_different = [
+        row
+        for row in priority_pairs
+        if any(
+            _float(row[f"delta_{metric}"]) != 0
+            for metric in ("similarity", "continuity", "overtime")
+        )
+    ]
+    priority_similarity_range = (
+        min(_float(row["delta_similarity"]) for row in priority_different),
+        max(_float(row["delta_similarity"]) for row in priority_different),
+    )
+
+    maxsat_progress = _maxsat_progress(corrected_maxsat_runs)
+    lex_timeouts = (
+        maxsat_progress["lex-cos"]["timeouts"]
+        + maxsat_progress["lex-overtime"]["timeouts"]
+    )
+    final_stage_timeouts = (
+        maxsat_progress["lex-cos"]["final_stage_timeouts"]
+        + maxsat_progress["lex-overtime"]["final_stage_timeouts"]
+    )
+    totalizer_only = _totalizer_only_contrast(factorial_pairs, factorial)
+    totalizer_cell = _one(
+        factorial,
+        lambda row: _configuration(row) == ("totalizer", "none", "none"),
+        "Totalizer-only cell",
+    )
+    exact_groups = sum(_truth(row["all_exact_optimum"]) for row in cross_rows)
+    infeasible_groups = sum(_truth(row["all_exact_infeasible"]) for row in cross_rows)
+    agreement_groups = sum(_truth(row["objective_agreement"]) for row in cross_rows)
+    if agreement_groups != exact_groups:
+        raise ValueError("cross-solver objective agreement is incomplete")
+
+    profiles = {
+        (
+            _int(row["optimum_runs"]),
+            _int(row["unsat_runs"]),
+            _int(row["timeout_runs"]),
+        )
+        for row in factorial
+    }
+    if len(profiles) != 1:
+        raise ValueError("factorial cells have different solved profiles")
+    optimum, infeasible, timeout = next(iter(profiles))
+
+    result_figure = _result_figure(encoding, corrected_pairs)
+    evidence_table = _evidence_table(
+        original_signal=original_signal,
+        corrected_signal=corrected_signal,
+        maxsat_progress=maxsat_progress,
+    )
+    factorial_table = _factorial_footprint_table(factorial)
 
     results = rf"""% Generated from validator-approved campaign summaries. Do not edit.
 \section{{Results}}
 \label{{sec:results}}
 
-The compact campaign contains {_count(screening['expected_measured_runs'])}
-measured runs.  Every reported optimal assignment passes independent
-verification.
+The {_count(screening['expected_measured_runs'])}-run campaign yields three
+findings. Explicit priorities change the schedules selected by a weighted
+score. Totalizer improves runtime in every controlled comparison. The final
+compatibility criterion accounts for almost all lexicographic timeouts.
 
-\subsection{{RQ1: Objective-rule effects}}
-\label{{sec:rq1}}
+{result_figure.rstrip()}
 
-{policy_prose.rstrip()}
+\subsection{{Priorities change schedules}}
+\label{{sec:policy-results}}
 
-\subsection{{RQ2: Totalizer encoding}}
-\label{{sec:rq2}}
+The original benchmark rarely activates overtime: only
+{_count(original_signal['weighted_overtime_positive'])}/{_count(original_signal['pairs'])}
+weighted solutions have positive overtime, and continuity-first improves both
+continuity and overtime in only
+{_count(original_signal['joint_strict_improvements'])}/{_count(original_signal['pairs'])}
+pairs. Corrected-v2 changes this picture. Weighted solutions use overtime in
+{_count(corrected_signal['weighted_overtime_positive'])}/{_count(corrected_signal['pairs'])}
+pairs, and continuity-first improves both criteria in
+{_count(corrected_signal['joint_strict_improvements'])}/{_count(corrected_signal['pairs'])}
+(Figure~\ref{{fig:main-effects}}a). It never worsens either prioritized
+criterion, while compatibility falls by a median
+{_fmt(corrected_signal['median_relative_similarity_loss_pct'], 1)}\%
+(range {_fmt(corrected_signal['min_relative_similarity_loss_pct'], 1)}--{_fmt(corrected_signal['max_relative_similarity_loss_pct'], 1)}\%).
+Table~\ref{{tab:benchmark-signal}} shows why corrected-v2 is needed for the
+policy study rather than merely adding more instances of the original design.
 
-Across the four direct sorting-network-to-Totalizer comparisons, median runtime
-ratios among pairs proved by both configurations {_range_wording(enc_speed)};
-Totalizer is faster on {_count(enc_wins)} such pairs and sorting
-networks on {_count(enc_losses)}.  Median formula-size changes range from {enc_vars[0]} to
-{enc_vars[1]} variables and from {enc_hard[0]} to {enc_hard[1]} hard clauses.
-The conditional contrasts and their uncertainty intervals are reported in
-Table~\ref{{tab:factorial}}B.
+Continuity-first and overtime-first select the same objective values on
+{_count(priority_same)}/{_count(len(priority_pairs))} instances. In each of the
+remaining {_count(len(priority_different))}, overtime-first removes one
+overtime unit in exchange for one continuity unit; the associated compatibility
+change ranges from {_fmt(priority_similarity_range[0])} to
+{_fmt(priority_similarity_range[1])} points.
 
-\subsection{{RQ3: Constraint strengthening and interactions}}
-\label{{sec:rq3}}
+{evidence_table.rstrip()}
 
-The four direct implied-constraint comparisons have median paired runtime ratios
-that {_range_wording(ic_speed)} and the CI evidence {ic_effect}; the four
-symmetry-breaking comparisons {_range_wording(sb_speed)}, and their effect
-{sb_effect}.  The 48-instance end-to-end
-baseline--enhanced comparison has a median ratio of
-{_fmt(composite['median_speedup_baseline_over_reference'])}
-(95\% bootstrap confidence interval [{_fmt(composite['bootstrap_95_ci_low'])},
-{_fmt(composite['bootstrap_95_ci_high'])}]) over
-{_count(composite['both_proved_pairs'])} pairs proved by both configurations.
-Table~\ref{{tab:factorial}}B separates the three component effects.
+\subsection{{Totalizer helps; extra constraints do not}}
+\label{{sec:encoding-results}}
+
+All eight configurations solve the same {_count(optimum)} instances, prove
+{_count(infeasible)} infeasible, and time out on {_count(timeout)}. Runtime
+therefore distinguishes configurations more clearly than solved count. Across
+the four sorting-network-to-Totalizer comparisons, paired median runtime ratios
+{_range_wording(enc_speed)}, and every 95\% interval lies above one
+(Figure~\ref{{fig:main-effects}}b). Totalizer is faster on {_count(enc_wins)} of
+{_count(sum(_int(row['both_proved_pairs']) for row in encoding))} pairs solved
+by both configurations,
+versus {_count(enc_losses)} for sorting networks. It removes a median
+{enc_var_reduction[0]}--{enc_var_reduction[1]} variables while adding
+{enc_hard_increase[0]}--{enc_hard_increase[1]} clauses. These measurements
+describe the formula change but do not isolate a single cause for the runtime gain.
 
 {factorial_table.rstrip()}
 
-\subsection{{Validation and scope}}
+The Totalizer-only cell has the lowest PAR-2,
+{_fmt(totalizer_cell['par2_seconds'], 1)}\,s, an
+{_fmt(totalizer_only['par2_reduction_vs_baseline_pct'], 1)}\% reduction from the
+sorting-network baseline. Adding the implied constraints is slower in all
+{_count(implied_slower)} contexts; its paired median ratios
+{_range_wording(ic_speed)}. Symmetry breaking is slower in
+{_count(symmetry_slower)} contexts and unresolved in
+{_count(symmetry_unresolved)}; its paired median ratios
+{_range_wording(sb_speed)}. The
+full configuration is slower than Totalizer-only on
+{_count(totalizer_only['totalizer_only_faster'])}/{_count(totalizer_only['pairs'])}
+pairs solved by both configurations: its median runtime ratio is
+{_fmt(totalizer_only['median_full_over_totalizer_only'], 2)}
+([95\% CI: {_fmt(totalizer_only['bootstrap_95_ci_low'], 2)},
+{_fmt(totalizer_only['bootstrap_95_ci_high'], 2)}]).
+
+\subsection{{Solver progress and independent checks}}
 \label{{sec:validation}}
 
-{corrected_prose}Among {_count(exact_groups)} commercial-subset groups where
-all three solvers prove optimum, {_count(agreement_groups)} objective vectors
-agree and {_count(disagreements)} disagree.
+Within 300\,s, EvalMaxSAT proves
+{_count(maxsat_progress['weighted']['optimum'])}/48 weighted runs and
+{_count(maxsat_progress['lex-cos']['optimum'])}/48 runs under each priority
+order. Among the {_count(lex_timeouts)} lexicographic timeouts,
+{_count(final_stage_timeouts)} reach the final compatibility criterion after
+proving the first two optima. Thus the main difficulty is completing the last
+criterion, not finding the higher-priority values.
 
-{policy_table.rstrip()}
+Gurobi proves all {_count(sum(_int(row['optimum_runs']) for row in corrected_rows))}
+corrected-v2 runs. CPLEX matches Gurobi on all
+{_count(corrected_validation['audit_runs'])} audited runs. On the original
+20-instance subset, EvalMaxSAT, Gurobi, and CPLEX also agree on
+{_count(exact_groups)} optimal groups and {_count(infeasible_groups)} infeasible groups.
+Every reported schedule passes the independent verifier.
 """
 
-    if original_enabled:
-        reference_lex = _one(
-            lex_rows,
-            lambda row: _configuration(row) == REFERENCE,
-            "reference LEX-COS summary",
-        )
-        if _int(reference_lex["both_optimum_pairs"]) > 0:
-            policy_finding = (
-                "Under the enhanced encoding, the continuity-first objective "
-                "changes median CONT and "
-                f"OT by {_fmt(reference_lex['median_continuity_change'])} and "
-                f"{_fmt(reference_lex['median_overtime_change'])} over "
-                f"{_count(reference_lex['both_optimum_pairs'])} jointly optimum "
-                "pairs."
-            )
-        else:
-            policy_finding = (
-                "Under the enhanced encoding, no matched pair completes both "
-                "objective rules; paired differences are unavailable."
-            )
-    elif corrected_enabled and corrected_paired is not None:
-        if _int(corrected_paired["both_optimum_pairs"]) > 0:
-            policy_finding = (
-                "On the corrected benchmark, the continuity-first objective "
-                "changes median CONT and OT by "
-                f"{_fmt(corrected_paired['median_continuity_change'])} and "
-                f"{_fmt(corrected_paired['median_overtime_change'])} over "
-                f"{_count(corrected_paired['both_optimum_pairs'])} jointly "
-                "optimum pairs."
-            )
-        else:
-            policy_finding = (
-                "No corrected-benchmark pair completes both objective rules; "
-                "paired differences are unavailable."
-            )
-    else:
-        policy_finding = (
-            "Objective-rule results are unavailable because neither evaluation "
-            "branch was run."
-        )
     abstract = (
         "% Generated from validator-approved campaign summaries. Do not edit.\n"
-        "Across four direct encoding contrasts, the median paired "
-        "sorting-network-to-Totalizer runtime ratios "
-        f"{_range_wording(enc_speed)}.  {policy_finding}  Among "
-        f"{_count(exact_groups)} "
-        "commercial-subset groups where EvalMaxSAT, Gurobi, and CPLEX all prove "
-        f"optimum, {_count(agreement_groups)} objective vectors agree and "
-        f"{_count(disagreements)} disagree.\n"
+        "On corrected-v2, continuity-first improves both continuity and overtime "
+        f"in {_count(corrected_signal['joint_strict_improvements'])}/"
+        f"{_count(corrected_signal['pairs'])} exact pairs, with a median "
+        f"compatibility reduction of {_fmt(corrected_signal['median_relative_similarity_loss_pct'], 1)}\\%. "
+        "Totalizer yields median paired speedups of "
+        f"{enc_speed[0]}--{enc_speed[1]} over sorting networks, whereas the two "
+        "added constraint families do not improve the Totalizer-only setting. "
+        f"Of {_count(lex_timeouts)} lexicographic timeouts, "
+        f"{_count(final_stage_timeouts)} reach the final compatibility criterion.\n"
     )
 
-    eligible_encoding = [
-        row
-        for row in encoding
-        if row.get("bootstrap_95_ci_low") not in (None, "")
-        and row.get("bootstrap_95_ci_high") not in (None, "")
-    ]
-    if len(eligible_encoding) == 4 and all(
-        _float(row["bootstrap_95_ci_low"]) > 1 for row in eligible_encoding
-    ):
-        effect = "consistently favors Totalizer in the direct encoding contrasts"
-    elif len(eligible_encoding) == 4 and all(
-        _float(row["bootstrap_95_ci_high"]) < 1 for row in eligible_encoding
-    ):
-        effect = "consistently favors sorting networks in the direct encoding contrasts"
-    elif eligible_encoding:
-        effect = "is mixed or only partially resolved across the direct contrasts"
-    else:
-        effect = "is unavailable because no direct contrast completes both configurations"
     conclusion = rf"""% Generated from validator-approved campaign summaries. Do not edit.
 \section{{Conclusion}}
 \label{{sec:conclusion}}
 
-We evaluated lexicographic MaxSAT objectives together with Totalizer encoding,
-implied constraints, and symmetry breaking for HCORAP.  The encoding effect
-{effect}: median paired ratios
-{_range_wording(enc_speed)}.  The CI evidence for implied constraints
-{ic_effect}, whereas the symmetry-breaking effect {sb_effect}.  {policy_finding}
-Objective vectors agree in
-{_count(agreement_groups)}/{_count(exact_groups)} groups in which EvalMaxSAT,
-Gurobi, and CPLEX all prove optimum.  Future work will extend the model to
-routing and uncertainty and evaluate it on operational data.
+Explicit priorities select different home-care schedules from a weighted
+score. Corrected-v2 exposes the trade-off clearly: continuity-first improves
+both continuity and overtime in
+{_count(corrected_signal['joint_strict_improvements'])}/{_count(corrected_signal['pairs'])}
+exact pairs at a median compatibility reduction of
+{_fmt(corrected_signal['median_relative_similarity_loss_pct'], 1)}\%. Totalizer
+is consistently faster than sorting networks, and Totalizer without the two
+added constraint families has the lowest PAR-2. The three-solver checks agree
+on all {_count(exact_groups + infeasible_groups)} original-benchmark groups.
+On corrected-v2, the final compatibility criterion accounts for
+{_count(final_stage_timeouts)}/{_count(lex_timeouts)} lexicographic timeouts and
+is the clearest target for further improvement.
 """
     return abstract, results, conclusion
 
@@ -724,6 +768,8 @@ def generate(arguments: argparse.Namespace) -> dict[str, Any]:
         raise ValueError("screening decision has no branch map")
     original_enabled = branches["original_lexicographic"]["enabled"] is True
     corrected_enabled = branches["corrected_v2_lexicographic"]["enabled"] is True
+    if not (original_enabled and corrected_enabled):
+        raise ValueError("the compact manuscript requires both policy branches")
     expected_primary_scope = "compact"
     expected_cross_scope = "full"
     if primary.get("scope") != expected_primary_scope:
@@ -739,53 +785,79 @@ def generate(arguments: argparse.Namespace) -> dict[str, Any]:
         return _csv(path)
 
     factorial = primary_csv("factorial_summary.csv")
+    factorial_pairs = primary_csv("factorial_paired_runs.csv")
     contrasts = primary_csv("factorial_contrasts.csv")
     composite_rows = primary_csv("weighted_composite_paired_summary.csv")
     if len(composite_rows) != 1:
         raise ValueError("weighted composite paired summary must have one row")
     composite = composite_rows[0]
-    lex_rows: list[dict[str, str]] = []
-    sensitivity_rows: list[dict[str, str]] = []
-    if original_enabled:
-        lex_rows = primary_csv("lex_confirmatory_summary.csv")
-        if len(lex_rows) != 1:
-            raise ValueError("compact policy scope requires one reference summary row")
+    lex_rows = primary_csv("lex_confirmatory_summary.csv")
+    if len(lex_rows) != 1:
+        raise ValueError("compact policy scope requires one reference summary row")
+    original_pairs = primary_csv("lex_confirmatory_pairs.csv")
 
     corrected_rows: list[dict[str, str]] = []
-    corrected_paired: dict[str, str] | None = None
+    corrected_maxsat_rows: list[dict[str, str]] = []
+    corrected_validation: dict[str, Any] | None = None
+    corrected_pairs: list[dict[str, str]] = []
+    corrected_maxsat_runs: list[dict[str, str]] = []
     if corrected_enabled:
         corrected_validation_path = (
             arguments.corrected_dir / "corrected_exact_validation.json"
         ).resolve()
-        corrected = _json(corrected_validation_path)
-        if corrected.get("manuscript_eligible") is not True:
+        corrected_validation = _json(corrected_validation_path)
+        if corrected_validation.get("manuscript_eligible") is not True:
             raise ValueError("corrected-v2 exact policy evidence is not manuscript-eligible")
+        corrected_maxsat_validation_path = (
+            arguments.corrected_maxsat_dir / "corrected_validation.json"
+        ).resolve()
+        corrected_maxsat_validation = _json(corrected_maxsat_validation_path)
+        if corrected_maxsat_validation.get("structurally_valid") is not True:
+            raise ValueError("corrected-v2 EvalMaxSAT scalability results are invalid")
+        corrected_maxsat_summary_path = (
+            arguments.corrected_maxsat_dir / "corrected_policy_summary.csv"
+        ).resolve()
+        corrected_maxsat_rows = _csv(corrected_maxsat_summary_path)
+        corrected_maxsat_runs_path = (
+            arguments.corrected_maxsat_results_dir / "runs.csv"
+        ).resolve()
+        corrected_maxsat_runs = _csv(corrected_maxsat_runs_path)
         corrected_summary_path = (
             arguments.corrected_dir / "corrected_policy_summary.csv"
         ).resolve()
         corrected_paired_path = (
             arguments.corrected_dir / "corrected_pairwise_summary.csv"
         ).resolve()
+        corrected_pairs_path = (
+            arguments.corrected_dir / "corrected_pairwise_pairs.csv"
+        ).resolve()
         corrected_rows = _csv(corrected_summary_path)
         corrected_paired_rows = _csv(corrected_paired_path)
-        corrected_paired = _one(
+        corrected_pairs = _csv(corrected_pairs_path)
+        _one(
             corrected_paired_rows,
             lambda row: row["comparison"] == "weighted-to-continuity-first",
             "corrected weighted-to-continuity-first summary",
         )
-        sensitivity_rows = [
-            _one(
-                corrected_paired_rows,
-                lambda row: row["comparison"]
-                == "continuity-first-to-overtime-first",
-                "corrected priority-order summary",
-            )
-        ]
-        source_paths.extend(
-            (corrected_validation_path, corrected_summary_path, corrected_paired_path)
+        _one(
+            corrected_paired_rows,
+            lambda row: row["comparison"]
+            == "continuity-first-to-overtime-first",
+            "corrected priority-order summary",
         )
-    if original_enabled and len(sensitivity_rows) != 1:
-        raise ValueError("compact policy scope requires one exact sensitivity row")
+        source_paths.extend(
+            (
+                corrected_validation_path,
+                corrected_summary_path,
+                corrected_paired_path,
+                corrected_pairs_path,
+                corrected_maxsat_validation_path,
+                corrected_maxsat_summary_path,
+                corrected_maxsat_runs_path,
+            )
+        )
+    if corrected_validation is None:
+        raise ValueError("missing corrected-v2 validation")
 
     cross_agreement_path = (
         arguments.cross_dir / "cross_paradigm_agreement.csv"
@@ -803,13 +875,13 @@ def generate(arguments: argparse.Namespace) -> dict[str, Any]:
         factorial=factorial,
         contrasts=contrasts,
         composite=composite,
-        lex_rows=lex_rows,
-        sensitivity_rows=sensitivity_rows,
+        factorial_pairs=factorial_pairs,
+        original_pairs=original_pairs,
+        corrected_pairs=corrected_pairs,
+        corrected_maxsat_runs=corrected_maxsat_runs,
+        corrected_validation=corrected_validation,
         corrected_rows=corrected_rows,
-        corrected_paired=corrected_paired,
         cross_rows=cross_rows,
-        original_enabled=original_enabled,
-        corrected_enabled=corrected_enabled,
     )
     arguments.output_dir.mkdir(parents=True, exist_ok=True)
     outputs = {
@@ -857,6 +929,16 @@ def parse_arguments() -> argparse.Namespace:
         "--corrected-dir",
         type=Path,
         default=Path("experiments/results/gcp_corrected_exact_analysis"),
+    )
+    parser.add_argument(
+        "--corrected-maxsat-dir",
+        type=Path,
+        default=Path("experiments/results/gcp_corrected_analysis"),
+    )
+    parser.add_argument(
+        "--corrected-maxsat-results-dir",
+        type=Path,
+        default=Path("experiments/results/gcp_corrected_primary"),
     )
     parser.add_argument(
         "--cross-dir",

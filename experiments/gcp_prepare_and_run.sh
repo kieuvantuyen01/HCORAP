@@ -32,6 +32,9 @@ Full manuscript phases (require CONFIRM_FULL_CAMPAIGN=YES):
   all                   Run the complete manifest-locked ICIIT campaign
 
 Deferred research phases (outside the publication manifest; not called by all):
+  lex-transfer-pilot   Compare Totalizer-only with the full configuration on
+                       one corrected-v2 seed per stratum (32 runs)
+  lex-transfer-full    Run the 96-row paired confirmation after a GO pilot
   pareto, weight-confirmation, uncertainty
 
 Post-processing:
@@ -546,6 +549,50 @@ run_corrected_commercial_evidence() {
     python3 experiments/analyze_corrected_exact_evidence.py
 }
 
+run_lex_transfer_pilot() {
+    result_dir=experiments/results/gcp_corrected_lex_encoding_transfer_pilot
+    analysis_dir=experiments/results/gcp_corrected_lex_encoding_transfer_pilot_analysis
+    run_maxsat experiments/configs/gcp_corrected_lex_encoding_transfer_pilot.json \
+        "$result_dir"
+    python3 experiments/analyze_lex_encoding_transfer.py \
+        --results "$result_dir" \
+        --output-dir "$analysis_dir" \
+        --expected-instances 16
+}
+
+require_lex_transfer_go() {
+    decision_path=experiments/results/gcp_corrected_lex_encoding_transfer_pilot_analysis/lex_encoding_transfer_validation.json
+    if [ ! -f "$decision_path" ]; then
+        echo "Missing lexicographic encoding-transfer pilot decision: $decision_path" >&2
+        exit 2
+    fi
+    decision=$(python3 - "$decision_path" <<'PY'
+import json, sys
+from pathlib import Path
+report = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+if report.get("structurally_valid") is not True:
+    raise SystemExit("pilot analysis is structurally invalid")
+print(report.get("decision", "INVALID"))
+PY
+    )
+    if [ "$decision" != "GO" ]; then
+        echo "Pilot decision is $decision; the 96-row confirmation is intentionally skipped." >&2
+        exit 3
+    fi
+}
+
+run_lex_transfer_full() {
+    require_lex_transfer_go
+    result_dir=experiments/results/gcp_corrected_lex_encoding_transfer_full
+    analysis_dir=experiments/results/gcp_corrected_lex_encoding_transfer_full_analysis
+    run_maxsat experiments/configs/gcp_corrected_lex_encoding_transfer_full.json \
+        "$result_dir"
+    python3 experiments/analyze_lex_encoding_transfer.py \
+        --results "$result_dir" \
+        --output-dir "$analysis_dir" \
+        --expected-instances 48
+}
+
 if [ "$PHASE" = "help" ] || [ "$PHASE" = "--help" ] || [ "$PHASE" = "-h" ]; then
     usage
     exit 0
@@ -596,6 +643,22 @@ case "$PHASE" in
         run_warmup
         run_corrected_primary
         checkpoint_results corrected-primary
+        ;;
+    lex-transfer-pilot)
+        check_clean_for_full
+        build_and_test
+        prepare_suite
+        run_warmup
+        run_lex_transfer_pilot
+        checkpoint_results lex-transfer-pilot
+        ;;
+    lex-transfer-full)
+        check_clean_for_full
+        build_and_test
+        prepare_suite
+        run_warmup
+        run_lex_transfer_full
+        checkpoint_results lex-transfer-full
         ;;
     pareto)
         check_clean_for_full

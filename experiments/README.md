@@ -33,6 +33,8 @@ totals.
 - Full clean-room campaign: `run_all_remaining_publication.sh`.
 - Only the corrected-v2 exact-policy supplement after C1--C5 already exist:
   `run_remaining_corrected_evidence.sh`.
+- Conditional Totalizer-only transfer test for corrected-v2 LEX-COS:
+  `run_corrected_lex_encoding_transfer.sh`.
 - Individual resumable phases: `gcp_prepare_and_run.sh PHASE`.
 
 Always run the contract check before starting a solver:

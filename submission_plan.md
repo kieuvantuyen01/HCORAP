@@ -105,6 +105,14 @@ số run và worst-case compute. Mỗi factorial contrast vẫn có 48 paired
 blocks trên đủ 16 lớp; kết quả theo từng lớp chỉ được trình bày mô tả vì mỗi lớp
 có ba seeds.
 
+Một kiểm tra chuyển giao được tách khỏi ma trận 924 runs: chạy LEX-COS trên
+corrected-v2 với `Totalizer-only` và cấu hình R. Pilot dùng seed 1002 của 16
+strata, tức 32 runs và tối đa 2,67 core-hour. Chỉ chạy confirmation 96 runs
+(48 instances × 2 configs, tối đa 8 core-hour) nếu pilot đạt ít nhất một điều
+kiện: thêm ròng 2 optimum, tiến thêm một criterion trên ít nhất 4/16 cặp, hoặc
+giảm PAR-2 ít nhất 10%. Kết quả chỉ nhập vào bài sau khi đủ 96 rows; pilot không
+được gộp vào estimate cuối.
+
 ## 5. Phần hoãn hoặc loại khỏi bài
 
 | Nhánh | Quyết định | Cách trình bày |
@@ -221,12 +229,17 @@ verifier-passing pairs.
 
 ## 10. Trình bày trong bản 5 trang
 
-Giữ đúng hai visual kết quả full-width:
+Giữ đúng ba visual kết quả, mỗi visual có một nhiệm vụ riêng:
 
-1. bảng factorial: tám cells, bốn direct contrasts tiêu biểu và B--R trên cùng
-   48 instances; đủ 12 direct contrasts nằm trong artifact;
-2. bảng policy/validation: weighted--LEX-COS, LEX-OCS sensitivity,
-   corrected-v2 và 20-instance three-backend agreement.
+1. figure full-width hai panel: weighted--LEX-COS policy deltas trên
+   corrected-v2 và bốn sorting-network/Totalizer confidence intervals;
+2. bảng single-column đủ tám factorial cells, báo PAR-2, peak RSS và số biến;
+3. bảng single-column đối chiếu signal của original/corrected-v2 và cho biết
+   EvalMaxSAT dừng ở criterion nào trong các lexicographic runs.
+
+Đủ 12 direct contrasts ở mức hàng và toàn bộ summary columns nằm trong
+artifact; bản chính chỉ giữ range/direction cần cho claims. Cấu trúc Results đi
+theo claim (policy, encoding, validation) thay vì lặp lại nhãn RQ cơ học.
 
 Không thêm Pareto, weight-sensitivity, uncertainty hoặc routing figure. Nếu còn
 chỗ, ưu tiên threats to validity và exact sample/protocol description hơn một
@@ -237,6 +250,8 @@ exploratory plot.
 - [ ] Publication commit/tag sạch và `HCORAP_EXPECTED_COMMIT` đã khóa.
 - [ ] G1, G2, G3 pass; exact count là 924 measured rows.
 - [ ] Tất cả bảng và prose định lượng sinh từ frozen raw data.
+- [ ] Pilot Totalizer-only/LEX-COS đã có quyết định GO/STOP; nếu GO thì đủ 96
+      confirmation rows trước khi đưa claim chuyển giao vào bài.
 - [ ] Mỗi con số trong Abstract/Conclusion truy về generated evidence.
 - [ ] Không dùng historical/development/pilot runtime làm publication evidence.
 - [ ] Artifact có source, configs, instances, raw logs, environment và SHA-256.

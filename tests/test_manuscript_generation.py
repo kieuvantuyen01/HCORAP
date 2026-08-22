@@ -24,10 +24,14 @@ def _configuration(configuration: tuple[str, str, str]) -> dict[str, str]:
 def test_generate_complete_branch_aware_manuscript_bundle(tmp_path: Path) -> None:
     primary = tmp_path / "primary"
     corrected = tmp_path / "corrected"
+    corrected_maxsat = tmp_path / "corrected-maxsat"
+    corrected_maxsat_results = tmp_path / "corrected-maxsat-results"
     cross = tmp_path / "cross"
     output = tmp_path / "generated"
     primary.mkdir()
     corrected.mkdir()
+    corrected_maxsat.mkdir()
+    corrected_maxsat_results.mkdir()
     cross.mkdir()
     screening = tmp_path / "screening.json"
     screening.write_text(
@@ -47,9 +51,47 @@ def test_generate_complete_branch_aware_manuscript_bundle(tmp_path: Path) -> Non
         json.dumps({"valid": True, "scope": "compact"}), encoding="utf-8"
     )
     (corrected / "corrected_exact_validation.json").write_text(
-        json.dumps({"valid": True, "manuscript_eligible": True}),
+        json.dumps(
+            {
+                "valid": True,
+                "manuscript_eligible": True,
+                "audit_instances": 16,
+                "audit_runs": 48,
+            }
+        ),
         encoding="utf-8",
     )
+    (corrected_maxsat / "corrected_validation.json").write_text(
+        json.dumps({"valid": True, "structurally_valid": True}),
+        encoding="utf-8",
+    )
+    _write_csv(
+        corrected_maxsat / "corrected_policy_summary.csv",
+        [
+            {
+                "method": method,
+                "runs": 48,
+                "optimum_runs": 3,
+                "timeout_runs": 45,
+                "par2_seconds": 570,
+            }
+            for method in ("weighted", "lex-cos", "lex-overtime")
+        ],
+    )
+    corrected_maxsat_run_rows = []
+    for method in ("weighted", "lex-cos", "lex-overtime"):
+        for index in range(48):
+            optimum = index < (1 if method == "weighted" else 3)
+            corrected_maxsat_run_rows.append(
+                {
+                    "method": method,
+                    "status": "OPTIMUM" if optimum else "TIMEOUT",
+                    "stage_count": (
+                        0 if method == "weighted" else (3 if optimum else (1 if index == 47 else 2))
+                    ),
+                }
+            )
+    _write_csv(corrected_maxsat_results / "runs.csv", corrected_maxsat_run_rows)
     (cross / "cross_paradigm_validation.json").write_text(
         json.dumps({"valid": True, "scope": "full"}), encoding="utf-8"
     )
@@ -65,10 +107,26 @@ def test_generate_complete_branch_aware_manuscript_bundle(tmp_path: Path) -> Non
                 "timeout_runs": 6,
                 "par2_seconds": 35,
                 "median_peak_rss_mb": 140,
+                "median_variables": 12000,
             }
             for configuration in FACTORIAL_ORDER
         ],
     )
+    factorial_pair_rows = []
+    for instance_index in range(3):
+        for configuration in FACTORIAL_ORDER:
+            totalizer_only = configuration == ("totalizer", "none", "none")
+            full = configuration == ("totalizer", "both", "slot-service")
+            elapsed = 8 if totalizer_only else (10 if full else 12)
+            factorial_pair_rows.append(
+                {
+                    "instance_sha256": f"factorial-{instance_index}",
+                    **_configuration(configuration),
+                    "both_proved": "True",
+                    "configuration_elapsed_seconds": elapsed,
+                }
+            )
+    _write_csv(primary / "factorial_paired_runs.csv", factorial_pair_rows)
     contrasts = []
     for implied in ("none", "both"):
         for symmetry in ("none", "slot-service"):
@@ -154,6 +212,21 @@ def test_generate_complete_branch_aware_manuscript_bundle(tmp_path: Path) -> Non
         )
     _write_csv(primary / "lex_confirmatory_summary.csv", policy_rows)
     _write_csv(
+        primary / "lex_confirmatory_pairs.csv",
+        [
+            {
+                "instance_sha256": f"original-{index}",
+                "both_optimum": "True",
+                "weighted_similarity": 100,
+                "weighted_overtime": 1 if index == 0 else 0,
+                "lex_minus_weighted_similarity": -5,
+                "lex_minus_weighted_continuity": -1,
+                "lex_minus_weighted_overtime": -1 if index == 0 else 0,
+            }
+            for index in range(4)
+        ],
+    )
+    _write_csv(
         corrected / "corrected_policy_summary.csv",
         [
             {
@@ -185,6 +258,12 @@ def test_generate_complete_branch_aware_manuscript_bundle(tmp_path: Path) -> Non
                 "median_overtime_change": -1,
                 "left_par2_seconds": 95,
                 "right_par2_seconds": 100,
+                "continuity_improved": 35,
+                "continuity_equal": 3,
+                "continuity_worsened": 0,
+                "overtime_decreased": 36,
+                "overtime_equal": 2,
+                "overtime_increased": 0,
             }
             for comparison in (
                 "weighted-to-continuity-first",
@@ -192,12 +271,44 @@ def test_generate_complete_branch_aware_manuscript_bundle(tmp_path: Path) -> Non
             )
         ],
     )
+    corrected_pair_rows = []
+    for index in range(48):
+        corrected_pair_rows.append(
+            {
+                "comparison": "weighted-to-continuity-first",
+                "instance_sha256": f"corrected-{index}",
+                "both_optimum": "True",
+                "left_similarity": 100,
+                "left_overtime": 1 if index < 47 else 0,
+                "delta_similarity": -6,
+                "delta_continuity": -1 if index < 42 else 0,
+                "delta_overtime": -1 if index < 47 else 0,
+            }
+        )
+    priority_similarity = (-3, 0, 8)
+    for index in range(48):
+        differs = index >= 45
+        corrected_pair_rows.append(
+            {
+                "comparison": "continuity-first-to-overtime-first",
+                "instance_sha256": f"corrected-{index}",
+                "both_optimum": "True",
+                "left_similarity": 94,
+                "left_overtime": 1,
+                "delta_similarity": priority_similarity[index - 45] if differs else 0,
+                "delta_continuity": 1 if differs else 0,
+                "delta_overtime": -1 if differs else 0,
+            }
+        )
+    _write_csv(corrected / "corrected_pairwise_pairs.csv", corrected_pair_rows)
     _write_csv(
         cross / "cross_paradigm_agreement.csv",
         [
             {
                 "method": method,
                 "all_exact_optimum": "True",
+                "all_exact_infeasible": "False",
+                "status_agreement": "True",
                 "objective_agreement": "True",
             }
             for method in ("weighted", "lex-cos")
@@ -210,6 +321,8 @@ def test_generate_complete_branch_aware_manuscript_bundle(tmp_path: Path) -> Non
             screening_decision=screening,
             primary_dir=primary,
             corrected_dir=corrected,
+            corrected_maxsat_dir=corrected_maxsat,
+            corrected_maxsat_results_dir=corrected_maxsat_results,
             cross_dir=cross,
             output_dir=output,
         )
@@ -217,11 +330,17 @@ def test_generate_complete_branch_aware_manuscript_bundle(tmp_path: Path) -> Non
     assert provenance["valid"]
     assert provenance["expected_measured_runs"] == 924
     results = (output / "results.tex").read_text(encoding="utf-8")
-    assert results.count(r"\begin{table*}") == 2
-    assert "end-to-end, $n=48$" in results
-    assert "48 original instances" in results
+    assert results.count(r"\begin{table}") == 2
+    assert r"\begin{table*}" not in results
+    assert results.count(r"\begin{figure*}") == 1
+    assert r"\label{tab:factorial-footprint}" in results
+    assert r"\label{tab:benchmark-signal}" in results
+    assert "PAR-2 includes" in results
+    assert r"12{,}000" in results
+    assert "Totalizer helps; extra constraints do not" in results
+    assert "final compatibility criterion" in results
     assert r"\resultplaceholder" not in results
-    assert "EvalMaxSAT / Gurobi / CPLEX" in results
+    assert "EvalMaxSAT, Gurobi, and CPLEX" in results
     assert (output / "manuscript-provenance.json").is_file()
     marker = validate_and_render_marker(
         generated_dir=output,

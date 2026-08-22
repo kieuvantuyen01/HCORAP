@@ -186,6 +186,7 @@ include_paths=(
     experiments/analyze_cross_paradigm_validation.py
     experiments/analyze_corrected_validation.py
     experiments/analyze_corrected_exact_evidence.py
+    experiments/analyze_lex_encoding_transfer.py
     experiments/evaluate_corrected_commercial_calibration.py
     experiments/evaluate_commercial_correctness_smoke.py
     experiments/evaluate_evalmaxsat_calibration.py
@@ -202,6 +203,7 @@ include_paths=(
     experiments/run_all_remaining_publication.sh
     experiments/run_remaining_corrected_evidence.sh
     experiments/run_iciit2027_reduced_campaign.sh
+    experiments/run_corrected_lex_encoding_transfer.sh
     experiments/prepare_benchmark_suite.sh
     experiments/prepare_uncertainty_screen.sh
     experiments/verify_benchmark_batch.py

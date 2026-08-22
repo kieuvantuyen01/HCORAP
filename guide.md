@@ -17,15 +17,17 @@ Protocol thực thi chi tiết nằm trong
 
 ### Ba chế độ build bắt buộc
 
-- `main.tex` tạo PDF sạch để đánh giá hình thức trước data freeze. PDF này không
-  hiển thị ghi chú biên tập hoặc placeholder nhưng chưa phải bản submission.
+- `main.tex` tạo PDF sạch để đánh giá hình thức. Khi bundle kết quả sinh tự động
+  đã đầy đủ, PDF này hiển thị Abstract findings, Results và Conclusion để rà
+  soát; đây vẫn chưa phải bản submission nếu thiếu freeze marker.
 - `review.tex` chỉ dùng nội bộ để kiểm tra cấu trúc bằng chứng đang chờ. Không
   gửi PDF này cho hội nghị.
 - `submission.tex` là release build duy nhất được phép gửi. Build phải dừng với
   lỗi nếu thiếu bất kỳ frozen file bắt buộc nào.
 - Abstract findings, Results và Conclusion chỉ được nạp vào `main.tex` khi bộ ba
-  file trong `LaTeX-Templates/paper/generated/` đã được sinh đầy đủ từ frozen
-  artifacts. Không điền số thủ công để làm bản thảo trông hoàn chỉnh.
+  file cùng `manuscript-provenance.json` trong
+  `LaTeX-Templates/paper/generated/` đã được sinh đầy đủ. `submission.tex` còn
+  yêu cầu freeze marker; không điền số thủ công để làm bản thảo trông hoàn chỉnh.
 
 Page budget mục tiêu: khoảng 0,8 trang cho title/abstract/Introduction; 0,5
 trang cho Related Work; 1,5--1,7 trang cho model và phương pháp; 0,6--0,8 trang
@@ -121,15 +123,20 @@ Các nhánh epsilon, weight, uncertainty và routing nằm ngoài measured compa
 campaign. Báo cả timeout, PAR-2, peak RSS và số cặp cùng optimum; không chỉ báo
 trung bình trên các run giải được.
 
-Thứ tự trình bày bắt buộc là RQ1 (objective policy), RQ2 (Totalizer), RQ3
-(implied/symmetry và interactions), rồi validation/scope. Bản 5 trang dùng đúng
-hai visual kết quả, đều là bảng full-width:
+Thứ tự trình bày theo ba claim thay vì lặp lại nhãn RQ: (i) policy ưu tiên làm
+thay đổi lịch được chọn, (ii) Totalizer có direct effect nhất quán trong khi
+implied/symmetry không tạo thêm lợi ích, và (iii) các kiểm tra độc lập xác nhận
+objective values nhưng cũng chỉ ra giới hạn scalability. Bản 5 trang dùng ba
+visual bổ trợ lẫn nhau:
 
-1. bảng factorial hai panel: đủ tám cell; bốn direct-factor contrasts tiêu biểu
-   kèm full set 12 contrasts trong artifact; và một dòng end-to-end B--R tái sử
-   dụng đúng 80 instances của factorial;
-2. bảng policy/validation ba panel: proved count, both-optimum, objective deltas
-   và PAR-2; corrected-v2; agreement EvalMaxSAT/Gurobi/CPLEX.
+1. một figure full-width hai panel, đặt ngay đầu Results, tóm tắt policy deltas
+   trên corrected-v2 và bốn khoảng tin cậy sorting-network/Totalizer;
+2. một bảng compact đủ tám factorial cells với PAR-2, peak RSS và số biến;
+3. một evidence map compact gộp direct-factor conclusions, end-to-end B--R,
+   corrected-v2 và agreement EvalMaxSAT/Gurobi/CPLEX.
+
+Đủ 12 direct contrasts và các cột phân tích chi tiết vẫn nằm trong artifact;
+main paper chỉ giữ các contrast cần để kiểm tra trực tiếp claims.
 
 Không thêm biểu đồ Pareto, cactus/scatter hoặc weight-sensitivity vào main paper
 trừ khi thay thế một trong ba visual hiện có và chứng minh được lượng thông tin
@@ -161,8 +168,11 @@ Conclusion chỉ nhắc lại claim đã có bảng/hình hỗ trợ.
 
 ## 5. Hình, bảng và khả năng tái lập
 
-- tối đa ba visual trong bản 5 trang: related-work taxonomy, factorial summary,
-  và một bảng ba panel gộp policy với corrected/commercial validation;
+- tối đa ba visual kết quả trong bản 5 trang: main-effects figure, full
+  factorial footprint và compact evidence map;
+- tránh các nhãn nội bộ khó hiểu như `cross-paradigm`, `treatment bundle` hoặc
+  `reference configuration` khi có thể nói trực tiếp solver/cấu hình nào được
+  so sánh;
 - mọi bảng/hình phải được sinh từ script và frozen raw data;
 - caption phải tự giải thích được metric, sample và hướng tốt/xấu;
 - biểu đồ dùng font/kích thước đọc được ở double-column;
@@ -181,7 +191,7 @@ Conclusion chỉ nhắc lại claim đã có bảng/hình hỗ trợ.
 - [ ] Related-work table có citation đầy đủ, không biến thành danh sách tóm tắt.
 - [ ] Methods đủ chi tiết để tái triển khai.
 - [ ] Experimental setup khớp exact scope trong `screening_decision.json`
-  (đúng 732 measured runs).
+  (đúng 924 measured runs).
 - [ ] Mọi dòng `OPTIMUM` trong bảng có nghiệm qua independent solution verifier;
       không gọi đó là independently certified optimum nếu chưa kiểm tra proof
       trace.

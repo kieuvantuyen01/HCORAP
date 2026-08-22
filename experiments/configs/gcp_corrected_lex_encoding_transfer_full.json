@@ -1,0 +1,25 @@
+{
+  "binary": "../../bin/release/hcorap_multi",
+  "solver": "${EVALMAXSAT_BIN}",
+  "result_dir": "../results/gcp_corrected_lex_encoding_transfer_full",
+  "instances": [
+    "../../instances/corrected_v2_reduced_suite/evaluation_critical/evaluation/critical/*.txt"
+  ],
+  "instance_filters": {
+    "seeds": [1001, 1002, 1003],
+    "load_profiles": ["critical"]
+  },
+  "expected_instances": 48,
+  "expected_runs": 96,
+  "timeout_seconds": 300,
+  "hard_grace_seconds": 60,
+  "workers": 1,
+  "order_seed": 20270901,
+  "configurations": [
+    {"cardinality": "totalizer", "implied": "none", "symmetry": "none"},
+    {"cardinality": "totalizer", "implied": "both", "symmetry": "slot-service"}
+  ],
+  "runs": [
+    {"method": "lex-cos", "print_assignments": true}
+  ]
+}

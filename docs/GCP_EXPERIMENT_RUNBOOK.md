@@ -241,6 +241,35 @@ Checkpoint tự động sao chép results, native logs và phase logs sang
 `HCORAP_BACKUP_DIR`. Không dùng Spot VM và không phân tích một primary subset
 chưa đủ expected rows.
 
+### 6.1. Kiểm tra chuyển giao Totalizer-only cho LEX-COS
+
+Đây là phần bổ sung duy nhất còn đáng chạy sau ma trận 924 rows. Nó kiểm tra
+liệu cấu hình nhanh nhất trong factorial weighted có còn tốt khi giải
+continuity-first trên corrected-v2 hay không. Pilot ghép cặp hai cấu hình trên
+16 strata của seed 1002:
+
+```text
+T0 = totalizer / implied none / symmetry none
+R  = totalizer / implied both / symmetry slot-service
+policy = LEX-COS; timeout = 300 s; workers = 1
+```
+
+Kiểm tra ma trận và chạy tự động:
+
+```bash
+bash experiments/run_corrected_lex_encoding_transfer.sh --check-only
+export CONFIRM_LEX_TRANSFER=YES
+bash experiments/run_corrected_lex_encoding_transfer.sh all \
+  2>&1 | tee vm-logs/lex-encoding-transfer.log
+```
+
+Pilot có 32 runs, tối đa 2,67 core-hour. Script chỉ chạy confirmation 96 runs
+(8 core-hour tối đa) nếu T0 đạt ít nhất một gate: thêm ròng 2 optimum, tiến thêm
+một criterion trên ít nhất 4/16 cặp, hoặc giảm PAR-2 ít nhất 10%. Nếu cả ba gate
+đều không đạt, script dừng sau pilot. Không gộp 16 pilot instances vào estimate
+của confirmation; confirmation tự chạy lại đủ 48 cặp dưới cùng commit và
+protocol.
+
 ## 7. Exact outputs cần có
 
 | Output | Điều kiện |
@@ -258,6 +287,7 @@ chưa đủ expected rows.
 | `gcp_corrected_analysis` | structurally valid; EvalMaxSAT scalability only |
 | `gcp_corrected_exact_analysis` | `manuscript_eligible=true`; exact policy evidence |
 | `gcp_cross_paradigm_analysis` | valid; 20 groups/policy |
+| `gcp_corrected_lex_encoding_transfer_*` | optional; pilot decision plus 96-row confirmation only after `GO` |
 
 Objective deltas chỉ dùng jointly-optimum, verifier-passing pairs. Solved count
 và PAR-2 giữ toàn bộ rows, kể cả timeout. Three-backend agreement chỉ được báo
@@ -271,10 +301,10 @@ python3 experiments/audit_publication_evidence.py
 bash experiments/package_experiment_artifacts.sh
 ```
 
-Generator sinh hai bảng full-width, quantitative prose, abstract findings,
-conclusion và `manuscript-provenance.json`. Review PDF/diff, commit generated
-bundle, rồi chạy `freeze_manuscript_bundle.py` từ clean commit; freeze kiểm
-SHA-256 của CSV/JSON nguồn và fragments.
+Generator sinh một figure hai panel, hai bảng compact, quantitative prose,
+abstract findings, conclusion và `manuscript-provenance.json`. Review PDF/diff,
+commit generated bundle, rồi chạy `freeze_manuscript_bundle.py` từ clean commit;
+freeze kiểm SHA-256 của CSV/JSON nguồn và fragments.
 
 Artifact nằm trong `artifacts/hcorap_iciit2027_<UTC>.tar.gz` cùng `.sha256` và
 phải chứa source, configs, benchmark/sidecars, raw results, native logs,
