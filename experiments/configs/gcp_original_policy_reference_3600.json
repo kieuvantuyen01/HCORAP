@@ -1,0 +1,42 @@
+{
+  "binary": "../../bin/release/hcorap_commercial",
+  "result_dir": "../results/gcp_original_policy_reference_3600",
+  "instances": [
+    "../../instances/paperInstances/**/*.txt"
+  ],
+  "instance_filters": {
+    "seeds": [1, 2, 3]
+  },
+  "expected_instances": 48,
+  "expected_runs": 96,
+  "timeout_seconds": 3600,
+  "preflight_timeout_seconds": 30,
+  "hard_grace_seconds": 60,
+  "threads": 1,
+  "seed": 0,
+  "mip_gap": 0,
+  "absolute_mip_gap": 0,
+  "workers": 1,
+  "order_seed": 20270906,
+  "order_strategy": "blocked-instance",
+  "commercial_configurations": [
+    {
+      "backend": "gurobi-mip",
+      "formulation": "mip-e"
+    }
+  ],
+  "runs": [
+    {
+      "method": "weighted",
+      "wc": 1,
+      "wo": 1,
+      "print_assignments": true,
+      "native_log": true
+    },
+    {
+      "method": "lex-cos",
+      "print_assignments": true,
+      "native_log": true
+    }
+  ]
+}

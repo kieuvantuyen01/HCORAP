@@ -26,12 +26,14 @@ def test_generate_complete_branch_aware_manuscript_bundle(tmp_path: Path) -> Non
     corrected = tmp_path / "corrected"
     corrected_maxsat = tmp_path / "corrected-maxsat"
     corrected_maxsat_results = tmp_path / "corrected-maxsat-results"
+    corrected_cplex_results = tmp_path / "corrected-cplex-results"
     cross = tmp_path / "cross"
     output = tmp_path / "generated"
     primary.mkdir()
     corrected.mkdir()
     corrected_maxsat.mkdir()
     corrected_maxsat_results.mkdir()
+    corrected_cplex_results.mkdir()
     cross.mkdir()
     screening = tmp_path / "screening.json"
     screening.write_text(
@@ -92,10 +94,22 @@ def test_generate_complete_branch_aware_manuscript_bundle(tmp_path: Path) -> Non
                 }
             )
     _write_csv(corrected_maxsat_results / "runs.csv", corrected_maxsat_run_rows)
+    _write_csv(
+        corrected_cplex_results / "runs.csv",
+        [
+            {
+                "method": method,
+                "status": "OPTIMUM",
+                "elapsed_seconds": 0.5,
+                "timeout_seconds": 300,
+            }
+            for method in ("weighted", "lex-cos", "lex-overtime")
+            for _ in range(16)
+        ],
+    )
     (cross / "cross_paradigm_validation.json").write_text(
         json.dumps({"valid": True, "scope": "full"}), encoding="utf-8"
     )
-
     _write_csv(
         primary / "factorial_summary.csv",
         [
@@ -121,6 +135,8 @@ def test_generate_complete_branch_aware_manuscript_bundle(tmp_path: Path) -> Non
             factorial_pair_rows.append(
                 {
                     "instance_sha256": f"factorial-{instance_index}",
+                    "users": 30 if instance_index < 2 else 40,
+                    "visits": 4 if instance_index % 2 == 0 else 5,
                     **_configuration(configuration),
                     "both_proved": "True",
                     "configuration_elapsed_seconds": elapsed,
@@ -143,6 +159,7 @@ def test_generate_complete_branch_aware_manuscript_bundle(tmp_path: Path) -> Non
                     "bootstrap_95_ci_high": 1.35,
                     "median_variables_difference": -200,
                     "median_hard_clauses_difference": 300,
+                    "median_peak_rss_difference_mb": -2,
                 }
             )
     for cardinality in ("sorting-network", "totalizer"):
@@ -160,6 +177,7 @@ def test_generate_complete_branch_aware_manuscript_bundle(tmp_path: Path) -> Non
                     "bootstrap_95_ci_high": 1.25,
                     "median_variables_difference": 25,
                     "median_hard_clauses_difference": 50,
+                    "median_peak_rss_difference_mb": 3,
                 }
             )
     for cardinality in ("sorting-network", "totalizer"):
@@ -177,6 +195,7 @@ def test_generate_complete_branch_aware_manuscript_bundle(tmp_path: Path) -> Non
                     "bootstrap_95_ci_high": 1.12,
                     "median_variables_difference": 0,
                     "median_hard_clauses_difference": 40,
+                    "median_peak_rss_difference_mb": 0,
                 }
             )
     _write_csv(primary / "factorial_contrasts.csv", contrasts)
@@ -191,6 +210,7 @@ def test_generate_complete_branch_aware_manuscript_bundle(tmp_path: Path) -> Non
                 "median_speedup_baseline_over_reference": 1.18,
                 "bootstrap_95_ci_low": 1.08,
                 "bootstrap_95_ci_high": 1.28,
+                "median_peak_rss_difference_mb": 5,
             }
         ],
     )
@@ -277,12 +297,16 @@ def test_generate_complete_branch_aware_manuscript_bundle(tmp_path: Path) -> Non
             {
                 "comparison": "weighted-to-continuity-first",
                 "instance_sha256": f"corrected-{index}",
+                "users": 30 if index < 24 else 40,
+                "agents": (10, 15, 20, 25)[index % 4],
+                "visits": 4 if index % 2 == 0 else 5,
+                "seed": 1001 + index % 3,
                 "both_optimum": "True",
                 "left_similarity": 100,
-                "left_overtime": 1 if index < 47 else 0,
+                "left_overtime": 0 if index == 42 else 1,
                 "delta_similarity": -6,
-                "delta_continuity": -1 if index < 42 else 0,
-                "delta_overtime": -1 if index < 47 else 0,
+                "delta_continuity": -1 if index < 43 else 0,
+                "delta_overtime": 0 if index == 42 else -1,
             }
         )
     priority_similarity = (-3, 0, 8)
@@ -292,6 +316,10 @@ def test_generate_complete_branch_aware_manuscript_bundle(tmp_path: Path) -> Non
             {
                 "comparison": "continuity-first-to-overtime-first",
                 "instance_sha256": f"corrected-{index}",
+                "users": 30 if index < 24 else 40,
+                "agents": (10, 15, 20, 25)[index % 4],
+                "visits": 4 if index % 2 == 0 else 5,
+                "seed": 1001 + index % 3,
                 "both_optimum": "True",
                 "left_similarity": 94,
                 "left_overtime": 1,
@@ -323,6 +351,7 @@ def test_generate_complete_branch_aware_manuscript_bundle(tmp_path: Path) -> Non
             corrected_dir=corrected,
             corrected_maxsat_dir=corrected_maxsat,
             corrected_maxsat_results_dir=corrected_maxsat_results,
+            corrected_cplex_results_dir=corrected_cplex_results,
             cross_dir=cross,
             output_dir=output,
         )
@@ -330,17 +359,24 @@ def test_generate_complete_branch_aware_manuscript_bundle(tmp_path: Path) -> Non
     assert provenance["valid"]
     assert provenance["expected_measured_runs"] == 924
     results = (output / "results.tex").read_text(encoding="utf-8")
-    assert results.count(r"\begin{table}") == 2
+    assert results.count(r"\begin{table}") == 1
     assert r"\begin{table*}" not in results
     assert results.count(r"\begin{figure*}") == 1
     assert r"\label{tab:factorial-footprint}" in results
-    assert r"\label{tab:benchmark-signal}" in results
-    assert "PAR-2 includes" in results
+    assert r"\label{tab:evidence-map}" not in results
+    assert "lowest PAR-2" in results
     assert r"12{,}000" in results
-    assert "Totalizer helps; extra constraints do not" in results
-    assert "final compatibility criterion" in results
+    assert "Totalizer improves runtime" in results
+    assert "compatibility stage" in results
+    assert "same-instance" in results
+    assert "94/96" in results
+    assert "Implied constraints are slower" in results
+    assert "raises median runtime" in results
+    assert "Gurobi" in results and "CPLEX" in results
+    assert "strict priorities change schedule quality" in results
+    assert "prioritizing overtime saves one overtime unit" in results
     assert r"\resultplaceholder" not in results
-    assert "EvalMaxSAT, Gurobi, and CPLEX" in results
+    assert "EvalMaxSAT" in results
     assert (output / "manuscript-provenance.json").is_file()
     marker = validate_and_render_marker(
         generated_dir=output,

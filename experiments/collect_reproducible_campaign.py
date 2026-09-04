@@ -22,24 +22,28 @@ INSTANCE_PATTERN = re.compile(
 SUCCESS = {"OPTIMUM", "UNSAT", "UNSATISFIABLE"}
 
 RAW_COLUMNS = (
-    "run_id", "instance", "instance_sha256", "users", "agents", "visits",
-    "seed", "load_profile", "rho", "method", "objective_mode",
+    "run_id", "schema_version", "instance", "instance_sha256", "users", "agents", "visits",
+    "seed", "load_profile", "rho", "variant", "method", "objective_mode",
     "objective_policy", "delta", "wc", "wo", "soft_coverage", "cardinality", "implied",
-    "symmetry", "status", "exit_code", "hard_timeout", "validation_errors",
+    "symmetry", "align_evalmaxsat_tct", "stage3_incumbent_bound",
+    "lexicographic_implementation", "status", "exit_code", "hard_timeout", "validation_errors",
     "elapsed_seconds", "wall_seconds", "timeout_seconds", "peak_rss_mb",
     "coverage", "similarity", "continuity", "overtime", "overtime_cost",
     "weighted_reference_score", "verified", "assignment_count",
-    "assignment_sha256", "solver_calls", "stage_count",
+    "assignment_sha256", "solver_calls", "stage_count", "proved_stage_count",
+    "certified_lexicographic_prefix", "incumbent_stage_index",
     "encode_seconds_sum", "solve_seconds_sum", "variables_max",
-    "hard_clauses_max", "soft_clauses_max", "stage_objectives", "stage_optima",
+    "hard_clauses_max", "soft_clauses_max", "stage_objectives", "stage_statuses",
+    "stage_optima", "stage_incumbents", "stage_solver_targets", "stage_solver_launched",
     "similarity_reference_optimum", "similarity_lower_bound",
     "similarity_realized_loss_absolute", "pareto_nondominated", "result",
     "stderr_log",
 )
 
 METHOD_GROUP = (
-    "method", "objective_policy", "delta", "wc", "wo", "soft_coverage", "cardinality",
-    "implied", "symmetry", "load_profile",
+    "variant", "method", "objective_policy", "delta", "wc", "wo", "soft_coverage",
+    "cardinality", "implied", "symmetry", "align_evalmaxsat_tct",
+    "stage3_incumbent_bound", "lexicographic_implementation", "load_profile",
 )
 CLASS_GROUP = METHOD_GROUP + ("users", "agents", "visits")
 EPSILON_POINT_COLUMNS = RAW_COLUMNS + (
@@ -141,9 +145,11 @@ def flatten(result_dir: Path) -> list[dict[str, Any]]:
         instance_path = _relocated_instance(Path(record["instance"]))
         row = {
             "run_id": record["run_id"],
+            "schema_version": payload.get("schema_version"),
             "instance": str(instance_path),
             "instance_sha256": record["instance_sha256"],
             **_instance_fields(instance_path),
+            "variant": specification.get("variant", specification["method"]),
             "method": specification["method"],
             "objective_mode": payload.get("objective_mode"),
             "objective_policy": payload.get("objective_policy"),
@@ -154,6 +160,15 @@ def flatten(result_dir: Path) -> list[dict[str, Any]]:
             "cardinality": specification["cardinality"],
             "implied": specification["implied"],
             "symmetry": specification["symmetry"],
+            "align_evalmaxsat_tct": specification.get(
+                "align_evalmaxsat_tct", False
+            ),
+            "stage3_incumbent_bound": specification.get(
+                "stage3_incumbent_bound", False
+            ),
+            "lexicographic_implementation": payload.get(
+                "lexicographic_implementation"
+            ),
             "status": payload.get("status", record.get("result_status", "MISSING")),
             "exit_code": record.get("exit_code"),
             "hard_timeout": record.get("hard_timeout"),
@@ -177,13 +192,34 @@ def flatten(result_dir: Path) -> list[dict[str, Any]]:
             "assignment_sha256": assignment_sha256,
             "solver_calls": payload.get("solver_calls"),
             "stage_count": len(stages),
+            "proved_stage_count": payload.get("proved_stage_count"),
+            "certified_lexicographic_prefix": payload.get(
+                "certified_lexicographic_prefix"
+            ),
+            "incumbent_stage_index": payload.get("incumbent_stage_index"),
             "encode_seconds_sum": sum(_number(stage.get("encode_seconds")) or 0 for stage in stages),
             "solve_seconds_sum": sum(_number(stage.get("solve_seconds")) or 0 for stage in stages),
             "variables_max": max((stage.get("variables", 0) for stage in stages), default=0),
             "hard_clauses_max": max((stage.get("hard_clauses", 0) for stage in stages), default=0),
             "soft_clauses_max": max((stage.get("soft_clauses", 0) for stage in stages), default=0),
             "stage_objectives": " | ".join(str(stage.get("objective", "")) for stage in stages),
-            "stage_optima": " | ".join(str(stage.get("optimum", "")) for stage in stages),
+            "stage_statuses": " | ".join(str(stage.get("status", "")) for stage in stages),
+            "stage_optima": " | ".join(
+                "" if stage.get("optimum") is None else str(stage["optimum"])
+                for stage in stages
+            ),
+            "stage_incumbents": " | ".join(
+                "" if stage.get("incumbent") is None else str(stage["incumbent"])
+                for stage in stages
+            ),
+            "stage_solver_targets": " | ".join(
+                "" if stage.get("solver_target_seconds") is None
+                else str(stage["solver_target_seconds"])
+                for stage in stages
+            ),
+            "stage_solver_launched": " | ".join(
+                str(stage.get("solver_launched", "")) for stage in stages
+            ),
             "similarity_reference_optimum": payload.get("similarity_reference_optimum"),
             "similarity_lower_bound": payload.get("similarity_lower_bound"),
             "similarity_realized_loss_absolute": payload.get("similarity_realized_loss_absolute"),

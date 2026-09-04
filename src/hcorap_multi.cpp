@@ -2,6 +2,7 @@
 #include "HCORAPMultiObjectiveEncoding.h"
 #include "dimacsfileencoder.h"
 
+#include <algorithm>
 #include <chrono>
 #include <cctype>
 #include <cmath>
@@ -11,6 +12,7 @@
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <limits>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -29,6 +31,7 @@ struct Options {
     string outputPath;
     string delta;
     double timeoutSeconds;
+    double solverShutdownGraceSeconds;
     int continuityWeight;
     int overtimeWeight;
     HCORAPCardinalityEncoding cardinalityEncoding;
@@ -38,21 +41,26 @@ struct Options {
     bool encodeOnly;
     bool keepFiles;
     bool printAssignments;
+    bool alignEvalMaxSATTargetTime;
+    bool stage3IncumbentBound;
 
     Options()
         : method("weighted"), solverPath("EvalMaxSAT_bin"), delta("0.05"),
-          timeoutSeconds(3600.0), continuityWeight(1), overtimeWeight(1),
+          timeoutSeconds(3600.0), solverShutdownGraceSeconds(5.0),
+          continuityWeight(1), overtimeWeight(1),
           cardinalityEncoding(HCORAP_SORTING_NETWORK),
           impliedConfig(HCORAP_IMPLIED_NONE),
           symmetryBreaking(HCORAP_SYMMETRY_NONE),
           fullCoverage(true), encodeOnly(false), keepFiles(false),
-          printAssignments(false) {}
+          printAssignments(false), alignEvalMaxSATTargetTime(false),
+          stage3IncumbentBound(false) {}
 };
 
 enum ExternalStatus {
     EXTERNAL_OPTIMUM,
     EXTERNAL_UNSAT,
     EXTERNAL_TIMEOUT,
+    EXTERNAL_TIMEOUT_FEASIBLE,
     EXTERNAL_ERROR
 };
 
@@ -60,20 +68,43 @@ struct ExternalResult {
     ExternalStatus status;
     vector<bool> model;
     double elapsedSeconds;
+    double shutdownGraceSeconds;
+    bool solverLaunched;
     string message;
 
-    ExternalResult() : status(EXTERNAL_ERROR), elapsedSeconds(0.0) {}
+    ExternalResult()
+        : status(EXTERNAL_ERROR), elapsedSeconds(0.0),
+          shutdownGraceSeconds(0.0), solverLaunched(false) {}
 };
 
 struct StageRecord {
     string name;
     string sense;
+    string status;
     int optimum;
+    int incumbent;
+    bool hasOptimum;
+    bool hasIncumbent;
     double encodeSeconds;
     double solveSeconds;
+    double solverTargetSeconds;
+    bool hasSolverTarget;
+    bool solverLaunched;
+    double shutdownGraceSeconds;
     int variables;
     int hardClauses;
     int softClauses;
+    int continuityObjectiveWeight;
+    int overtimeObjectiveWeight;
+    string message;
+
+    StageRecord()
+        : optimum(0), incumbent(0), hasOptimum(false), hasIncumbent(false),
+          encodeSeconds(0.0), solveSeconds(0.0), solverTargetSeconds(0.0),
+          hasSolverTarget(false), solverLaunched(false),
+          shutdownGraceSeconds(0.0), variables(0), hardClauses(0),
+          softClauses(0), continuityObjectiveWeight(0),
+          overtimeObjectiveWeight(0) {}
 };
 
 struct RunState {
@@ -82,22 +113,32 @@ struct RunState {
     HCORAPSolutionMetrics metrics;
     string error;
     int solverCalls;
+    int provedStages;
+    int incumbentStageIndex;
+    bool hasIncumbent;
     int similarityReferenceOptimum;
     int similarityLowerBound;
 
     RunState()
-        : solverCalls(0), similarityReferenceOptimum(-1),
+        : solverCalls(0), provedStages(0), incumbentStageIndex(-1),
+          hasIncumbent(false), similarityReferenceOptimum(-1),
           similarityLowerBound(-1) {}
 };
 
 static pair<long long, long long> parseDecimalFraction(const string &text);
+static string statusName(ExternalStatus status);
 
 static void usage(const char *program) {
     cerr
         << "Usage: " << program << " INSTANCE [options]\n"
-        << "  --method weighted|lex-continuity|lex-cos|lex-overtime|epsilon\n"
+        << "  --method weighted|lex-continuity|lex-cos|lex-overtime|"
+           "lex-cos-one-shot|lex-overtime-one-shot|epsilon\n"
         << "  --solver PATH             external MaxSAT solver with s/v output\n"
         << "  --timeout SECONDS         cumulative encode+solve timeout\n"
+        << "  --solver-shutdown-grace SECONDS\n"
+        << "                            time to collect a model after SIGTERM\n"
+        << "  --align-evalmaxsat-tct    pass the remaining budget via --TCT\n"
+        << "  --stage3-incumbent-bound  constrain final similarity by Stage 2 incumbent\n"
         << "  --wc INTEGER              continuity weight (weighted)\n"
         << "  --wo INTEGER              overtime multiplier (weighted)\n"
         << "  --cardinality-encoding sorting-network|totalizer\n"
@@ -130,6 +171,13 @@ static Options parseOptions(int argc, char **argv) {
             options.solverPath = requireValue(argc, argv, index);
         } else if (argument == "--timeout") {
             options.timeoutSeconds = stod(requireValue(argc, argv, index));
+        } else if (argument == "--solver-shutdown-grace") {
+            options.solverShutdownGraceSeconds =
+                stod(requireValue(argc, argv, index));
+        } else if (argument == "--align-evalmaxsat-tct") {
+            options.alignEvalMaxSATTargetTime = true;
+        } else if (argument == "--stage3-incumbent-bound") {
+            options.stage3IncumbentBound = true;
         } else if (argument == "--wc") {
             options.continuityWeight = stoi(requireValue(argc, argv, index));
         } else if (argument == "--wo") {
@@ -168,14 +216,25 @@ static Options parseOptions(int argc, char **argv) {
     }
     if (options.instancePath.empty())
         throw runtime_error("an instance path is required");
-    if (options.timeoutSeconds <= 0)
+    if (!isfinite(options.timeoutSeconds) || options.timeoutSeconds <= 0)
         throw runtime_error("timeout must be positive");
+    if (!isfinite(options.solverShutdownGraceSeconds) ||
+        options.solverShutdownGraceSeconds < 0 ||
+        options.solverShutdownGraceSeconds > 60)
+        throw runtime_error("solver shutdown grace must lie in [0,60]");
     if (options.continuityWeight < 0 || options.overtimeWeight < 0)
         throw runtime_error("wc and wo must be non-negative");
     if (options.method != "weighted" && options.method != "lex-continuity" &&
         options.method != "lex-cos" && options.method != "lex-overtime" &&
+        options.method != "lex-cos-one-shot" &&
+        options.method != "lex-overtime-one-shot" &&
         options.method != "epsilon")
         throw runtime_error("unsupported method: " + options.method);
+    if (options.stage3IncumbentBound &&
+        options.method != "lex-cos" && options.method != "lex-overtime")
+        throw runtime_error(
+            "--stage3-incumbent-bound requires lex-cos or lex-overtime"
+        );
     if (options.method == "epsilon")
         parseDecimalFraction(options.delta);
     if (options.encodeOnly && (options.method != "weighted" || !options.fullCoverage))
@@ -253,6 +312,7 @@ static ExternalResult parseSolverOutput(
 
     bool optimum = false;
     bool unsat = false;
+    bool satisfiable = false;
     bool modelFound = false;
     int binaryIndex = 1;
     string line;
@@ -263,6 +323,8 @@ static ExternalResult parseSolverOutput(
                 optimum = true;
             if (stripped.find("UNSATISFIABLE") != string::npos)
                 unsat = true;
+            else if (stripped.find("SATISFIABLE") != string::npos)
+                satisfiable = true;
         }
         if (stripped.size() < 2 || stripped[0] != 'v' || stripped[1] != ' ')
             continue;
@@ -299,9 +361,12 @@ static ExternalResult parseSolverOutput(
         result.status = EXTERNAL_UNSAT;
     } else if (optimum && modelFound) {
         result.status = EXTERNAL_OPTIMUM;
+    } else if (satisfiable && modelFound) {
+        result.status = EXTERNAL_TIMEOUT_FEASIBLE;
+        result.message = "solver returned a feasible incumbent without an optimality proof";
     } else {
         result.status = EXTERNAL_ERROR;
-        result.message = "solver did not return an optimum with a model";
+        result.message = "solver did not return a recognized status with a model";
     }
     return result;
 }
@@ -311,7 +376,9 @@ static ExternalResult runExternalSolver(
     const string &formulaPath,
     const string &outputPath,
     int variables,
-    double timeoutSeconds
+    double timeoutSeconds,
+    double shutdownGraceSeconds,
+    bool alignEvalMaxSATTargetTime
 ) {
     ExternalResult result;
     if (timeoutSeconds <= 0) {
@@ -330,17 +397,37 @@ static ExternalResult runExternalSolver(
         dup2(output, STDOUT_FILENO);
         dup2(output, STDERR_FILENO);
         close(output);
-        execlp(
-            solverPath.c_str(),
-            solverPath.c_str(),
-            formulaPath.c_str(),
-            static_cast<char *>(NULL)
-        );
+        if (alignEvalMaxSATTargetTime) {
+            const double boundedTarget = max(1.0, floor(timeoutSeconds));
+            if (boundedTarget > numeric_limits<unsigned int>::max())
+                _exit(125);
+            const string target = to_string(
+                static_cast<unsigned int>(boundedTarget)
+            );
+            execlp(
+                solverPath.c_str(),
+                solverPath.c_str(),
+                "--TCT",
+                target.c_str(),
+                formulaPath.c_str(),
+                static_cast<char *>(NULL)
+            );
+        } else {
+            execlp(
+                solverPath.c_str(),
+                solverPath.c_str(),
+                formulaPath.c_str(),
+                static_cast<char *>(NULL)
+            );
+        }
         _exit(127);
     }
 
     int childStatus = 0;
+    result.solverLaunched = true;
     bool timedOut = false;
+    double solverElapsed = 0.0;
+    double shutdownElapsed = 0.0;
     while (true) {
         pid_t checked = waitpid(child, &childStatus, WNOHANG);
         if (checked == child)
@@ -352,25 +439,49 @@ static ExternalResult runExternalSolver(
         ).count();
         if (elapsed >= timeoutSeconds) {
             timedOut = true;
+            solverElapsed = timeoutSeconds;
             kill(child, SIGTERM);
-            this_thread::sleep_for(chrono::milliseconds(100));
+            const auto shutdownStarted = chrono::steady_clock::now();
+            const auto shutdownDeadline = shutdownStarted +
+                chrono::duration_cast<chrono::steady_clock::duration>(
+                    chrono::duration<double>(shutdownGraceSeconds)
+                );
+            while (waitpid(child, &childStatus, WNOHANG) == 0 &&
+                   chrono::steady_clock::now() < shutdownDeadline) {
+                this_thread::sleep_for(chrono::milliseconds(10));
+            }
             if (waitpid(child, &childStatus, WNOHANG) == 0) {
                 kill(child, SIGKILL);
                 waitpid(child, &childStatus, 0);
             }
+            shutdownElapsed = chrono::duration<double>(
+                chrono::steady_clock::now() - shutdownStarted
+            ).count();
             break;
         }
         this_thread::sleep_for(chrono::milliseconds(10));
     }
-    double elapsed = chrono::duration<double>(
+    const double elapsed = chrono::duration<double>(
         chrono::steady_clock::now() - started
     ).count();
     if (timedOut) {
+        ExternalResult parsed = parseSolverOutput(
+            outputPath, variables, solverElapsed
+        );
+        parsed.solverLaunched = true;
+        parsed.shutdownGraceSeconds = shutdownElapsed;
+        if (parsed.status == EXTERNAL_OPTIMUM ||
+            parsed.status == EXTERNAL_UNSAT ||
+            parsed.status == EXTERNAL_TIMEOUT_FEASIBLE)
+            return parsed;
         result.status = EXTERNAL_TIMEOUT;
-        result.elapsedSeconds = elapsed;
+        result.elapsedSeconds = solverElapsed;
+        result.shutdownGraceSeconds = shutdownElapsed;
+        result.message = "solver reached the external time limit without a usable model";
         return result;
     }
     ExternalResult parsed = parseSolverOutput(outputPath, variables, elapsed);
+    parsed.solverLaunched = true;
     if (parsed.status == EXTERNAL_ERROR) {
         if (WIFSIGNALED(childStatus)) {
             parsed.message = "solver terminated by signal "
@@ -409,6 +520,9 @@ static string objectiveName(HCORAPObjectiveKind objective) {
         case HCORAP_SIMILARITY: return "similarity";
         case HCORAP_CONTINUITY: return "continuity";
         case HCORAP_OVERTIME: return "overtime";
+        case HCORAP_LEX_COS_SINGLE:
+        case HCORAP_LEX_OCS_SINGLE:
+            return "lexicographic_score";
         case HCORAP_WEIGHTED:
         default: return "weighted_score";
     }
@@ -423,7 +537,8 @@ static string objectiveMode(const string &method) {
     if (method == "weighted")
         return "weighted";
     if (method == "lex-continuity" || method == "lex-cos" ||
-        method == "lex-overtime")
+        method == "lex-overtime" || method == "lex-cos-one-shot" ||
+        method == "lex-overtime-one-shot")
         return "lexicographic";
     return "epsilon-constraint";
 }
@@ -433,11 +548,24 @@ static string objectivePolicy(const string &method) {
         return "continuity-priority";
     if (method == "lex-cos")
         return "continuity-overtime-similarity";
+    if (method == "lex-cos-one-shot")
+        return "continuity-overtime-similarity";
     if (method == "lex-overtime")
+        return "overtime-priority";
+    if (method == "lex-overtime-one-shot")
         return "overtime-priority";
     if (method == "epsilon")
         return "similarity-budget";
     return "weighted-sum";
+}
+
+static string lexicographicImplementation(const string &method) {
+    if (method == "lex-cos-one-shot" || method == "lex-overtime-one-shot")
+        return "single-call-dominance-weights";
+    if (method == "lex-continuity" || method == "lex-cos" ||
+        method == "lex-overtime")
+        return "sequential-stages";
+    return "not-applicable";
 }
 
 static string temporaryBase(int stageIndex) {
@@ -495,18 +623,32 @@ static ExternalStatus solveStage(
         formulaPath,
         solverOutputPath,
         formula->getNBoolVars(),
-        remaining
+        remaining,
+        options.solverShutdownGraceSeconds,
+        options.alignEvalMaxSATTargetTime
     );
 
     record.name = objectiveName(objective);
     record.sense = objectiveSense(objective);
     record.encodeSeconds = encodeSeconds;
     record.solveSeconds = solved.elapsedSeconds;
+    record.solverTargetSeconds = options.alignEvalMaxSATTargetTime
+        && solved.solverLaunched ? max(1.0, floor(remaining))
+        : 0.0;
+    record.hasSolverTarget =
+        options.alignEvalMaxSATTargetTime && solved.solverLaunched;
+    record.solverLaunched = solved.solverLaunched;
+    record.shutdownGraceSeconds = solved.shutdownGraceSeconds;
     record.variables = formula->getNBoolVars();
     record.hardClauses = formula->getNClauses();
     record.softClauses = formula->getNSoftClauses();
+    record.continuityObjectiveWeight =
+        encoding.effectiveContinuityObjectiveWeight();
+    record.overtimeObjectiveWeight =
+        encoding.effectiveOvertimeObjectiveWeight();
 
-    if (solved.status == EXTERNAL_OPTIMUM) {
+    if (solved.status == EXTERNAL_OPTIMUM ||
+        solved.status == EXTERNAL_TIMEOUT_FEASIBLE) {
         encoding.setBooleanModel(solved.model);
         metrics = encoding.evaluateModel();
         bool boundsSatisfied =
@@ -519,12 +661,20 @@ static ExternalStatus solveStage(
             error = !metrics.valid
                 ? "independent C++ verifier rejected solver model"
                 : "independent C++ verifier rejected an objective bound";
+            solved.message = error;
         } else {
-            record.optimum = encoding.objectiveValue(metrics);
+            record.incumbent = encoding.objectiveValue(metrics);
+            record.hasIncumbent = true;
+            if (solved.status == EXTERNAL_OPTIMUM) {
+                record.optimum = record.incumbent;
+                record.hasOptimum = true;
+            }
         }
-    } else if (!solved.message.empty()) {
+    } else if (solved.status == EXTERNAL_ERROR && !solved.message.empty()) {
         error = solved.message;
     }
+    record.status = statusName(solved.status);
+    record.message = solved.message;
 
     delete formula;
     if (!options.keepFiles) {
@@ -568,7 +718,6 @@ static ExternalStatus executeAndRecord(
     bool preserveOptimum
 ) {
     StageRecord record;
-    ++state.solverCalls;
     ExternalStatus status = solveStage(
         instance,
         options,
@@ -580,8 +729,16 @@ static ExternalStatus executeAndRecord(
         metrics,
         state.error
     );
+    if (record.solverLaunched)
+        ++state.solverCalls;
+    state.stages.push_back(record);
+    if (record.hasIncumbent) {
+        state.metrics = metrics;
+        state.hasIncumbent = true;
+        state.incumbentStageIndex = static_cast<int>(state.stages.size()) - 1;
+    }
     if (status == EXTERNAL_OPTIMUM) {
-        state.stages.push_back(record);
+        ++state.provedStages;
         if (preserveOptimum)
             updateBound(bounds, objective, metrics);
     }
@@ -622,7 +779,14 @@ static ExternalStatus executeLexicographicPolicy(
     HCORAPSolutionMetrics &metrics
 ) {
     ExternalStatus status = EXTERNAL_OPTIMUM;
-    for (HCORAPObjectiveKind objective : lexicographicOrder(options.method)) {
+    const vector<HCORAPObjectiveKind> order = lexicographicOrder(options.method);
+    for (size_t index = 0; index < order.size(); ++index) {
+        const HCORAPObjectiveKind objective = order[index];
+        if (index == 2 && objective == HCORAP_SIMILARITY &&
+            options.stage3IncumbentBound) {
+            bounds.minSimilarity = metrics.similarity;
+            state.similarityLowerBound = metrics.similarity;
+        }
         status = executeAndRecord(
             instance,
             options,
@@ -762,6 +926,7 @@ static string statusName(ExternalStatus status) {
         case EXTERNAL_OPTIMUM: return "OPTIMUM";
         case EXTERNAL_UNSAT: return "UNSATISFIABLE";
         case EXTERNAL_TIMEOUT: return "TIMEOUT";
+        case EXTERNAL_TIMEOUT_FEASIBLE: return "TIMEOUT_FEASIBLE";
         case EXTERNAL_ERROR:
         default: return "ERROR";
     }
@@ -798,16 +963,56 @@ static RunState solveMethod(
         status = executeLexicographicPolicy(
             instance, options, bounds, overallStarted, state, metrics
         );
+    } else if (
+        status == EXTERNAL_OPTIMUM &&
+        (options.method == "lex-cos-one-shot" ||
+         options.method == "lex-overtime-one-shot")
+    ) {
+        const HCORAPObjectiveKind objective =
+            options.method == "lex-cos-one-shot"
+            ? HCORAP_LEX_COS_SINGLE
+            : HCORAP_LEX_OCS_SINGLE;
+        status = executeAndRecord(
+            instance, options, objective, bounds, overallStarted,
+            state, metrics, false
+        );
     } else if (status == EXTERNAL_OPTIMUM && options.method == "epsilon") {
         status = executeEpsilonPolicy(
             instance, options, bounds, overallStarted, state, metrics
         );
     }
 
-    state.status = statusName(status);
-    if (status == EXTERNAL_OPTIMUM)
+    state.status = status == EXTERNAL_TIMEOUT && state.hasIncumbent
+        ? "TIMEOUT_FEASIBLE"
+        : statusName(status);
+    if (status == EXTERNAL_OPTIMUM || state.hasIncumbent)
         state.metrics = metrics;
     return state;
+}
+
+static int certifiedLexicographicPrefix(
+    const Options &options, const RunState &state
+) {
+    if (options.method == "lex-cos-one-shot" ||
+        options.method == "lex-overtime-one-shot")
+        return state.status == "OPTIMUM" ? 3 : 0;
+    if (options.method != "lex-continuity" && options.method != "lex-cos" &&
+        options.method != "lex-overtime")
+        return -1;
+
+    const vector<HCORAPObjectiveKind> order = lexicographicOrder(options.method);
+    size_t expected = 0;
+    for (const StageRecord &stage : state.stages) {
+        if (expected >= order.size())
+            break;
+        if (stage.name == objectiveName(order[expected]) &&
+            stage.status == "OPTIMUM") {
+            ++expected;
+        } else if (stage.name != "coverage") {
+            break;
+        }
+    }
+    return static_cast<int>(expected);
 }
 
 static void jsonEscape(ostream &output, const string &value) {
@@ -830,7 +1035,7 @@ static void writeResult(
     double totalSeconds,
     const HCORAP *instance
 ) {
-    output << "{\n  \"schema_version\": 2,\n  \"status\": ";
+    output << "{\n  \"schema_version\": 3,\n  \"status\": ";
     jsonEscape(output, state.status);
     output << ",\n  \"method\": ";
     jsonEscape(output, options.method);
@@ -838,6 +1043,8 @@ static void writeResult(
     jsonEscape(output, objectiveMode(options.method));
     output << ",\n  \"objective_policy\": ";
     jsonEscape(output, objectivePolicy(options.method));
+    output << ",\n  \"lexicographic_implementation\": ";
+    jsonEscape(output, lexicographicImplementation(options.method));
     output << ",\n  \"language\": \"C++\",\n  \"instance\": ";
     jsonEscape(output, options.instancePath);
     output << ",\n  \"solver\": ";
@@ -845,8 +1052,28 @@ static void writeResult(
     output << ",\n  \"wcnf_format\": \"legacy-top-weight\",\n"
            << "  \"timing_scope\": \"parse+encode+serialize+solve+verify\",\n"
            << "  \"timeout_seconds\": " << options.timeoutSeconds << ",\n"
+           << "  \"solver_shutdown_grace_seconds\": "
+           << options.solverShutdownGraceSeconds << ",\n"
+           << "  \"align_evalmaxsat_tct\": "
+           << (options.alignEvalMaxSATTargetTime ? "true" : "false") << ",\n"
+           << "  \"stage3_incumbent_bound\": "
+           << (options.stage3IncumbentBound ? "true" : "false") << ",\n"
            << "  \"elapsed_seconds\": " << setprecision(10) << totalSeconds << ",\n"
            << "  \"solver_calls\": " << state.solverCalls << ",\n"
+           << "  \"proved_stage_count\": " << state.provedStages << ",\n"
+           << "  \"certified_lexicographic_prefix\": ";
+    const int certifiedPrefix = certifiedLexicographicPrefix(options, state);
+    if (certifiedPrefix >= 0)
+        output << certifiedPrefix;
+    else
+        output << "null";
+    output << ",\n"
+           << "  \"incumbent_stage_index\": ";
+    if (state.incumbentStageIndex >= 0)
+        output << state.incumbentStageIndex;
+    else
+        output << "null";
+    output << ",\n"
            << "  \"full_coverage\": " << (options.fullCoverage ? "true" : "false") << ",\n"
            << "  \"continuity_weight\": " << options.continuityWeight << ",\n"
            << "  \"overtime_weight\": " << options.overtimeWeight << ",\n"
@@ -906,12 +1133,41 @@ static void writeResult(
         jsonEscape(output, stage.name);
         output << ", \"sense\": ";
         jsonEscape(output, stage.sense);
-        output << ", \"optimum\": " << stage.optimum
-               << ", \"encode_seconds\": " << stage.encodeSeconds
+        output << ", \"status\": ";
+        jsonEscape(output, stage.status);
+        output << ", \"optimum\": ";
+        if (stage.hasOptimum)
+            output << stage.optimum;
+        else
+            output << "null";
+        output << ", \"incumbent\": ";
+        if (stage.hasIncumbent)
+            output << stage.incumbent;
+        else
+            output << "null";
+        output << ", \"encode_seconds\": " << stage.encodeSeconds
                << ", \"solve_seconds\": " << stage.solveSeconds
+               << ", \"solver_target_seconds\": ";
+        if (stage.hasSolverTarget)
+            output << stage.solverTargetSeconds;
+        else
+            output << "null";
+        output << ", \"shutdown_grace_seconds\": "
+               << stage.shutdownGraceSeconds
+               << ", \"solver_launched\": "
+               << (stage.solverLaunched ? "true" : "false")
                << ", \"variables\": " << stage.variables
                << ", \"hard_clauses\": " << stage.hardClauses
-               << ", \"soft_clauses\": " << stage.softClauses << '}';
+               << ", \"soft_clauses\": " << stage.softClauses
+               << ", \"continuity_objective_weight\": "
+               << stage.continuityObjectiveWeight
+               << ", \"overtime_objective_weight\": "
+               << stage.overtimeObjectiveWeight;
+        if (!stage.message.empty()) {
+            output << ", \"message\": ";
+            jsonEscape(output, stage.message);
+        }
+        output << '}';
     }
     if (!state.stages.empty())
         output << '\n';
@@ -921,7 +1177,7 @@ static void writeResult(
         jsonEscape(output, state.error);
         output << ",\n";
     }
-    if (state.status == "OPTIMUM") {
+    if (state.status == "OPTIMUM" || state.hasIncumbent) {
         int weightedReferenceScore =
             state.metrics.similarity
             - options.continuityWeight * state.metrics.continuity

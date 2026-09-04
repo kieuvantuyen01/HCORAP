@@ -187,14 +187,34 @@ def _policy_signal(
     similarity_changes = [
         _float(row[f"{delta_prefix}similarity"]) for row in selected
     ]
+    joint_strict_improvements = sum(
+        continuity < 0 and overtime < 0
+        for continuity, overtime in zip(continuity_changes, overtime_changes)
+    )
+    continuity_only_improvements = sum(
+        continuity < 0 and overtime == 0
+        for continuity, overtime in zip(continuity_changes, overtime_changes)
+    )
+    overtime_only_improvements = sum(
+        continuity == 0 and overtime < 0
+        for continuity, overtime in zip(continuity_changes, overtime_changes)
+    )
     return {
         "pairs": len(selected),
         "weighted_overtime_positive": sum(
             _float(row[weighted_overtime_key]) > 0 for row in selected
         ),
-        "joint_strict_improvements": sum(
-            continuity < 0 and overtime < 0
-            for continuity, overtime in zip(continuity_changes, overtime_changes)
+        "joint_strict_improvements": joint_strict_improvements,
+        "continuity_only_improvements": continuity_only_improvements,
+        "overtime_only_improvements": overtime_only_improvements,
+        "continuity_improved": (
+            joint_strict_improvements + continuity_only_improvements
+        ),
+        "overtime_improved": joint_strict_improvements + overtime_only_improvements,
+        "any_priority_improvement": (
+            joint_strict_improvements
+            + continuity_only_improvements
+            + overtime_only_improvements
         ),
         "joint_nonworse": sum(
             continuity <= 0 and overtime <= 0
@@ -205,9 +225,129 @@ def _policy_signal(
         "median_continuity_change": _median(continuity_changes),
         "median_overtime_change": _median(overtime_changes),
         "median_relative_similarity_loss_pct": _median(relative_losses),
+        "q1_relative_similarity_loss_pct": _percentile(relative_losses, 0.25),
+        "q3_relative_similarity_loss_pct": _percentile(relative_losses, 0.75),
         "min_relative_similarity_loss_pct": min(relative_losses),
         "max_relative_similarity_loss_pct": max(relative_losses),
     }
+
+
+def _policy_size_breakdown(rows: list[dict[str, str]]) -> dict[str, dict[str, Any]]:
+    """Summarize corrected policy effects by the two main size dimensions."""
+    selected = [
+        row
+        for row in rows
+        if row.get("comparison") == "weighted-to-continuity-first"
+        and _truth(row.get("both_optimum"))
+    ]
+    output: dict[str, dict[str, Any]] = {}
+    for field, expected in (
+        ("users", {"30", "40"}),
+        ("agents", {"10", "15", "20", "25"}),
+        ("visits", {"4", "5"}),
+    ):
+        observed = {row.get(field, "") for row in selected}
+        if observed != expected:
+            raise ValueError(
+                f"corrected policy pairs have unexpected {field} groups: {observed}"
+            )
+        for value in sorted(expected, key=int):
+            group = [row for row in selected if row[field] == value]
+            continuity = [-_float(row["delta_continuity"]) for row in group]
+            overtime = [-_float(row["delta_overtime"]) for row in group]
+            output[f"{field}_{value}"] = {
+                "pairs": len(group),
+                "joint_strict_improvements": sum(
+                    cont > 0 and ot > 0 for cont, ot in zip(continuity, overtime)
+                ),
+                "median_continuity_reduction": _median(continuity),
+                "median_overtime_reduction": _median(overtime),
+            }
+    return output
+
+
+def _encoding_size_breakdown(rows: list[dict[str, str]]) -> dict[str, float]:
+    """Pool the four direct SN/Totalizer contrasts within each size group."""
+    indexed = {(row["instance_sha256"], _configuration(row)): row for row in rows}
+    grouped: dict[str, list[float]] = {
+        "users_30": [],
+        "users_40": [],
+        "visits_4": [],
+        "visits_5": [],
+    }
+    for instance in sorted({row["instance_sha256"] for row in rows}):
+        for implied in ("none", "both"):
+            for symmetry in ("none", "slot-service"):
+                sorting = indexed.get(
+                    (instance, ("sorting-network", implied, symmetry))
+                )
+                totalizer = indexed.get((instance, ("totalizer", implied, symmetry)))
+                if sorting is None or totalizer is None:
+                    raise ValueError("factorial pair matrix is incomplete")
+                if not (
+                    _truth(sorting["both_proved"])
+                    and _truth(totalizer["both_proved"])
+                ):
+                    continue
+                ratio = _float(sorting["configuration_elapsed_seconds"]) / _float(
+                    totalizer["configuration_elapsed_seconds"]
+                )
+                for field in ("users", "visits"):
+                    key = f"{field}_{sorting.get(field, '')}"
+                    if key not in grouped:
+                        raise ValueError(f"unexpected factorial size group: {key}")
+                    grouped[key].append(ratio)
+    if any(not values for values in grouped.values()):
+        raise ValueError("factorial size breakdown contains an empty group")
+    return {key: _median(values) for key, values in grouped.items()}
+
+
+def _solver_policy_performance(
+    maxsat_rows: list[dict[str, str]],
+    gurobi_rows: list[dict[str, str]],
+    cplex_runs: list[dict[str, str]],
+) -> dict[str, dict[str, dict[str, float | int]]]:
+    """Normalize optimum counts and mean PAR-2 across the three solvers."""
+    methods = ("weighted", "lex-cos", "lex-overtime")
+    output: dict[str, dict[str, dict[str, float | int]]] = {}
+    for solver, rows, expected in (
+        ("EvalMaxSAT", maxsat_rows, 48),
+        ("Gurobi", gurobi_rows, 48),
+    ):
+        solver_rows: dict[str, dict[str, float | int]] = {}
+        for method in methods:
+            row = _one(
+                rows,
+                lambda item, selected=method: item["method"] == selected,
+                f"{solver}/{method} summary",
+            )
+            if _int(row["runs"]) != expected:
+                raise ValueError(f"unexpected {solver}/{method} run count")
+            solver_rows[method] = {
+                "runs": expected,
+                "optimum": _int(row["optimum_runs"]),
+                "par2_seconds": _float(row["par2_seconds"]),
+            }
+        output[solver] = solver_rows
+
+    cplex_summary: dict[str, dict[str, float | int]] = {}
+    for method in methods:
+        group = [row for row in cplex_runs if row["method"] == method]
+        if len(group) != 16:
+            raise ValueError(f"expected 16 CPLEX corrected-v2 runs for {method}")
+        par2_values = [
+            _float(row["elapsed_seconds"])
+            if row["status"] in {"OPTIMUM", "INFEASIBLE", "UNSATISFIABLE"}
+            else 2 * _float(row["timeout_seconds"])
+            for row in group
+        ]
+        cplex_summary[method] = {
+            "runs": len(group),
+            "optimum": sum(row["status"] == "OPTIMUM" for row in group),
+            "par2_seconds": statistics.fmean(par2_values),
+        }
+    output["CPLEX"] = cplex_summary
+    return output
 
 
 def _totalizer_only_contrast(
@@ -264,6 +404,10 @@ def _maxsat_progress(rows: list[dict[str, str]]) -> dict[str, dict[str, int]]:
             "runs": len(group),
             "optimum": sum(row["status"] == "OPTIMUM" for row in group),
             "timeouts": len(timeouts),
+            "reached_final_stage": sum(
+                method != "weighted" and _int(row.get("stage_count", 0)) >= 2
+                for row in group
+            ),
             "final_stage_timeouts": sum(
                 method != "weighted" and _int(row.get("stage_count", 0)) >= 2
                 for row in timeouts
@@ -277,10 +421,10 @@ def _result_figure(
 ) -> str:
     """Render the two instance-level effects readers should remember."""
     order = (
-        ("IC=none;SB=none", "neither added", 4),
+        ("IC=none;SB=none", "no optional constraints", 4),
         ("IC=none;SB=slot-service", "symmetry only", 3),
         ("IC=both;SB=none", "implied only", 2),
-        ("IC=both;SB=slot-service", "both added", 1),
+        ("IC=both;SB=slot-service", "both optional types", 1),
     )
     intervals = []
     labels = []
@@ -304,9 +448,9 @@ def _result_figure(
         ticks.append(str(y))
     proved_counts = {_int(row["both_proved_pairs"]) for row in encoding}
     proved_wording = (
-        f"{_count(next(iter(proved_counts)))} pairs solved by both settings per context"
+        f"{_count(next(iter(proved_counts)))} same-instance pairs per row"
         if len(proved_counts) == 1
-        else "the pairs solved by both settings in each context"
+        else "the same-instance pairs available in each row"
     )
     policy_rows = [
         row
@@ -336,9 +480,9 @@ def _result_figure(
         ymin=-0.8, ymax=16.8,
         xtick={{0,3,6,9,12}},
         ytick={{0,4,8,12,16}},
-        title={{\footnotesize\bfseries (a) Effect of continuity-first policy}},
-        xlabel={{\scriptsize continuity improvement}},
-        ylabel={{\scriptsize overtime reduction}},
+        title={{\footnotesize\bfseries (a) Weighted to continuity-first}},
+        xlabel={{\scriptsize lower continuity penalty (CONT)}},
+        ylabel={{\scriptsize less overtime (OT)}},
         tick label style={{font=\scriptsize}},
         label style={{font=\scriptsize}},
         grid=major,
@@ -356,15 +500,15 @@ def _result_figure(
     \vspace{{0pt}}
     \begin{{tikzpicture}}
       \begin{{axis}}[
-        width=0.98\linewidth,
+        width=0.90\linewidth,
         height=4.35cm,
         xmin=0.98, xmax=1.30,
         ymin=0.45, ymax=4.55,
         ytick={{{','.join(ticks)}}},
         yticklabels={{{','.join('{' + label + '}' for label in labels)}}},
         xtick={{1.0,1.1,1.2,1.3}},
-        title={{\footnotesize\bfseries (b) Sorting network / Totalizer runtime}},
-        xlabel={{\scriptsize paired median ratio ($>1$ favors Totalizer)}},
+        title={{\footnotesize\bfseries (b) Sorting-network time / Totalizer time}},
+        xlabel={{\scriptsize median time ratio ($>1$: Totalizer is faster)}},
         tick label style={{font=\scriptsize}},
         yticklabel style={{align=right}},
         axis y line*=left,
@@ -379,16 +523,13 @@ def _result_figure(
       \end{{axis}}
     \end{{tikzpicture}}
   \end{{minipage}}
-  \caption{{Main effects. (a) Each point is one of 48 jointly optimal
-  corrected-v2 pairs; movement up and right means that continuity-first
-  improves both criteria. (b) Sorting-network runtime divided by Totalizer
-  runtime on the original benchmark; dots are paired medians and lines are
-  95\% intervals over {proved_wording}. Values above one favor Totalizer; all
-  runs use a 300-s limit.}}
-  \Description{{Panel a is a scatter plot of continuity improvement against
-  overtime reduction for 48 corrected-v2 instances. Most points lie above and
-  to the right of zero. Panel b is a forest plot whose four confidence
-  intervals lie above one and therefore favor Totalizer.}}
+  \caption{{Policy and encoding effects. (a) Reductions under continuity-first
+  for 48 corrected-v2 instances. (b) Sorting-network/Totalizer runtime ratios
+  over {proved_wording}; points are medians, bars are 95\% intervals, and values
+  above one favor Totalizer.}}
+  \Description{{Panel a plots the reduction in additional caregivers against
+  the reduction in overtime for 48 instances. Panel b compares sorting-network
+  and Totalizer runtime under four choices of optional constraints.}}
   \label{{fig:main-effects}}
 \end{{figure*}}
 """
@@ -398,35 +539,35 @@ def _evidence_table(
     *,
     original_signal: dict[str, Any],
     corrected_signal: dict[str, Any],
-    maxsat_progress: dict[str, dict[str, int]],
+    encoding_speed: tuple[str, str],
+    implied_contexts_slower: int,
+    symmetry_contexts_slower: int,
+    symmetry_contexts_unresolved: int,
+    corrected_audit_groups: int,
+    exact_groups: int,
+    infeasible_groups: int,
+    lex_timeouts: int,
+    final_stage_timeouts: int,
 ) -> str:
     return rf"""
 \begin{{table}}[!t]
-  \caption{{Benchmark signal and EvalMaxSAT progress. In the upper panel,
-  ``both improve'' means strictly lower continuity and overtime under
-  continuity-first; pairs are optimal under both policies, and SIM loss is the
-  median compatibility reduction. The lower panel reports where runs stand at
-  the 300-s limit.}}
-  \label{{tab:benchmark-signal}}
+  \caption{{Main results for the three research questions.}}
+  \label{{tab:evidence-map}}
   \centering
   \scriptsize
-  \setlength{{\tabcolsep}}{{2.7pt}}
-  \renewcommand{{\arraystretch}}{{1.03}}
-  \begin{{tabular}}{{@{{}}lrrrr@{{}}}}
+  \setlength{{\tabcolsep}}{{2.8pt}}
+  \renewcommand{{\arraystretch}}{{1.06}}
+  \begin{{tabularx}}{{\columnwidth}}{{@{{}}>{{\raggedright\arraybackslash}}p{{0.22\columnwidth}}>{{\raggedright\arraybackslash}}p{{0.23\columnwidth}}X@{{}}}}
     \toprule
-    Benchmark & Pairs & Weighted OT$>0$ & Both improve & SIM loss \\
+    Question & Compared cases & Main observation \\
     \midrule
-    Original & {_count(original_signal['pairs'])} & {_count(original_signal['weighted_overtime_positive'])} & {_count(original_signal['joint_strict_improvements'])} & {_fmt(original_signal['median_relative_similarity_loss_pct'], 1)}\% \\
-    Corrected-v2 & {_count(corrected_signal['pairs'])} & {_count(corrected_signal['weighted_overtime_positive'])} & {_count(corrected_signal['joint_strict_improvements'])} & {_fmt(corrected_signal['median_relative_similarity_loss_pct'], 1)}\% \\
-    \midrule
-    \multicolumn{{5}}{{@{{}}l}}{{\textit{{EvalMaxSAT progress on corrected-v2 (48 runs per policy)}}}} \\
-    \midrule
-    Policy & Optimum & \multicolumn{{2}}{{c}}{{Timeouts at final criterion}} & Total timeouts \\
-    Weighted & {_count(maxsat_progress['weighted']['optimum'])} & \multicolumn{{2}}{{c}}{{--}} & {_count(maxsat_progress['weighted']['timeouts'])} \\
-    Continuity-first & {_count(maxsat_progress['lex-cos']['optimum'])} & \multicolumn{{2}}{{c}}{{{_count(maxsat_progress['lex-cos']['final_stage_timeouts'])}}} & {_count(maxsat_progress['lex-cos']['timeouts'])} \\
-    Overtime-first & {_count(maxsat_progress['lex-overtime']['optimum'])} & \multicolumn{{2}}{{c}}{{{_count(maxsat_progress['lex-overtime']['final_stage_timeouts'])}}} & {_count(maxsat_progress['lex-overtime']['timeouts'])} \\
+    Priority rule & original: {_count(original_signal['pairs'])}; corrected: {_count(corrected_signal['pairs'])} & CONT and OT decrease in {_count(original_signal['joint_strict_improvements'])}/{_count(original_signal['pairs'])} versus {_count(corrected_signal['joint_strict_improvements'])}/{_count(corrected_signal['pairs'])}; corrected median compatibility loss {_fmt(corrected_signal['median_relative_similarity_loss_pct'], 1)}\% \\
+    Count encoding & four paired settings & sorting/Totalizer time ratio {encoding_speed[0]}--{encoding_speed[1]}; Totalizer faster in all four \\
+    Optional constraints & four settings per type & implied constraints slower in {_count(implied_contexts_slower)}/4; symmetry slower in {_count(symmetry_contexts_slower)}/4 and inconclusive in {_count(symmetry_contexts_unresolved)}/4 \\
+    Solver agreement & {_count(corrected_audit_groups)} corrected; {_count(exact_groups + infeasible_groups)} original & no disagreement in feasibility or quality values \\
+    Three-stage solving & 96 priority runs & {_count(final_stage_timeouts)}/{_count(lex_timeouts)} timeouts occur in final compatibility stage \\
     \bottomrule
-  \end{{tabular}}
+  \end{{tabularx}}
 \end{{table}}
 """
 
@@ -457,11 +598,11 @@ def _factorial_footprint_table(factorial: list[dict[str, str]]) -> str:
     if len(profiles) == 1:
         optimum, infeasible, timeout = next(iter(profiles))
         profile_caption = (
-            f"each cell has {_count(optimum)} optimum, "
-            f"{_count(infeasible)} infeasible, and {_count(timeout)} timeout runs"
+            f"Each row has {_count(optimum)} proved-optimal, "
+            f"{_count(infeasible)} proved-infeasible, and {_count(timeout)} timed-out runs"
         )
     else:
-        profile_caption = "solved profiles vary by cell"
+        profile_caption = "Solved profiles vary by row"
     lines = []
     for row in ordered:
         encoding = "SN" if row["cardinality"] == "sorting-network" else "TOT"
@@ -477,10 +618,8 @@ def _factorial_footprint_table(factorial: list[dict[str, str]]) -> str:
         )
     return rf"""
 \begin{{table}}[!t]
-  \caption{{Full encoding ablation (48 runs per cell). SN and TOT denote sorting
-  networks and Totalizers; IC and SB denote implied constraints and symmetry
-  breaking. PAR-2 includes the timeouts; RSS is peak resident memory; formula
-  sizes and RSS are cell medians; {profile_caption}. Best PAR-2 is bold.}}
+  \caption{{Runtime and model size for all eight Boolean configurations
+  (48 runs per row).}}
   \label{{tab:factorial-footprint}}
   \centering
   \scriptsize
@@ -488,7 +627,7 @@ def _factorial_footprint_table(factorial: list[dict[str, str]]) -> str:
   \renewcommand{{\arraystretch}}{{1.02}}
   \begin{{tabular}}{{@{{}}lllrrr@{{}}}}
     \toprule
-    Enc. & IC & SB & PAR-2 (s) & RSS (MB) & Variables \\
+    Count & IC & SB & PAR-2 (s) & Peak MB & Variables \\
     \midrule
 {chr(10).join(lines)}
     \bottomrule
@@ -506,13 +645,14 @@ def _render(
     factorial_pairs: list[dict[str, str]],
     original_pairs: list[dict[str, str]],
     corrected_pairs: list[dict[str, str]],
+    corrected_maxsat_rows: list[dict[str, str]],
     corrected_maxsat_runs: list[dict[str, str]],
+    corrected_cplex_runs: list[dict[str, str]],
     corrected_validation: dict[str, Any],
     corrected_rows: list[dict[str, str]],
     cross_rows: list[dict[str, str]],
 ) -> tuple[str, str, str]:
     """Build a concise result narrative from pair-level evidence."""
-    del composite  # Retained in the generator contract and provenance.
     encoding = [row for row in contrasts if row["factor"] == "encoding"]
     implied = [row for row in contrasts if row["factor"] == "implied"]
     symmetry = [row for row in contrasts if row["factor"] == "symmetry"]
@@ -541,8 +681,42 @@ def _render(
         ),
     )
     implied_slower = sum(_float(row["bootstrap_95_ci_high"]) < 1 for row in implied)
+    implied_wins = sum(_int(row["right_faster"]) for row in implied)
+    implied_losses = sum(_int(row["left_faster"]) for row in implied)
+    implied_var_increase = (
+        _fmt_grouped(min(_float(row["median_variables_difference"]) for row in implied)),
+        _fmt_grouped(max(_float(row["median_variables_difference"]) for row in implied)),
+    )
+    implied_hard_increase = (
+        _fmt_grouped(
+            min(_float(row["median_hard_clauses_difference"]) for row in implied)
+        ),
+        _fmt_grouped(
+            max(_float(row["median_hard_clauses_difference"]) for row in implied)
+        ),
+    )
+    implied_rss_increase = (
+        _fmt(
+            min(_float(row["median_peak_rss_difference_mb"]) for row in implied),
+            1,
+        ),
+        _fmt(
+            max(_float(row["median_peak_rss_difference_mb"]) for row in implied),
+            1,
+        ),
+    )
     symmetry_slower = sum(_float(row["bootstrap_95_ci_high"]) < 1 for row in symmetry)
     symmetry_unresolved = len(symmetry) - symmetry_slower
+    symmetry_wins = sum(_int(row["right_faster"]) for row in symmetry)
+    symmetry_losses = sum(_int(row["left_faster"]) for row in symmetry)
+    symmetry_var_increase = _fmt_grouped(
+        max(_float(row["median_variables_difference"]) for row in symmetry)
+    )
+    symmetry_hard_increase = _fmt_grouped(
+        max(_float(row["median_hard_clauses_difference"]) for row in symmetry)
+    )
+    if _int(composite["both_proved_pairs"]) <= 0:
+        raise ValueError("end-to-end baseline/full contrast has no proved pairs")
 
     original_signal = _policy_signal(
         original_pairs,
@@ -558,6 +732,23 @@ def _render(
         weighted_similarity_key="left_similarity",
         weighted_overtime_key="left_overtime",
     )
+    if (
+        corrected_signal["joint_nonworse"] != corrected_signal["pairs"]
+        or corrected_signal["any_priority_improvement"] != corrected_signal["pairs"]
+    ):
+        raise ValueError(
+            "corrected continuity-first schedules must weakly dominate weighted "
+            "schedules in the two prioritized criteria"
+        )
+    policy_sizes = _policy_size_breakdown(corrected_pairs)
+    agent_groups = [policy_sizes[f"agents_{agents}"] for agents in (10, 15, 20, 25)]
+    agent_joint_improvements = [
+        _int(group["joint_strict_improvements"]) for group in agent_groups
+    ]
+    agent_pairs = {_int(group["pairs"]) for group in agent_groups}
+    if len(agent_pairs) != 1:
+        raise ValueError("corrected policy caregiver-count groups are unbalanced")
+    encoding_sizes = _encoding_size_breakdown(factorial_pairs)
     priority_pairs = [
         row
         for row in corrected_pairs
@@ -585,8 +776,23 @@ def _render(
         min(_float(row["delta_similarity"]) for row in priority_different),
         max(_float(row["delta_similarity"]) for row in priority_different),
     )
+    priority_cases = sorted(
+        priority_different,
+        key=lambda row: tuple(_int(row[field]) for field in ("users", "agents", "visits", "seed")),
+    )
+    priority_case_tuples = ", ".join(
+        rf"$({_count(row['users'])},{_count(row['agents'])},"
+        rf"{_count(row['visits'])},{_count(row['seed'])})$"
+        for row in priority_cases
+    )
+    priority_case_similarity = ", ".join(
+        _fmt(_float(row["delta_similarity"]), 0) for row in priority_cases
+    )
 
     maxsat_progress = _maxsat_progress(corrected_maxsat_runs)
+    solver_performance = _solver_policy_performance(
+        corrected_maxsat_rows, corrected_rows, corrected_cplex_runs
+    )
     lex_timeouts = (
         maxsat_progress["lex-cos"]["timeouts"]
         + maxsat_progress["lex-overtime"]["timeouts"]
@@ -595,6 +801,24 @@ def _render(
         maxsat_progress["lex-cos"]["final_stage_timeouts"]
         + maxsat_progress["lex-overtime"]["final_stage_timeouts"]
     )
+    lex_reached_final = (
+        maxsat_progress["lex-cos"]["reached_final_stage"]
+        + maxsat_progress["lex-overtime"]["reached_final_stage"]
+    )
+    commercial_overheads: dict[str, tuple[float, float, float]] = {}
+    for solver in ("Gurobi", "CPLEX"):
+        weighted_time = _float(solver_performance[solver]["weighted"]["par2_seconds"])
+        continuity_time = _float(
+            solver_performance[solver]["lex-cos"]["par2_seconds"]
+        )
+        overtime_time = _float(
+            solver_performance[solver]["lex-overtime"]["par2_seconds"]
+        )
+        commercial_overheads[solver] = (
+            min(continuity_time, overtime_time) / weighted_time,
+            max(continuity_time, overtime_time) / weighted_time,
+            max(continuity_time, overtime_time),
+        )
     totalizer_only = _totalizer_only_contrast(factorial_pairs, factorial)
     totalizer_cell = _one(
         factorial,
@@ -623,131 +847,137 @@ def _render(
     evidence_table = _evidence_table(
         original_signal=original_signal,
         corrected_signal=corrected_signal,
-        maxsat_progress=maxsat_progress,
+        encoding_speed=enc_speed,
+        implied_contexts_slower=implied_slower,
+        symmetry_contexts_slower=symmetry_slower,
+        symmetry_contexts_unresolved=symmetry_unresolved,
+        corrected_audit_groups=_int(corrected_validation["audit_runs"]),
+        exact_groups=exact_groups,
+        infeasible_groups=infeasible_groups,
+        lex_timeouts=lex_timeouts,
+        final_stage_timeouts=final_stage_timeouts,
     )
     factorial_table = _factorial_footprint_table(factorial)
 
     results = rf"""% Generated from validator-approved campaign summaries. Do not edit.
+{result_figure.rstrip()}
+
 \section{{Results}}
 \label{{sec:results}}
 
-The {_count(screening['expected_measured_runs'])}-run campaign yields three
-findings. Explicit priorities change the schedules selected by a weighted
-score. Totalizer improves runtime in every controlled comparison. The final
-compatibility criterion accounts for almost all lexicographic timeouts.
+The {_count(screening['expected_measured_runs'])} runs yield three findings:
+strict priorities change schedule quality, Totalizer improves EvalMaxSAT
+runtime, and the final compatibility stage dominates its timeouts.
 
-{result_figure.rstrip()}
-
-\subsection{{Priorities change schedules}}
+\subsection{{Strict priorities change the selected schedules}}
 \label{{sec:policy-results}}
 
-The original benchmark rarely activates overtime: only
-{_count(original_signal['weighted_overtime_positive'])}/{_count(original_signal['pairs'])}
-weighted solutions have positive overtime, and continuity-first improves both
-continuity and overtime in only
-{_count(original_signal['joint_strict_improvements'])}/{_count(original_signal['pairs'])}
-pairs. Corrected-v2 changes this picture. Weighted solutions use overtime in
+Only {_count(original_signal['weighted_overtime_positive'])}/{_count(original_signal['pairs'])}
+weighted schedules on the original benchmark use overtime, so that suite cannot
+reveal the effect of an overtime priority. On corrected-v2, overtime appears in
 {_count(corrected_signal['weighted_overtime_positive'])}/{_count(corrected_signal['pairs'])}
-pairs, and continuity-first improves both criteria in
+weighted schedules. Continuity-first reduces both CONT and OT in
 {_count(corrected_signal['joint_strict_improvements'])}/{_count(corrected_signal['pairs'])}
-(Figure~\ref{{fig:main-effects}}a). It never worsens either prioritized
-criterion, while compatibility falls by a median
-{_fmt(corrected_signal['median_relative_similarity_loss_pct'], 1)}\%
-(range {_fmt(corrected_signal['min_relative_similarity_loss_pct'], 1)}--{_fmt(corrected_signal['max_relative_similarity_loss_pct'], 1)}\%).
-Table~\ref{{tab:benchmark-signal}} shows why corrected-v2 is needed for the
-policy study rather than merely adding more instances of the original design.
+comparisons, only CONT in {_count(corrected_signal['continuity_only_improvements'])},
+and only OT in {_count(corrected_signal['overtime_only_improvements'])}
+(Figure~\ref{{fig:main-effects}}a). The median reductions are
+{_fmt(-corrected_signal['median_continuity_change'], 1)} CONT units and
+{_fmt(-corrected_signal['median_overtime_change'], 1)} OT units. Compatibility
+falls by a median {_fmt(corrected_signal['median_relative_similarity_loss_pct'], 1)}\%,
+with an interquartile range of
+{_fmt(corrected_signal['q1_relative_similarity_loss_pct'], 1)}--{_fmt(corrected_signal['q3_relative_similarity_loss_pct'], 1)}\%.
+The joint improvement occurs in
+{_count(policy_sizes['users_30']['joint_strict_improvements'])}/24 smaller and
+{_count(policy_sizes['users_40']['joint_strict_improvements'])}/24 larger instances.
 
-Continuity-first and overtime-first select the same objective values on
-{_count(priority_same)}/{_count(len(priority_pairs))} instances. In each of the
-remaining {_count(len(priority_different))}, overtime-first removes one
-overtime unit in exchange for one continuity unit; the associated compatibility
-change ranges from {_fmt(priority_similarity_range[0])} to
-{_fmt(priority_similarity_range[1])} points.
+Continuity-first and overtime-first produce the same quality values on
+{_count(priority_same)}/{_count(len(priority_pairs))} instances. In the other
+{_count(len(priority_different))}, prioritizing overtime saves one overtime unit
+at the cost of one continuity unit; compatibility changes by
+{_fmt(priority_similarity_range[0])} to {_fmt(priority_similarity_range[1])} points.
 
-{evidence_table.rstrip()}
-
-\subsection{{Totalizer helps; extra constraints do not}}
+\subsection{{Totalizer improves runtime}}
 \label{{sec:encoding-results}}
 
-All eight configurations solve the same {_count(optimum)} instances, prove
-{_count(infeasible)} infeasible, and time out on {_count(timeout)}. Runtime
-therefore distinguishes configurations more clearly than solved count. Across
-the four sorting-network-to-Totalizer comparisons, paired median runtime ratios
-{_range_wording(enc_speed)}, and every 95\% interval lies above one
+All eight configurations prove the same {_count(optimum)} instances optimal,
+prove {_count(infeasible)} infeasible, and time out on {_count(timeout)}. Across
+the four controlled comparisons, the median sorting-network/Totalizer runtime
+ratio is {enc_speed[0]}--{enc_speed[1]}, and every 95\% interval is above one
 (Figure~\ref{{fig:main-effects}}b). Totalizer is faster on {_count(enc_wins)} of
-{_count(sum(_int(row['both_proved_pairs']) for row in encoding))} pairs solved
-by both configurations,
-versus {_count(enc_losses)} for sorting networks. It removes a median
-{enc_var_reduction[0]}--{enc_var_reduction[1]} variables while adding
-{enc_hard_increase[0]}--{enc_hard_increase[1]} clauses. These measurements
-describe the formula change but do not isolate a single cause for the runtime gain.
+{_count(sum(_int(row['both_proved_pairs']) for row in encoding))} paired runs,
+uses about {enc_var_reduction[0]}--{enc_var_reduction[1]} fewer variables, and
+reduces median peak memory by
+{_fmt(abs(max(_float(row['median_peak_rss_difference_mb']) for row in encoding)), 1)}--{_fmt(abs(min(_float(row['median_peak_rss_difference_mb']) for row in encoding)), 1)}\,MB.
+Table~\ref{{tab:factorial-footprint}} uses SN/TOT for the two encodings and
+IC/SB for implied constraints and symmetry breaking.
 
 {factorial_table.rstrip()}
 
-The Totalizer-only cell has the lowest PAR-2,
+Totalizer without optional constraints has the lowest PAR-2,
 {_fmt(totalizer_cell['par2_seconds'], 1)}\,s, an
 {_fmt(totalizer_only['par2_reduction_vs_baseline_pct'], 1)}\% reduction from the
-sorting-network baseline. Adding the implied constraints is slower in all
-{_count(implied_slower)} contexts; its paired median ratios
-{_range_wording(ic_speed)}. Symmetry breaking is slower in
-{_count(symmetry_slower)} contexts and unresolved in
-{_count(symmetry_unresolved)}; its paired median ratios
-{_range_wording(sb_speed)}. The
-full configuration is slower than Totalizer-only on
-{_count(totalizer_only['totalizer_only_faster'])}/{_count(totalizer_only['pairs'])}
-pairs solved by both configurations: its median runtime ratio is
-{_fmt(totalizer_only['median_full_over_totalizer_only'], 2)}
-([95\% CI: {_fmt(totalizer_only['bootstrap_95_ci_low'], 2)},
-{_fmt(totalizer_only['bootstrap_95_ci_high'], 2)}]).
+sorting-network baseline. Implied constraints are slower in all
+{_count(implied_slower)} controlled comparisons. Symmetry breaking has no
+consistent benefit: disabling it is favored in {_count(symmetry_slower)}
+settings, while {_count(symmetry_unresolved)} are inconclusive. Adding both to
+Totalizer raises median runtime by a factor of
+{_fmt(totalizer_only['median_full_over_totalizer_only'], 2)} (95\% interval
+{_fmt(totalizer_only['bootstrap_95_ci_low'], 2)}--{_fmt(totalizer_only['bootstrap_95_ci_high'], 2)}).
 
-\subsection{{Solver progress and independent checks}}
+\subsection{{The compatibility stage dominates EvalMaxSAT timeouts}}
 \label{{sec:validation}}
 
-Within 300\,s, EvalMaxSAT proves
+EvalMaxSAT completes all objectives in
 {_count(maxsat_progress['weighted']['optimum'])}/48 weighted runs and
-{_count(maxsat_progress['lex-cos']['optimum'])}/48 runs under each priority
-order. Among the {_count(lex_timeouts)} lexicographic timeouts,
-{_count(final_stage_timeouts)} reach the final compatibility criterion after
-proving the first two optima. Thus the main difficulty is completing the last
-criterion, not finding the higher-priority values.
+{_count(maxsat_progress['lex-cos']['optimum'])}/48 runs under each strict order.
+Yet {_count(lex_reached_final)}/96 strict-priority runs reach the compatibility
+stage, where {_count(final_stage_timeouts)}/{_count(lex_timeouts)} timeouts occur.
+The earlier continuity and overtime optima are therefore usually available even
+when compatibility cannot be completed within 300\,s.
 
-Gurobi proves all {_count(sum(_int(row['optimum_runs']) for row in corrected_rows))}
-corrected-v2 runs. CPLEX matches Gurobi on all
+Gurobi proves all
+{_count(sum(_int(row['optimum_runs']) for row in corrected_rows))} corrected-v2
+runs, and CPLEX matches its quality values on all
 {_count(corrected_validation['audit_runs'])} audited runs. On the original
-20-instance subset, EvalMaxSAT, Gurobi, and CPLEX also agree on
-{_count(exact_groups)} optimal groups and {_count(infeasible_groups)} infeasible groups.
-Every reported schedule passes the independent verifier.
+subset, all three solvers agree on {_count(exact_groups)} optimal and
+{_count(infeasible_groups)} infeasible instance--policy comparisons. Every
+reported schedule passes the independent checker. Mean commercial-solver PAR-2
+remains below
+{_fmt(max(commercial_overheads['Gurobi'][2], commercial_overheads['CPLEX'][2]), 1)}\,s,
+pointing to the staged EvalMaxSAT implementation as the performance bottleneck.
 """
 
     abstract = (
         "% Generated from validator-approved campaign summaries. Do not edit.\n"
         "On corrected-v2, continuity-first improves both continuity and overtime "
         f"in {_count(corrected_signal['joint_strict_improvements'])}/"
-        f"{_count(corrected_signal['pairs'])} exact pairs, with a median "
+        f"{_count(corrected_signal['pairs'])} same-instance comparisons, with a median "
         f"compatibility reduction of {_fmt(corrected_signal['median_relative_similarity_loss_pct'], 1)}\\%. "
-        "Totalizer yields median paired speedups of "
-        f"{enc_speed[0]}--{enc_speed[1]} over sorting networks, whereas the two "
-        "added constraint families do not improve the Totalizer-only setting. "
-        f"Of {_count(lex_timeouts)} lexicographic timeouts, "
-        f"{_count(final_stage_timeouts)} reach the final compatibility criterion.\n"
+        "Across the four controlled settings, the median "
+        "sorting-network/Totalizer runtime ratios are "
+        f"{enc_speed[0]}--{enc_speed[1]}; implied constraints and symmetry "
+        "breaking do not improve Totalizer without those constraints. "
+        f"Of {_count(lex_timeouts)} strict-priority timeouts, "
+        f"{_count(final_stage_timeouts)} occur in the third, compatibility stage.\n"
     )
 
     conclusion = rf"""% Generated from validator-approved campaign summaries. Do not edit.
 \section{{Conclusion}}
 \label{{sec:conclusion}}
 
-Explicit priorities select different home-care schedules from a weighted
-score. Corrected-v2 exposes the trade-off clearly: continuity-first improves
-both continuity and overtime in
+Strict priorities and Boolean representation have distinct effects on HCORAP.
+Continuity-first improves both continuity and overtime in
 {_count(corrected_signal['joint_strict_improvements'])}/{_count(corrected_signal['pairs'])}
-exact pairs at a median compatibility reduction of
+same-instance comparisons at a median compatibility reduction of
 {_fmt(corrected_signal['median_relative_similarity_loss_pct'], 1)}\%. Totalizer
-is consistently faster than sorting networks, and Totalizer without the two
-added constraint families has the lowest PAR-2. The three-solver checks agree
-on all {_count(exact_groups + infeasible_groups)} original-benchmark groups.
-On corrected-v2, the final compatibility criterion accounts for
-{_count(final_stage_timeouts)}/{_count(lex_timeouts)} lexicographic timeouts and
-is the clearest target for further improvement.
+has a lower median runtime than sorting networks in all four controlled
+comparisons, while implied constraints and symmetry breaking do not improve
+Totalizer without those constraints. Gurobi and CPLEX confirm the reported
+quality values. The compatibility stage accounts for
+{_count(final_stage_timeouts)}/{_count(lex_timeouts)} EvalMaxSAT timeouts, making
+cross-stage information reuse the clearest algorithmic next step. Operational
+data are needed to assess whether the measured trade-offs match provider
+priorities.
 """
     return abstract, results, conclusion
 
@@ -798,6 +1028,7 @@ def generate(arguments: argparse.Namespace) -> dict[str, Any]:
 
     corrected_rows: list[dict[str, str]] = []
     corrected_maxsat_rows: list[dict[str, str]] = []
+    corrected_cplex_runs: list[dict[str, str]] = []
     corrected_validation: dict[str, Any] | None = None
     corrected_pairs: list[dict[str, str]] = []
     corrected_maxsat_runs: list[dict[str, str]] = []
@@ -822,6 +1053,10 @@ def generate(arguments: argparse.Namespace) -> dict[str, Any]:
             arguments.corrected_maxsat_results_dir / "runs.csv"
         ).resolve()
         corrected_maxsat_runs = _csv(corrected_maxsat_runs_path)
+        corrected_cplex_runs_path = (
+            arguments.corrected_cplex_results_dir / "runs.csv"
+        ).resolve()
+        corrected_cplex_runs = _csv(corrected_cplex_runs_path)
         corrected_summary_path = (
             arguments.corrected_dir / "corrected_policy_summary.csv"
         ).resolve()
@@ -854,6 +1089,7 @@ def generate(arguments: argparse.Namespace) -> dict[str, Any]:
                 corrected_maxsat_validation_path,
                 corrected_maxsat_summary_path,
                 corrected_maxsat_runs_path,
+                corrected_cplex_runs_path,
             )
         )
     if corrected_validation is None:
@@ -878,7 +1114,9 @@ def generate(arguments: argparse.Namespace) -> dict[str, Any]:
         factorial_pairs=factorial_pairs,
         original_pairs=original_pairs,
         corrected_pairs=corrected_pairs,
+        corrected_maxsat_rows=corrected_maxsat_rows,
         corrected_maxsat_runs=corrected_maxsat_runs,
+        corrected_cplex_runs=corrected_cplex_runs,
         corrected_validation=corrected_validation,
         corrected_rows=corrected_rows,
         cross_rows=cross_rows,
@@ -939,6 +1177,11 @@ def parse_arguments() -> argparse.Namespace:
         "--corrected-maxsat-results-dir",
         type=Path,
         default=Path("experiments/results/gcp_corrected_primary"),
+    )
+    parser.add_argument(
+        "--corrected-cplex-results-dir",
+        type=Path,
+        default=Path("experiments/results/gcp_commercial_corrected_audit"),
     )
     parser.add_argument(
         "--cross-dir",

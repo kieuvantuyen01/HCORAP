@@ -3,8 +3,10 @@
 #include <algorithm>
 #include <cstdlib>
 #include <functional>
+#include <limits>
 #include <map>
 #include <set>
+#include <stdexcept>
 
 using namespace std;
 
@@ -779,9 +781,144 @@ void HCORAPMultiObjectiveEncoding::addBounds(SMTFormula *formula) {
     }
 }
 
+int HCORAPMultiObjectiveEncoding::maximumSimilarity() const {
+    long long maximum = 0;
+    for (int service = 0; service < instance->S; ++service) {
+        int serviceMaximum = 0;
+        for (int agent = 0; agent < instance->A; ++agent)
+            serviceMaximum = max(serviceMaximum, instance->r[agent][service]);
+        maximum += serviceMaximum;
+    }
+    if (maximum > numeric_limits<int>::max())
+        throw runtime_error("similarity upper bound exceeds supported integer range");
+    return static_cast<int>(maximum);
+}
+
+int HCORAPMultiObjectiveEncoding::maximumContinuity() const {
+    long long maximum = 0;
+    for (const vector<int> &sequence : instance->SEQ) {
+        maximum += max(
+            0,
+            min(instance->A, static_cast<int>(sequence.size())) - 1
+        );
+    }
+    if (maximum > numeric_limits<int>::max())
+        throw runtime_error("continuity upper bound exceeds supported integer range");
+    return static_cast<int>(maximum);
+}
+
+int HCORAPMultiObjectiveEncoding::maximumOvertime() const {
+    long long maximum = 0;
+    for (int extra : instance->HE)
+        maximum += max(0, extra);
+    if (maximum > numeric_limits<int>::max())
+        throw runtime_error("overtime upper bound exceeds supported integer range");
+    return static_cast<int>(maximum);
+}
+
+int HCORAPMultiObjectiveEncoding::effectiveContinuityObjectiveWeight() const {
+    if (objective == HCORAP_WEIGHTED)
+        return continuityWeight;
+    if (objective == HCORAP_CONTINUITY)
+        return 1;
+    if (objective == HCORAP_LEX_COS_SINGLE) {
+        long long value = (static_cast<long long>(maximumOvertime()) + 1) *
+            (static_cast<long long>(maximumSimilarity()) + 1);
+        if (value > numeric_limits<int>::max())
+            throw runtime_error(
+                "single-call LEX-COS continuity coefficient exceeds supported integer range"
+            );
+        return static_cast<int>(value);
+    }
+    if (objective == HCORAP_LEX_OCS_SINGLE) {
+        const long long value = static_cast<long long>(maximumSimilarity()) + 1;
+        if (value > numeric_limits<int>::max())
+            throw runtime_error(
+                "single-call LEX-OCS continuity coefficient exceeds supported integer range"
+            );
+        return static_cast<int>(value);
+    }
+    return 0;
+}
+
+int HCORAPMultiObjectiveEncoding::effectiveOvertimeObjectiveWeight() const {
+    if (objective == HCORAP_WEIGHTED) {
+        long long value = static_cast<long long>(overtimeWeight) * abs(instance->P);
+        if (value > numeric_limits<int>::max())
+            throw runtime_error("weighted overtime coefficient exceeds supported integer range");
+        return static_cast<int>(value);
+    }
+    if (objective == HCORAP_OVERTIME)
+        return 1;
+    if (objective == HCORAP_LEX_COS_SINGLE) {
+        const long long value = static_cast<long long>(maximumSimilarity()) + 1;
+        if (value > numeric_limits<int>::max())
+            throw runtime_error(
+                "single-call LEX-COS overtime coefficient exceeds supported integer range"
+            );
+        return static_cast<int>(value);
+    }
+    if (objective == HCORAP_LEX_OCS_SINGLE) {
+        long long value = (static_cast<long long>(maximumContinuity()) + 1) *
+            (static_cast<long long>(maximumSimilarity()) + 1);
+        if (value > numeric_limits<int>::max())
+            throw runtime_error(
+                "single-call LEX-OCS overtime coefficient exceeds supported integer range"
+            );
+        return static_cast<int>(value);
+    }
+    return 0;
+}
+
+void HCORAPMultiObjectiveEncoding::validateObjectiveWeightRange(
+    int similarityWeight,
+    int continuityObjectiveWeight,
+    int overtimeObjectiveWeight
+) const {
+    long long total = 0;
+    if (similarityWeight > 0) {
+        for (int agent = 0; agent < instance->A; ++agent) {
+            for (int service = 0; service < instance->S; ++service) {
+                if (instance->r[agent][service] > 0) {
+                    total += static_cast<long long>(similarityWeight) *
+                        instance->r[agent][service];
+                }
+            }
+        }
+    }
+    if (continuityObjectiveWeight > 0) {
+        total += static_cast<long long>(continuityObjectiveWeight) *
+            static_cast<long long>(instance->A + 1) *
+            static_cast<long long>(instance->SEQ.size());
+    }
+    if (overtimeObjectiveWeight > 0) {
+        long long thresholds = 0;
+        for (const vector<literal> &agentThresholds : overtimeThreshold)
+            thresholds += agentThresholds.size();
+        total += static_cast<long long>(overtimeObjectiveWeight) * thresholds;
+    }
+    if (total + 2 > numeric_limits<int>::max())
+        throw runtime_error(
+            "sum of MaxSAT soft weights exceeds the legacy WCNF integer range"
+        );
+}
+
 void HCORAPMultiObjectiveEncoding::addObjective(SMTFormula *formula) {
+    const bool includesSimilarity =
+        objective == HCORAP_WEIGHTED || objective == HCORAP_SIMILARITY ||
+        objective == HCORAP_LEX_COS_SINGLE ||
+        objective == HCORAP_LEX_OCS_SINGLE;
+    const int continuityObjectiveWeight =
+        effectiveContinuityObjectiveWeight();
+    const int overtimeObjectiveWeight = effectiveOvertimeObjectiveWeight();
+    validateObjectiveWeightRange(
+        includesSimilarity ? 1 : 0,
+        continuityObjectiveWeight,
+        overtimeObjectiveWeight
+    );
+
     int softCount = 0;
-    if (objective == HCORAP_WEIGHTED || objective == HCORAP_SIMILARITY) {
+    if (includesSimilarity) {
         for (int agent = 0; agent < instance->A; ++agent) {
             for (int service = 0; service < instance->S; ++service) {
                 if (instance->r[agent][service] > 0) {
@@ -794,8 +931,8 @@ void HCORAPMultiObjectiveEncoding::addObjective(SMTFormula *formula) {
         }
     }
 
-    if (objective == HCORAP_WEIGHTED || objective == HCORAP_CONTINUITY) {
-        int weight = objective == HCORAP_WEIGHTED ? continuityWeight : 1;
+    if (continuityObjectiveWeight > 0) {
+        int weight = continuityObjectiveWeight;
         if (weight > 0) {
             for (int sequence = 0; sequence < static_cast<int>(instance->SEQ.size()); ++sequence) {
                 for (int agent = 0; agent < instance->A; ++agent) {
@@ -810,10 +947,8 @@ void HCORAPMultiObjectiveEncoding::addObjective(SMTFormula *formula) {
         }
     }
 
-    if (objective == HCORAP_WEIGHTED || objective == HCORAP_OVERTIME) {
-        int weight = objective == HCORAP_WEIGHTED
-            ? overtimeWeight * abs(instance->P)
-            : 1;
+    if (overtimeObjectiveWeight > 0) {
+        int weight = overtimeObjectiveWeight;
         if (weight > 0) {
             for (const vector<literal> &agentThresholds : overtimeThreshold) {
                 for (const literal &threshold : agentThresholds) {
@@ -987,6 +1122,7 @@ HCORAPSolutionMetrics HCORAPMultiObjectiveEncoding::evaluateModel() const {
 int HCORAPMultiObjectiveEncoding::objectiveValue(
     const HCORAPSolutionMetrics &metrics
 ) const {
+    long long value = 0;
     switch (objective) {
         case HCORAP_COVERAGE:
             return metrics.coverage;
@@ -996,10 +1132,28 @@ int HCORAPMultiObjectiveEncoding::objectiveValue(
             return metrics.continuity;
         case HCORAP_OVERTIME:
             return metrics.overtime;
+        case HCORAP_LEX_COS_SINGLE:
+        case HCORAP_LEX_OCS_SINGLE:
+            value = static_cast<long long>(metrics.similarity)
+                - static_cast<long long>(effectiveContinuityObjectiveWeight()) *
+                    metrics.continuity
+                - static_cast<long long>(effectiveOvertimeObjectiveWeight()) *
+                    metrics.overtime;
+            if (value < numeric_limits<int>::min() ||
+                value > numeric_limits<int>::max())
+                throw runtime_error(
+                    "single-call lexicographic score exceeds supported integer range"
+                );
+            return static_cast<int>(value);
         case HCORAP_WEIGHTED:
         default:
-            return metrics.similarity
-                - continuityWeight * metrics.continuity
-                - overtimeWeight * abs(instance->P) * metrics.overtime;
+            value = static_cast<long long>(metrics.similarity)
+                - static_cast<long long>(continuityWeight) * metrics.continuity
+                - static_cast<long long>(overtimeWeight) * abs(instance->P) *
+                    metrics.overtime;
+            if (value < numeric_limits<int>::min() ||
+                value > numeric_limits<int>::max())
+                throw runtime_error("weighted score exceeds supported integer range");
+            return static_cast<int>(value);
     }
 }

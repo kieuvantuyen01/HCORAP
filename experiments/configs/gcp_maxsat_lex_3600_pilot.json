@@ -1,0 +1,43 @@
+{
+  "binary": "../../bin/release/hcorap_multi",
+  "solver": "${EVALMAXSAT_BIN}",
+  "result_dir": "../results/gcp_maxsat_lex_3600_pilot",
+  "instances": [
+    "../../instances/corrected_v2_reduced_suite/calibration/calibration/critical/*.txt"
+  ],
+  "instance_filters": {
+    "seeds": [1],
+    "load_profiles": ["critical"]
+  },
+  "expected_instances": 16,
+  "expected_runs": 48,
+  "timeout_seconds": 3600,
+  "solver_shutdown_grace_seconds": 5,
+  "hard_grace_seconds": 60,
+  "workers": 1,
+  "order_seed": 20270904,
+  "configurations": [
+    {"cardinality": "totalizer", "implied": "none", "symmetry": "none"}
+  ],
+  "runs": [
+    {
+      "variant": "staged-aligned",
+      "method": "lex-cos",
+      "align_evalmaxsat_tct": true,
+      "print_assignments": true
+    },
+    {
+      "variant": "staged-incumbent-bound",
+      "method": "lex-cos",
+      "align_evalmaxsat_tct": true,
+      "stage3_incumbent_bound": true,
+      "print_assignments": true
+    },
+    {
+      "variant": "single-call-dominance",
+      "method": "lex-cos-one-shot",
+      "align_evalmaxsat_tct": true,
+      "print_assignments": true
+    }
+  ]
+}

@@ -23,7 +23,15 @@ from typing import Any, Iterable
 
 
 ROOT = Path(__file__).resolve().parents[1]
-ALLOWED_METHODS = {"weighted", "lex-continuity", "lex-cos", "lex-overtime", "epsilon"}
+ALLOWED_METHODS = {
+    "weighted",
+    "lex-continuity",
+    "lex-cos",
+    "lex-overtime",
+    "lex-cos-one-shot",
+    "lex-overtime-one-shot",
+    "epsilon",
+}
 ALLOWED_CARDINALITY = {"sorting-network", "totalizer"}
 ALLOWED_IMPLIED = {"none", "user-slots", "slot-capacity", "both", "both-plus"}
 ALLOWED_SYMMETRY = {"none", "slots", "services", "slot-service", "all"}
@@ -197,6 +205,13 @@ def _validate_specification(specification: dict[str, Any]) -> None:
         value = int(specification.get(key, 1))
         if value < 0:
             raise ValueError(f"{key} must be non-negative")
+    if specification.get("stage3_incumbent_bound", False) and method not in {
+        "lex-cos",
+        "lex-overtime",
+    }:
+        raise ValueError(
+            "stage3_incumbent_bound requires lex-cos or lex-overtime"
+        )
 
 
 def _build_tasks(
@@ -241,6 +256,7 @@ def _build_tasks(
                 raise ValueError(f"unsupported symmetry breaking: {symmetry}")
             for requested in runs:
                 specification = {
+                    "variant": str(requested.get("variant", requested["method"])),
                     "method": requested["method"],
                     "delta": str(requested.get("delta", "-")),
                     "wc": int(requested.get("wc", 1)),
@@ -250,6 +266,12 @@ def _build_tasks(
                     "symmetry": symmetry,
                     "soft_coverage": bool(requested.get("soft_coverage", False)),
                     "print_assignments": bool(requested.get("print_assignments", False)),
+                    "align_evalmaxsat_tct": bool(
+                        requested.get("align_evalmaxsat_tct", False)
+                    ),
+                    "stage3_incumbent_bound": bool(
+                        requested.get("stage3_incumbent_bound", False)
+                    ),
                 }
                 identity = {
                     "instance_sha256": instance_sha,
@@ -257,6 +279,9 @@ def _build_tasks(
                     "binary_sha256": environment["binary_sha256"],
                     "solver_sha256": environment["solver_sha256"],
                     "timeout_seconds": float(config.get("timeout_seconds", 300)),
+                    "solver_shutdown_grace_seconds": float(
+                        config.get("solver_shutdown_grace_seconds", 5)
+                    ),
                 }
                 run_id = _json_hash(identity)[:24]
                 if run_id in seen:
@@ -341,6 +366,7 @@ def _run_task(
     result_dir: Path,
     timeout_seconds: float,
     hard_grace_seconds: float,
+    solver_shutdown_grace_seconds: float,
 ) -> dict[str, Any]:
     specification = task["specification"]
     raw_dir = result_dir / "raw"
@@ -360,6 +386,8 @@ def _run_task(
         str(solver),
         "--timeout",
         str(timeout_seconds),
+        "--solver-shutdown-grace",
+        str(solver_shutdown_grace_seconds),
         "--method",
         specification["method"],
         "--wc",
@@ -377,6 +405,10 @@ def _run_task(
     ]
     if specification["method"] == "epsilon":
         command.extend(["--delta", specification["delta"]])
+    if specification["align_evalmaxsat_tct"]:
+        command.append("--align-evalmaxsat-tct")
+    if specification["stage3_incumbent_bound"]:
+        command.append("--stage3-incumbent-bound")
     if specification["soft_coverage"]:
         command.append("--soft-coverage")
     if specification["print_assignments"]:
@@ -416,8 +448,18 @@ def _run_task(
     if temporary_result.is_file():
         try:
             payload = json.loads(temporary_result.read_text(encoding="utf-8"))
+            if payload.get("schema_version") != 3:
+                validation_errors.append("unexpected result schema_version")
             if payload.get("method") != specification["method"]:
                 validation_errors.append("method mismatch")
+            if payload.get("align_evalmaxsat_tct") is not specification[
+                "align_evalmaxsat_tct"
+            ]:
+                validation_errors.append("align_evalmaxsat_tct mismatch")
+            if payload.get("stage3_incumbent_bound") is not specification[
+                "stage3_incumbent_bound"
+            ]:
+                validation_errors.append("stage3_incumbent_bound mismatch")
             for key, result_key in (
                 ("cardinality", "cardinality_encoding"),
                 ("implied", "implied_constraints"),
@@ -429,6 +471,12 @@ def _run_task(
                 payload.get("metrics") or {}
             ).get("verified"):
                 validation_errors.append("OPTIMUM result is not independently verified")
+            if payload.get("status") == "TIMEOUT_FEASIBLE" and not (
+                payload.get("metrics") or {}
+            ).get("verified"):
+                validation_errors.append(
+                    "TIMEOUT_FEASIBLE result is not independently verified"
+                )
         except (OSError, json.JSONDecodeError) as exc:
             validation_errors.append(f"invalid result JSON: {exc}")
         os.replace(temporary_result, final_result)
@@ -545,6 +593,16 @@ def run_campaign(
     )
     timeout_seconds = float(config.get("timeout_seconds", 300))
     hard_grace_seconds = float(config.get("hard_grace_seconds", 60))
+    solver_shutdown_grace_seconds = float(
+        config.get("solver_shutdown_grace_seconds", 5)
+    )
+    if not 0 <= solver_shutdown_grace_seconds <= 60:
+        raise ValueError("solver_shutdown_grace_seconds must lie in [0,60]")
+    if solver_shutdown_grace_seconds + 5 > hard_grace_seconds:
+        raise ValueError(
+            "hard_grace_seconds must leave at least five seconds after "
+            "solver_shutdown_grace_seconds"
+        )
     worker_count = int(workers if workers is not None else config.get("workers", 1))
     if worker_count <= 0:
         raise ValueError("workers must be positive")
@@ -560,6 +618,7 @@ def run_campaign(
                     result_dir=result_dir,
                     timeout_seconds=timeout_seconds,
                     hard_grace_seconds=hard_grace_seconds,
+                    solver_shutdown_grace_seconds=solver_shutdown_grace_seconds,
                 ): task
                 for task in pending
             }

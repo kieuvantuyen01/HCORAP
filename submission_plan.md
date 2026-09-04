@@ -1,261 +1,333 @@
 # Kế hoạch hoàn thiện và nộp bài ICIIT 2027
 
-Cập nhật ngày 22/08/2026. Ma trận publication hiện hành là compact campaign
-924 measured runs trong
-`experiments/configs/reduced_campaign_manifest.json`. Bản phân tích đầy đủ về
-cấu hình, kết quả cũ và lý do loại nhánh nằm tại
-[`docs/COMPACT_EXPERIMENT_MATRIX_20260820.md`](docs/COMPACT_EXPERIMENT_MATRIX_20260820.md).
-Trạng thái 732 rows đã có và đúng 192 rows còn thiếu được khóa tại
-[`docs/EXPERIMENT_SUPPLEMENT_MATRIX_20260822.md`](docs/EXPERIMENT_SUPPLEMENT_MATRIX_20260822.md).
+Cập nhật ngày 04/09/2026. Kế hoạch này thay thế ma trận 924 runs và bốn RQ
+trước đây. Bản thảo chính chỉ còn hai thiết kế thực nghiệm. Validation,
+sensitivity và ablation là bằng chứng hỗ trợ, không được trình bày như các
+nghiên cứu ngang hàng.
 
-Không chạy measured phase cho tới khi code/config sau rà soát được commit,
-worktree sạch, publication tag mới được tạo và `HCORAP_EXPECTED_COMMIT` trỏ
-đúng commit/tag đó.
+Runbook chi tiết cho campaign còn thiếu:
+[`docs/COMPACT_RESULTS_RUNBOOK.md`](docs/COMPACT_RESULTS_RUNBOOK.md).
 
-## 1. Thông điệp khoa học
+Không chạy measured phase cho tới khi code và configs được review, commit,
+push, worktree sạch và `HCORAP_EXPECTED_COMMIT` trỏ đúng frozen commit.
 
-Policy chính được khóa là LEX-COS:
+## 1. Định vị nghiên cứu
 
-\[
-\min CONT\;\rightarrow\;\min OT\;\rightarrow\;\max SIM.
-\]
+Nghiên cứu không tuyên bố MaxSAT nhanh hơn các commercial solvers. Đóng góp
+được định vị như sau:
 
-LEX-OCS đổi hai ưu tiên đầu và chỉ là order-sensitivity analysis:
+1. xây dựng một chính sách HCORAP theo thứ tự ưu tiên tường minh:
+   `continuity → overtime → compatibility`;
+2. xây dựng Corrected-v2 để các mục tiêu continuity và overtime thực sự thay
+   đổi trong nghiệm được chọn;
+3. đánh giá một phương pháp MaxSAT chính xác với hai cardinality encodings,
+   đồng thời kiểm tra encoding effect dưới cả weighted và LEX-COS;
+4. kiểm chứng status, assignment và objective vector bằng independent verifier
+   và exact MIP references.
 
-\[
-\min OT\;\rightarrow\;\min CONT\;\rightarrow\;\max SIM.
-\]
+Kết luận về chính sách tối ưu được tách khỏi kết luận về hiệu năng MaxSAT.
+Gurobi tạo objective-quality evidence; EvalMaxSAT tạo encoding evidence.
 
-Thông điệp bài báo giữ ở mức:
+## 2. Hai câu hỏi nghiên cứu
 
-> LEX-COS làm rõ ưu tiên vốn có thể mơ hồ dưới weighted optimum; Totalizer làm
-> thay đổi cấu trúc encoding; tác động của implied constraints và exact symmetry
-> breaking phải được đánh giá bằng paired factorial ablation.
+### RQ1: Ảnh hưởng của objective policy
 
-Không claim rằng mọi treatment đều nhanh hơn. Hiệu ứng âm, trung tính hoặc phụ
-thuộc lớp instance đều là kết quả hợp lệ.
+So với weighted objective, LEX-COS thay đổi continuity, overtime và
+compatibility như thế nào trên các instances có tải đủ cao để ba tiêu chí cùng
+có ý nghĩa?
 
-## 2. Câu hỏi nghiên cứu và bằng chứng
+### RQ2: Ảnh hưởng của cardinality encoding
 
-### RQ1 — Objective policy
+Khi mọi yếu tố khác được giữ cố định, Totalizer thay đổi completion, PAR-2,
+paired runtime và formula size như thế nào so với sorting network dưới weighted
+và LEX-COS?
 
-Weighted và LEX-COS khác nhau thế nào về CONT, OT, SIM, proved count và PAR-2?
-Trên corrected benchmark, LEX-OCS có làm thay đổi vector objective hay không?
+Implied constraints, symmetry breaking, solver agreement và LEX-OT không có RQ
+riêng. Chúng lần lượt là configuration-selection ablation, correctness
+validation và priority-order sensitivity.
 
-### RQ2 — Totalizer
+## 3. Thiết kế A: policy study đã hoàn tất
 
-Totalizer ảnh hưởng thế nào đến số biến/clauses, peak RSS, proved count, PAR-2
-và paired time-to-proof so với sorting network?
+- Dataset: 48 Corrected-v2 critical instances.
+- Cấu trúc: 16 size categories × 3 evaluation seeds.
+- Main policies: weighted và LEX-COS.
+- Primary solver: Gurobi MIP-E, 300 s, một thread.
+- Main runs: 96/96 `OPTIMUM`.
+- CPLEX audit: 16 categories × 2 policies = 32/32 `OPTIMUM`, objective values
+  khớp Gurobi.
+- LEX-OT: 48 Gurobi + 16 CPLEX runs đã có, chỉ dùng sensitivity.
 
-### RQ3 — Constraint strengthening
+Không chạy thêm Thiết kế A.
 
-Implied constraints và exact slot-service symmetry breaking có hiệu ứng nào,
-và hiệu ứng đó tương tác ra sao với cardinality encoding?
+Nguồn được phép dùng:
 
-### Validation
+- `results_v2/gcp_corrected_exact_analysis/corrected_pairwise_summary.csv`;
+- `results_v2/gcp_corrected_exact_analysis/corrected_pairwise_pairs.csv`;
+- `results_v2/gcp_corrected_exact_analysis/corrected_policy_summary.csv`;
+- `results_v2/gcp_corrected_exact_analysis/corrected_exact_validation.json`.
 
-Policy effect có còn quan sát được trên corrected-v2 critical benchmark không?
-EvalMaxSAT có khớp exact objective với Gurobi MIP và CPLEX MIP trên commercial
-subset đã khai báo trước không?
+## 4. Thiết kế B: policy-by-encoding cần chạy
 
-RQ2--RQ3 chỉ phát biểu cho EvalMaxSAT binary đã khóa và protocol đã khóa.
-Gurobi/CPLEX là
-exact-objective validation backends, không phải căn cứ cho MaxSAT runtime claim.
+### MaxSAT matrix
 
-## 3. Cấu hình và benchmark split đã khóa
+| Policy | Encoding | IC | SB | Instances | Timeout | Runs |
+|---|---|---|---|---:|---:|---:|
+| weighted | sorting network | none | none | 48 | 3.600 s | 48 |
+| weighted | Totalizer | none | none | 48 | 3.600 s | 48 |
+| LEX-COS | sorting network | none | none | 48 | 3.600 s | 48 |
+| LEX-COS | Totalizer | none | none | 48 | 3.600 s | 48 |
+| **Tổng MaxSAT** |  |  |  |  |  | **192** |
 
-```text
-B = sorting-network / implied none / symmetry none
-R = totalizer / implied both / symmetry slot-service
-```
+Dataset là toàn bộ Original suite với seeds 1--3. Không loại hai classes từng
+bị loại trong campaign 42 instances. MaxSAT dùng một cumulative budget cho cả
+ba LEX-COS stages. Bốn tasks của cùng instance tạo thành một randomized block.
 
-- original factorial: 16 lớp, seeds 1--3, 48 instances;
-- original weighted/LEX-COS: 14 lớp, seeds 1--3, 42 instances, chỉ R;
-- corrected-v2: 16 critical strata, evaluation seeds 1001--1003, 48 instances,
-  chạy weighted/LEX-COS/LEX-OCS dưới R;
-- commercial subset: hai lớp `30_15_4`, `40_25_5`, seeds 1--10, 20 instances.
+### Exact reference
 
-Hai commercial-development classes bị loại khỏi original LEX sets. Chúng vẫn
-được dùng trong commercial validation vì vai trò này được khai báo riêng. B--R
-weighted comparison tái sử dụng hai cell của factorial. RQ1 chạy lại weighted R
-cùng LEX-COS; commercial validation cũng chạy cả hai MaxSAT policies. Mọi
-measured top-level run dùng timeout 300 s.
+Gurobi MIP-E chạy hai policies trên cùng 48 instances:
 
-## 4. Ma trận measured compact
+| Backend | Policies | Instances | Timeout | Runs |
+|---|---:|---:|---:|---:|
+| Gurobi MIP-E | 2 | 48 | 3.600 s | 96 |
 
-| Campaign | Thiết kế | Runs | Timeout | Worst-case core-hour |
-|---|---|---:|---:|---:|
-| original factorial ablation | 48 × 8 configs × weighted | 384 | 300 s | 32,00 |
-| original policy comparison | 42 × R × weighted/LEX-COS | 84 | 300 s | 7,00 |
-| corrected-v2 EvalMaxSAT scalability | 48 × R × weighted/LEX-COS/LEX-OCS | 144 | 300 s | 12,00 |
-| Gurobi/CPLEX validation | 20 × 2 backends × weighted/LEX-COS | 80 | 300 s | 6,67 |
-| EvalMaxSAT commercial validation | 20 × R × weighted/LEX-COS | 40 | 300 s | 3,33 |
-| corrected-v2 exact policy primary | 48 × Gurobi × weighted/LEX-COS/LEX-OCS | 144 | 300 s | 12,00 |
-| corrected-v2 CPLEX stratum audit | 16 × CPLEX × weighted/LEX-COS/LEX-OCS | 48 | 300 s | 4,00 |
-| **Tổng measured** |  | **924** |  | **77,00** |
+Gurobi reference không phải runtime baseline. Nó xác nhận mọi MaxSAT result đã
+quyết định và objective vector của mọi MaxSAT `OPTIMUM`.
 
-Ngoài measured matrix có 4 EvalMaxSAT LEX-COS scalability-calibration runs,
-48 corrected-v2 exact-solver calibration runs ở timeout 300 s và 18 commercial
-correctness-smoke runs ở timeout 30 s. Chúng
-không được dùng trong runtime tables. Calibration phải đạt ít nhất 2/4 optimum
-trước khi measured campaign bắt đầu. Worst case measured tuần tự là 3,21 ngày;
-với dữ liệu hiện có chỉ còn 192 measured rows, tối đa 16 core-hours.
-So với campaign 1.270 runs trước khi compact, thiết kế hiện tại giảm 27,24%
-số run và worst-case compute. Mỗi factorial contrast vẫn có 48 paired
-blocks trên đủ 16 lớp; kết quả theo từng lớp chỉ được trình bày mô tả vì mỗi lớp
-có ba seeds.
+### Tổng khối lượng mới
 
-Một kiểm tra chuyển giao được tách khỏi ma trận 924 runs: chạy LEX-COS trên
-corrected-v2 với `Totalizer-only` và cấu hình R. Pilot dùng seed 1002 của 16
-strata, tức 32 runs và tối đa 2,67 core-hour. Chỉ chạy confirmation 96 runs
-(48 instances × 2 configs, tối đa 8 core-hour) nếu pilot đạt ít nhất một điều
-kiện: thêm ròng 2 optimum, tiến thêm một criterion trên ít nhất 4/16 cặp, hoặc
-giảm PAR-2 ít nhất 10%. Kết quả chỉ nhập vào bài sau khi đủ 96 rows; pilot không
-được gộp vào estimate cuối.
+- 192 EvalMaxSAT rows;
+- 96 Gurobi reference rows;
+- tổng 288 records;
+- chỉ bốn MaxSAT configurations, không phải 288 thiết kế.
 
-## 5. Phần hoãn hoặc loại khỏi bài
+MaxSAT worst case là 192 core-hour. Dữ liệu 300 s hiện có cho thấy ước lượng
+thực tế khoảng 9--12 giờ tuần tự, nhưng con số này chỉ dùng để vận hành VM.
 
-| Nhánh | Quyết định | Cách trình bày |
-|---|---|---|
-| Pareto/epsilon confirmation | hoãn | không đưa exploratory pilot vào main results |
-| weight sensitivity confirmation | hoãn | không đưa claim sensitivity |
-| corrected relaxed/saturated stress | hoãn | limitation/future study |
-| availability uncertainty | hoãn | không claim robust optimization |
-| routing | loại | ngoài implemented decision model |
-| CPLEX CP và Open-WBO | loại | CP không cần cho exact MIP validation; giữ một MaxSAT solver chính nhất quán với nghiên cứu gốc |
-| extra IC/SB modes, `both-plus` | loại | pilot-only; không cần cho factorial claim |
+## 5. Vai trò của dữ liệu cũ
 
-Không mở lại các nhánh này trước submission trừ khi một claim cốt lõi bị loại
-và nhóm tác giả chủ động định nghĩa lại scope trước khi xem primary results.
+| Nguồn | Vai trò mới |
+|---|---|
+| 8-cell weighted factorial | giải thích vì sao IC và SB bị tắt |
+| weighted SN/TOT 300 s | evidence sơ bộ, sẽ bị thay bởi matrix 3.600 s |
+| original 42-instance weighted/LEX-COS | diagnostic về objective activity |
+| corrected-v2 EvalMaxSAT 300 s | historical scalability diagnostic, không dùng ở main results |
+| three-solver 20-instance subset | correctness check bổ sung |
+| Totalizer-transfer pilot | STOP, artifact only |
+| epsilon, weight, uncertainty, routing | ngoài scope |
 
-## 6. Protocol GCP
+Không cộng dữ liệu 300 s và 3.600 s trong cùng PAR-2 hoặc runtime distribution.
+Không trộn rows từ khác binary hash hoặc source commit trong một direct
+comparison.
 
-Publication machine: non-Spot GCP `c4-highcpu-8`, 8 vCPU, 16 GB RAM, Ubuntu
-24.04 LTS. Mỗi measured run dùng một solver process bị giới hạn vào một pinned
-vCPU; publication default là `WORKERS=1`. Gurobi và CPLEX còn được khóa một
-native solver thread.
-
-Khóa các yếu tố sau:
-
-- EvalMaxSAT Linux x86-64 SHA-256 `97614c996e1173ca0672ec46da153656046db1d84b9362a8561161ee750779f7`;
-- compile flags `-O3 -DNDEBUG -std=c++11`;
-- cùng VM image, source/binary/solver hash;
-- timeout 300 s cho mọi measured top-level run; 30 s chỉ cho smoke;
-- cumulative timeout cho toàn bộ stages của lexicographic policy;
-- 10 warm-up instances không thuộc measured sample;
-- instance-major blocked randomized order với seed lưu trong config;
-- Gurobi/CPLEX: one thread, seed 0, relative/absolute gap 0;
-- raw JSON, native/stderr logs, peak RSS, verifier outcome và all hashes.
-
-## 7. Cách chạy
-
-Sau khi đã đặt đúng EvalMaxSAT binary, Gurobi và CPLEX trên VM:
+## 6. Cách chạy trên GCP
 
 ```bash
 export EVALMAXSAT_BIN=/opt/evalmaxsat/EvalMaxSAT_bin
 export GUROBI_HOME=/absolute/path/to/gurobi/platform
-export CPLEX_STUDIO_DIR=/absolute/path/to/CPLEX_Studio
 export HCORAP_CPU_CORE=0
-export HCORAP_EXPECTED_COMMIT=iciit2027-exp-v3
+export HCORAP_EXPECTED_COMMIT=$(git rev-parse HEAD)
 export HCORAP_BACKUP_DIR=/mnt/hcorap-backup
-export CONFIRM_PUBLICATION_CAMPAIGN=YES
-
-bash experiments/run_all_remaining_publication.sh
 ```
 
-Thứ tự pipeline:
+Preflight:
 
-```text
-build/test/benchmark checks
--> commercial license + 18-run correctness smoke
--> 384-run factorial hard gate
--> 42 weighted + 42 LEX-COS trên original
--> 48 weighted + 48 LEX-COS + 48 LEX-OCS trên corrected-v2
--> 80 commercial MIP + 40 MaxSAT commercial weighted/LEX
--> 48-run corrected exact calibration
--> 144 Gurobi corrected primary + 48 CPLEX stratum audit
--> analysis -> package -> manuscript freeze
+```bash
+./experiments/run_compact_policy_encoding.sh preflight
 ```
 
-Chi tiết resume và checkpoint nằm trong
-[`docs/GCP_EXPERIMENT_RUNBOOK.md`](docs/GCP_EXPERIMENT_RUNBOOK.md).
+Measured campaign:
 
-## 8. Gates bắt buộc
+```bash
+export CONFIRM_COMPACT_POLICY_ENCODING=YES
+./experiments/run_compact_policy_encoding.sh all
+```
 
-### G1 — Preflight
+Runner hỗ trợ resume theo phase:
 
-- all tests và C++ builds pass;
-- solver source/binary đúng pinned commit;
-- corrected-v2 instances qua witness/hash/matrix verification;
-- manifest đúng 924 measured + 52 calibration + 18 smoke runs;
-- mọi MaxSAT config resolve đúng instance/task count;
-- commercial preflight và 18/18 smoke runs qua verifier;
-- ba smoke backends agreement trên 6 instance-policy groups.
+```bash
+./experiments/run_compact_policy_encoding.sh reference
+./experiments/run_compact_policy_encoding.sh maxsat
+./experiments/run_compact_policy_encoding.sh analyze
+```
 
-### G2 — Factorial hard gate
+Sau khi đồng bộ kết quả về máy chứa analysis Corrected-v2, sinh bảng và macro
+LaTeX bằng evidence gate:
 
-Dừng campaign nếu C1 thiếu row, có technical/validation error, có unverified
-solver-reported optimum, paired weighted-objective mismatch hoặc peak RSS vượt
-12 GB. `reference_composite` chỉ là evidence label; gate không giả định R phải
-nhanh hơn B. Không còn branch gate hậu nghiệm cho epsilon, weight hoặc LEX.
+```bash
+export HCORAP_POLICY_ANALYSIS=results_v2/gcp_corrected_exact_analysis
+export HCORAP_MANUSCRIPT_RESULTS=LaTeX-Templates/paper/generated_compact
+./experiments/run_compact_policy_encoding.sh manuscript
+```
 
-### G3 — Data freeze
+Generator chỉ chạy khi cả `manuscript_eligible=true` của Thiết kế A và
+`evidence_valid=true` của Thiết kế B. File provenance ghi SHA-256 của mọi input
+và output; không sao chép số liệu thủ công từ CSV vào bảng cuối.
 
-- chính xác 924 measured rows, không duplicate/unexpected run ID;
-- mọi `OPTIMUM` qua independent verifier;
-- all analyzers trả `valid=true` với expected pair/group counts;
-- MaxSAT/Gurobi/CPLEX objective agreement được tính chỉ trên groups cả ba backend
-  chứng minh optimum;
-- generated LaTeX/prose/provenance được tạo từ frozen artifacts;
-- archive và SHA-256 được tạo từ clean publication commit;
-- manuscript build chỉ mở sau freeze marker hợp lệ.
+## 7. Gates trước khi đưa vào bản thảo
 
-## 9. Ánh xạ kết quả vào bản thảo
+### G1: source và execution
 
-| Claim/bảng | Nguồn duy nhất được phép dùng |
-|---|---|
-| factorial RQ2/RQ3 và B--R 48 pairs | `gcp_primary_analysis/factorial_*`, `weighted_composite_*` |
-| original weighted--LEX-COS R, 42 pairs | `gcp_primary_analysis/lex_confirmatory_*` |
-| corrected EvalMaxSAT scalability | `gcp_corrected_analysis/corrected_*` |
-| corrected weighted--LEX-COS và LEX-COS--LEX-OCS exact pairs | `gcp_corrected_exact_analysis/corrected_pairwise_*` |
-| corrected-v2 exact policy, 48 instances/policy | `gcp_corrected_exact_analysis/corrected_policy_summary.csv` |
-| three-backend agreement, 20 groups/policy | `gcp_cross_paradigm_analysis/*` |
-| reproducibility | resolved configs, environment, manifests, hashes, validators |
+- frozen commit tồn tại trên remote;
+- worktree sạch;
+- EvalMaxSAT đúng SHA-256;
+- build và toàn bộ tests pass;
+- dry-run resolve đúng 192 MaxSAT + 96 Gurobi tasks;
+- VM, CPU affinity, memory và disk checks pass.
 
-Không dùng timing lịch sử trong `results/` hoặc `results_addition/` trong bảng
-chính. Không gộp development/pilot rows với publication rows. Timeouts phải ở
-trong solved counts và PAR-2; objective deltas chỉ dùng jointly-optimum,
-verifier-passing pairs.
+### G2: completeness và correctness
 
-## 10. Trình bày trong bản 5 trang
+- đủ 288 rows, không thiếu hoặc duplicate key;
+- đủ bốn MaxSAT cells trên đúng 48 instance hashes;
+- mọi row đúng timeout, method, encoding, IC và SB;
+- Gurobi chứng minh optimum hoặc infeasibility cho đủ 96 references;
+- timeout không bị báo thành infeasible;
+- không có status contradiction với Gurobi;
+- mọi MaxSAT `OPTIMUM` khớp objective vector Gurobi;
+- mọi assignment được independent verifier chấp nhận.
 
-Giữ đúng ba visual kết quả, mỗi visual có một nhiệm vụ riêng:
+### G3: claim gate cho từng policy
 
-1. figure full-width hai panel: weighted--LEX-COS policy deltas trên
-   corrected-v2 và bốn sorting-network/Totalizer confidence intervals;
-2. bảng single-column đủ tám factorial cells, báo PAR-2, peak RSS và số biến;
-3. bảng single-column đối chiếu signal của original/corrected-v2 và cho biết
-   EvalMaxSAT dừng ở criterion nào trong các lexicographic runs.
+Chỉ phát biểu “Totalizer nhanh hơn” nếu:
 
-Đủ 12 direct contrasts ở mức hàng và toàn bộ summary columns nằm trong
-artifact; bản chính chỉ giữ range/direction cần cho claims. Cấu trúc Results đi
-theo claim (policy, encoding, validation) thay vì lặp lại nhãn RQ cơ học.
+- proved count không giảm;
+- PAR-2 thấp hơn;
+- median SN/TOT speedup lớn hơn 1;
+- bootstrap 95% CI nằm hoàn toàn trên 1;
+- không có status hoặc objective mismatch.
 
-Không thêm Pareto, weight-sensitivity, uncertainty hoặc routing figure. Nếu còn
-chỗ, ưu tiên threats to validity và exact sample/protocol description hơn một
-exploratory plot.
+Nếu gate không đạt, kết quả vẫn được báo trung thực là neutral hoặc
+policy-dependent. Không thay dataset, timeout hoặc encoding sau khi xem kết
+quả.
+
+## 8. Outline bản thảo
+
+### 1. Introduction
+
+- quyết định HCORAP và ba quality measures;
+- hạn chế của weighted exchange rates;
+- nhu cầu về objective priorities;
+- hai câu hỏi nghiên cứu;
+- bốn đóng góp, trong đó policy evidence và encoding evidence được tách rõ.
+
+### 2. Related Work
+
+- home-care allocation/scheduling;
+- lexicographic and multi-objective optimization;
+- MaxSAT và cardinality encodings;
+- khoảng trống: chưa có đánh giá HCORAP kết nối objective order với encoding
+  choice trên cùng fixed matrix.
+
+### 3. Problem Formulation and Lexicographic Policy
+
+- sets, assignment variables và feasibility;
+- định nghĩa CONT, OT, SIM;
+- weighted objective;
+- LEX-COS và staged exact solution procedure;
+- LEX-OT chỉ được giới thiệu như sensitivity policy.
+
+### 4. Boolean Encoding
+
+- phần model được encode;
+- sorting network;
+- Totalizer;
+- IC và SB được mô tả ngắn vì chúng chỉ thuộc ablation.
+
+### 5. Experimental Methodology
+
+- benchmark và hardware;
+- Design A: policy study;
+- Design B: fixed 2×2 policy-by-encoding matrix;
+- Gurobi/CPLEX và verifier là validation;
+- metrics, pairing, bootstrap CI và PAR-2;
+- không có Table đếm tổng số runs trong main paper.
+
+### 6. Experimental Results
+
+#### 6.1 Effect of the lexicographic policy
+
+- Table: 48 weighted/LEX-COS objective deltas;
+- Figure: joint reductions của CONT và OT;
+- paragraph: compatibility trade-off;
+- một câu về LEX-OT sensitivity.
+
+#### 6.2 Effect of the cardinality encoding
+
+- Table bốn rows: Weighted-SN, Weighted-TOT, LEX-COS-SN, LEX-COS-TOT;
+- report completion, PAR-2, median runtime, RSS, variables và clauses;
+- Figure gồm hai paired speedup estimates với 95% CI, một estimate mỗi policy;
+- một paragraph ngắn về full runtime distribution nếu còn chỗ;
+- một paragraph configuration selection từ ablation cũ.
+
+#### 6.3 Independent validation
+
+- CPLEX khớp Gurobi trên Corrected-v2 audit;
+- MaxSAT optimum khớp Gurobi trên full Original matrix;
+- independent verifier;
+- không dùng bảng solver-completion 300 s cũ.
+
+### 7. Discussion
+
+- khi nào dùng LEX-COS, khi nào weighted hợp lý;
+- ý nghĩa của compatibility trade-off;
+- encoding effect có transfer giữa policies hay không;
+- vai trò khác nhau của Original và Corrected-v2.
+
+### 8. Limitations
+
+- synthetic instances và ba seeds mỗi stratum;
+- hai dataset có mục đích khác nhau;
+- solver/hardware dependence;
+- không có routing/uncertainty/operational data;
+- proof files chưa có nếu trạng thái này vẫn đúng khi freeze.
+
+### 9. Conclusion
+
+- một kết luận về objective policy;
+- một kết luận về encoding effect, có điều kiện theo claim gate;
+- một câu về validation;
+- không đưa exploratory hoặc failed pilot vào conclusion.
+
+## 9. Bảng và hình cuối cùng
+
+Giữ tối đa bốn visual chính:
+
+1. policy-effect table;
+2. CONT/OT delta scatter plot;
+3. four-cell encoding table;
+4. two-policy paired speedup plot hoặc cactus plot.
+
+Không dùng experiment-map table, eight-cell main table hoặc corrected-v2
+EvalMaxSAT completion table. Full factorial, per-instance records và provenance
+được chuyển sang artifact.
+
+## 10. Những nhánh không chạy
+
+- epsilon/Pareto;
+- weight sensitivity;
+- routing;
+- uncertainty;
+- relaxed/saturated load profiles;
+- Open-WBO;
+- full 8-cell factorial ở 3.600 s;
+- full CPLEX trên 48 Original instances;
+- lặp lại deterministic solver nhiều lần trên cùng instance.
+
+Campaign Corrected-v2 MaxSAT 3.600 s chỉ được mở nếu nhóm tác giả thay đổi scope
+để claim high-load MaxSAT scalability. Nó không thuộc campaign mặc định này.
 
 ## 11. Definition of done
 
-- [ ] Publication commit/tag sạch và `HCORAP_EXPECTED_COMMIT` đã khóa.
-- [ ] G1, G2, G3 pass; exact count là 924 measured rows.
-- [ ] Tất cả bảng và prose định lượng sinh từ frozen raw data.
-- [ ] Pilot Totalizer-only/LEX-COS đã có quyết định GO/STOP; nếu GO thì đủ 96
-      confirmation rows trước khi đưa claim chuyển giao vào bài.
-- [ ] Mỗi con số trong Abstract/Conclusion truy về generated evidence.
-- [ ] Không dùng historical/development/pilot runtime làm publication evidence.
-- [ ] Artifact có source, configs, instances, raw logs, environment và SHA-256.
-- [ ] Clean-room reproduction chạy được trên fresh checkout.
-- [ ] PDF đúng template/page limit, font embedded và không warning nghiêm trọng.
-- [ ] Author metadata và submission metadata đã được đồng tác giả xác nhận.
-- [ ] Kiểm tra lại deadline và yêu cầu ICIIT trên trang chính thức trước upload.
+- [ ] Source/config review hoàn tất; frozen commit đã push.
+- [ ] `preflight` pass trên GCP.
+- [ ] Đủ 192 MaxSAT + 96 Gurobi rows.
+- [ ] `policy_encoding_validation.json` có `evidence_valid=true`.
+- [ ] Claim gate được đọc riêng cho weighted và LEX-COS.
+- [ ] Table/figure được sinh từ CSV đã freeze, không chép số bằng tay.
+- [ ] Xóa đoạn thông báo “matrix has not yet been collected” khỏi bản thảo sau
+      khi dữ liệu pass gate.
+- [ ] Abstract, Results, Discussion và Conclusion thống nhất cùng số liệu.
+- [ ] Artifact giữ configs, resolved matrix, raw JSON, logs, environment và
+      checksums.
+- [ ] Khôi phục hai Git objects cũ nếu vẫn phân phối historical artifact.
+- [ ] Build PDF, kiểm tra overflow, font embedding và page count.
+- [ ] Xác minh metadata, deadline và yêu cầu ICIIT 2027 trước khi upload.

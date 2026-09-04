@@ -28,6 +28,12 @@ def _number(value: Any) -> float:
     return float(value)
 
 
+def _difference(left: Any, right: Any) -> float | str:
+    if left in (None, "") or right in (None, ""):
+        return ""
+    return _number(left) - _number(right)
+
+
 def _configuration(row: dict[str, str]) -> tuple[str, str, str]:
     return tuple(row[key] for key in CONFIG_KEYS)  # type: ignore[return-value]
 
@@ -36,6 +42,32 @@ def _par2(row: dict[str, str]) -> float:
     if row["status"] in PROVED:
         return _number(row["elapsed_seconds"])
     return 2 * _number(row["timeout_seconds"])
+
+
+def _pipe_values(row: dict[str, str], key: str) -> list[str]:
+    value = row.get(key, "").strip()
+    return [part.strip() for part in value.split("|")] if value else []
+
+
+def _common_stage_values_match(
+    totalizer: dict[str, str], full: dict[str, str]
+) -> bool:
+    common = min(
+        int(float(totalizer.get("stage_count") or 0)),
+        int(float(full.get("stage_count") or 0)),
+    )
+    totalizer_objectives = _pipe_values(totalizer, "stage_objectives")
+    full_objectives = _pipe_values(full, "stage_objectives")
+    totalizer_optima = _pipe_values(totalizer, "stage_optima")
+    full_optima = _pipe_values(full, "stage_optima")
+    return (
+        len(totalizer_objectives) >= common
+        and len(full_objectives) >= common
+        and len(totalizer_optima) >= common
+        and len(full_optima) >= common
+        and totalizer_objectives[:common] == full_objectives[:common]
+        and totalizer_optima[:common] == full_optima[:common]
+    )
 
 
 def _write_csv(path: Path, rows: list[dict[str, Any]]) -> None:
@@ -74,6 +106,10 @@ def analyze(result_dir: Path, output_dir: Path, expected_instances: int) -> dict
         full_stage = int(float(full.get("stage_count") or 0))
         totalizer_par2 = _par2(totalizer)
         full_par2 = _par2(full)
+        equal_progress = totalizer_stage == full_stage
+        common_values_match = _common_stage_values_match(totalizer, full)
+        totalizer_solve = totalizer.get("solve_seconds_sum")
+        full_solve = full.get("solve_seconds_sum")
         pair_rows.append(
             {
                 "instance_sha256": instance,
@@ -87,9 +123,39 @@ def analyze(result_dir: Path, output_dir: Path, expected_instances: int) -> dict
                 "totalizer_only_stage_count": totalizer_stage,
                 "full_stage_count": full_stage,
                 "stage_advantage": totalizer_stage - full_stage,
+                "common_stage_values_match": common_values_match,
                 "totalizer_only_par2_seconds": totalizer_par2,
                 "full_par2_seconds": full_par2,
                 "par2_difference_seconds": totalizer_par2 - full_par2,
+                "totalizer_only_completed_solve_seconds": totalizer.get(
+                    "solve_seconds_sum"
+                ),
+                "full_completed_solve_seconds": full.get("solve_seconds_sum"),
+                "full_over_totalizer_completed_solve_ratio": (
+                    _number(full_solve) / _number(totalizer_solve)
+                    if equal_progress
+                    and common_values_match
+                    and totalizer_solve not in (None, "", "0", "0.0")
+                    and full_solve not in (None, "")
+                    else ""
+                ),
+                "totalizer_only_encode_seconds": totalizer.get("encode_seconds_sum"),
+                "full_encode_seconds": full.get("encode_seconds_sum"),
+                "totalizer_only_variables": totalizer.get("variables_max"),
+                "full_variables": full.get("variables_max"),
+                "variables_difference": _difference(
+                    full.get("variables_max"), totalizer.get("variables_max")
+                ),
+                "totalizer_only_hard_clauses": totalizer.get("hard_clauses_max"),
+                "full_hard_clauses": full.get("hard_clauses_max"),
+                "hard_clauses_difference": _difference(
+                    full.get("hard_clauses_max"), totalizer.get("hard_clauses_max")
+                ),
+                "totalizer_only_peak_rss_mb": totalizer.get("peak_rss_mb"),
+                "full_peak_rss_mb": full.get("peak_rss_mb"),
+                "peak_rss_difference_mb": _difference(
+                    full.get("peak_rss_mb"), totalizer.get("peak_rss_mb")
+                ),
             }
         )
 
@@ -105,6 +171,41 @@ def analyze(result_dir: Path, output_dir: Path, expected_instances: int) -> dict
     )
     full_par2 = statistics.fmean(float(row["full_par2_seconds"]) for row in pair_rows)
     par2_improvement_pct = 100 * (full_par2 - totalizer_par2) / full_par2
+    equal_progress_rows = [
+        row
+        for row in pair_rows
+        if row["totalizer_only_stage_count"] == row["full_stage_count"]
+        and row["common_stage_values_match"]
+        and row["full_over_totalizer_completed_solve_ratio"] not in (None, "")
+    ]
+    variable_differences = [
+        _number(row["variables_difference"])
+        for row in pair_rows
+        if row["variables_difference"] not in (None, "")
+    ]
+    hard_clause_differences = [
+        _number(row["hard_clauses_difference"])
+        for row in pair_rows
+        if row["hard_clauses_difference"] not in (None, "")
+    ]
+    rss_differences = [
+        _number(row["peak_rss_difference_mb"])
+        for row in pair_rows
+        if row["peak_rss_difference_mb"] not in (None, "")
+    ]
+    common_stage_value_matches = sum(
+        bool(row["common_stage_values_match"]) for row in pair_rows
+    )
+    both_reached_final_stage = sum(
+        int(row["totalizer_only_stage_count"]) >= 2
+        and int(row["full_stage_count"]) >= 2
+        and _number(
+            indexed[(row["instance_sha256"], TOTALIZER_ONLY)].get("solver_calls")
+        )
+        >= 3
+        and _number(indexed[(row["instance_sha256"], FULL)].get("solver_calls")) >= 3
+        for row in pair_rows
+    )
 
     gates = {
         "at_least_two_net_extra_optima": net_extra_optima >= 2,
@@ -127,6 +228,7 @@ def analyze(result_dir: Path, output_dir: Path, expected_instances: int) -> dict
             row["status"] != "OPTIMUM" or _truth(row.get("verified")) for row in rows
         ),
         "timeout": all(_number(row.get("timeout_seconds")) == 300 for row in rows),
+        "common_stage_values": common_stage_value_matches == len(pair_rows),
     }
     result = {
         "scope": "corrected-v2-lex-encoding-transfer",
@@ -140,6 +242,30 @@ def analyze(result_dir: Path, output_dir: Path, expected_instances: int) -> dict
         "totalizer_only_par2_seconds": totalizer_par2,
         "full_par2_seconds": full_par2,
         "par2_improvement_pct": par2_improvement_pct,
+        "common_stage_value_matches": common_stage_value_matches,
+        "equal_progress_pairs": len(equal_progress_rows),
+        "both_reached_final_stage": both_reached_final_stage,
+        "full_slower_on_completed_stages": sum(
+            _number(row["full_over_totalizer_completed_solve_ratio"]) > 1
+            for row in equal_progress_rows
+        ),
+        "median_full_over_totalizer_completed_solve_ratio": statistics.median(
+            _number(row["full_over_totalizer_completed_solve_ratio"])
+            for row in equal_progress_rows
+        )
+        if equal_progress_rows
+        else None,
+        "median_variables_difference": (
+            statistics.median(variable_differences) if variable_differences else None
+        ),
+        "median_hard_clauses_difference": (
+            statistics.median(hard_clause_differences)
+            if hard_clause_differences
+            else None
+        ),
+        "median_peak_rss_difference_mb": (
+            statistics.median(rss_differences) if rss_differences else None
+        ),
         "gates": gates,
         "decision": "GO" if any(gates.values()) else "STOP",
         "structural_checks": structural_checks,
@@ -165,6 +291,14 @@ def analyze(result_dir: Path, output_dir: Path, expected_instances: int) -> dict
                     "totalizer_only_par2_seconds",
                     "full_par2_seconds",
                     "par2_improvement_pct",
+                    "common_stage_value_matches",
+                    "equal_progress_pairs",
+                    "both_reached_final_stage",
+                    "full_slower_on_completed_stages",
+                    "median_full_over_totalizer_completed_solve_ratio",
+                    "median_variables_difference",
+                    "median_hard_clauses_difference",
+                    "median_peak_rss_difference_mb",
                     "decision",
                 )
             }

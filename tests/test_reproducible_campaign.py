@@ -71,3 +71,58 @@ def test_reproducible_campaign_runs_validates_and_resumes(tmp_path: Path) -> Non
     assert summary["optimum_runs"] == 2
     assert (result_dir / "runs.csv").is_file()
     assert (result_dir / "summary_by_class.csv").is_file()
+
+
+def test_campaign_preserves_a_verified_evalmaxsat_timeout_incumbent(
+    tmp_path: Path,
+) -> None:
+    module = _module()
+    result_dir = tmp_path / "timeout-results"
+    config = {
+        "binary": str(ROOT / "bin" / "release" / "hcorap_multi"),
+        "solver": str(ROOT / "tests" / "rc2_timeout_incumbent.py"),
+        "result_dir": str(result_dir),
+        "instances": [str(ROOT / "tests" / "instances" / "lex_cos_tie.txt")],
+        "timeout_seconds": 0.5,
+        "solver_shutdown_grace_seconds": 2,
+        "hard_grace_seconds": 10,
+        "workers": 1,
+        "configurations": [
+            {"cardinality": "totalizer", "implied": "none", "symmetry": "none"}
+        ],
+        "runs": [
+            {
+                "variant": "staged-incumbent-bound",
+                "method": "lex-cos",
+                "align_evalmaxsat_tct": True,
+                "stage3_incumbent_bound": True,
+                "print_assignments": True,
+            }
+        ],
+    }
+    config_path = tmp_path / "timeout-campaign.json"
+    config_path.write_text(json.dumps(config), encoding="utf-8")
+
+    result = module.run_campaign(config_path)
+    assert result["complete"] is True
+    record = json.loads(
+        (result_dir / "manifest.jsonl").read_text(encoding="utf-8").strip()
+    )
+    assert record["result_status"] == "TIMEOUT_FEASIBLE"
+    assert record["validation_errors"] == []
+    payload = json.loads(Path(record["result"]).read_text(encoding="utf-8"))
+    assert payload["schema_version"] == 3
+    assert payload["metrics"]["verified"] is True
+    assert payload["align_evalmaxsat_tct"] is True
+    assert payload["stage3_incumbent_bound"] is True
+    assert payload["certified_lexicographic_prefix"] == 2
+
+    collector_spec = importlib.util.spec_from_file_location(
+        "timeout_campaign_collector",
+        ROOT / "experiments" / "collect_reproducible_campaign.py",
+    )
+    assert collector_spec and collector_spec.loader
+    collector = importlib.util.module_from_spec(collector_spec)
+    collector_spec.loader.exec_module(collector)
+    summary = collector.collect(result_dir)
+    assert summary["timeout_runs"] == 1

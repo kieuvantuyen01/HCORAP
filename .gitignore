@@ -58,10 +58,12 @@ experiments/results/*
 /vm-logs/
 /output/
 /outputs/
+/tmp/
 /EvalMaxSAT
 /open-wbo_macos
 /experiments/archive/
 /results_reduced/
+/results_v2/
 
 # Local literature library (do not redistribute third-party PDFs)
 /docs/*.pdf

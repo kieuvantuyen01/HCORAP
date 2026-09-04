@@ -15,7 +15,9 @@ enum HCORAPObjectiveKind {
     HCORAP_COVERAGE,
     HCORAP_SIMILARITY,
     HCORAP_CONTINUITY,
-    HCORAP_OVERTIME
+    HCORAP_OVERTIME,
+    HCORAP_LEX_COS_SINGLE,
+    HCORAP_LEX_OCS_SINGLE
 };
 
 struct HCORAPObjectiveBounds {
@@ -99,6 +101,14 @@ class HCORAPMultiObjectiveEncoding : public Encoding {
         const std::vector<literal> &values,
         int lowerBound
     );
+    int maximumSimilarity() const;
+    int maximumContinuity() const;
+    int maximumOvertime() const;
+    void validateObjectiveWeightRange(
+        int similarityWeight,
+        int continuityObjectiveWeight,
+        int overtimeObjectiveWeight
+    ) const;
     void addBounds(SMTFormula *formula);
     void addObjective(SMTFormula *formula);
 
@@ -119,6 +129,8 @@ public:
     void setBooleanModel(const std::vector<bool> &values);
     HCORAPSolutionMetrics evaluateModel() const;
     int objectiveValue(const HCORAPSolutionMetrics &metrics) const;
+    int effectiveContinuityObjectiveWeight() const;
+    int effectiveOvertimeObjectiveWeight() const;
 };
 
 #endif

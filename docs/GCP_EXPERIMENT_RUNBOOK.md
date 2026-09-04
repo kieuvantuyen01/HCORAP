@@ -1,5 +1,11 @@
 # Runbook thực nghiệm compact HCORAP trên GCP — ICIIT 2027
 
+> **Lưu ý lịch sử.** Bản thảo compact ngày 04/09/2026 không còn dùng ma trận
+> 924 runs bên dưới làm main-paper contract. Campaign còn phải chạy được mô tả
+> tại `COMPACT_RESULTS_RUNBOOK.md` và thực thi bằng
+> `experiments/run_compact_policy_encoding.sh`. Phần còn lại của tài liệu này
+> được giữ để tái lập và kiểm toán thiết kế rộng trước đây.
+
 Cập nhật ngày 22/08/2026. Manifest chuẩn là
 `experiments/configs/reduced_campaign_manifest.json`; giải thích khoa học và
 audit dữ liệu cũ nằm tại
@@ -269,6 +275,10 @@ một criterion trên ít nhất 4/16 cặp, hoặc giảm PAR-2 ít nhất 10%.
 đều không đạt, script dừng sau pilot. Không gộp 16 pilot instances vào estimate
 của confirmation; confirmation tự chạy lại đủ 48 cặp dưới cùng commit và
 protocol.
+
+Trạng thái ngày 24/08/2026: pilot đủ 32/32 runs, hợp lệ về cấu trúc và có quyết
+định STOP; cả ba gate đều không đạt. Không chạy confirmation 96 rows. Xem
+docs/LEX_ENCODING_TRANSFER_PILOT_AUDIT_20260824.md.
 
 ## 7. Exact outputs cần có
 

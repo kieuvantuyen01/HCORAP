@@ -23,6 +23,7 @@ SYMMETRY_PARTIAL_INSTANCE = (
 LEX_COS_TIE_INSTANCE = ROOT / "tests" / "instances" / "lex_cos_tie.txt"
 RC2_STUB = ROOT / "tests" / "rc2_open_wbo.py"
 EVALMAXSAT_STUB = ROOT / "tests" / "rc2_evalmaxsat.py"
+TIMEOUT_INCUMBENT_STUB = ROOT / "tests" / "rc2_timeout_incumbent.py"
 
 MAIN_8_CONFIGS = (
     ("sorting-network", "none", "none"),
@@ -200,6 +201,132 @@ def test_cpp_lex_cos_prioritizes_overtime_before_similarity() -> None:
         0,
         0,
     )
+
+
+@pytest.mark.parametrize(
+    ("staged_method", "single_method"),
+    (
+        ("lex-cos", "lex-cos-one-shot"),
+        ("lex-overtime", "lex-overtime-one-shot"),
+    ),
+)
+@pytest.mark.parametrize(
+    "instance",
+    (LEX_COS_TIE_INSTANCE, INSTANCE, CARDINALITY_INSTANCE),
+)
+def test_cpp_single_call_lexicographic_matches_staged_policy(
+    instance: Path, staged_method: str, single_method: str
+) -> None:
+    staged = _run_instance(instance, staged_method)
+    single = _run_instance(instance, single_method)
+    assert single["status"] == "OPTIMUM"
+    assert single["objective_policy"] == staged["objective_policy"]
+    assert single["lexicographic_implementation"] == (
+        "single-call-dominance-weights"
+    )
+    assert single["solver_calls"] == 1
+    assert single["certified_lexicographic_prefix"] == 3
+    assert (
+        single["metrics"]["similarity"],
+        single["metrics"]["continuity"],
+        single["metrics"]["overtime"],
+    ) == (
+        staged["metrics"]["similarity"],
+        staged["metrics"]["continuity"],
+        staged["metrics"]["overtime"],
+    )
+    stage = single["stages"][0]
+    assert stage["continuity_objective_weight"] > 0
+    assert stage["overtime_objective_weight"] > 0
+
+
+def test_cpp_stage3_incumbent_bound_preserves_lexicographic_optimum() -> None:
+    baseline = _run_instance(LEX_COS_TIE_INSTANCE, "lex-cos")
+    bounded = _run_instance(
+        LEX_COS_TIE_INSTANCE, "lex-cos", "--stage3-incumbent-bound"
+    )
+    assert bounded["status"] == "OPTIMUM"
+    assert bounded["stage3_incumbent_bound"] is True
+    assert bounded["similarity_lower_bound"] is not None
+    assert bounded["stages"][2]["hard_clauses"] >= baseline["stages"][2][
+        "hard_clauses"
+    ]
+    assert bounded["metrics"] == baseline["metrics"]
+
+
+def test_cpp_collects_and_verifies_timeout_incumbent() -> None:
+    completed = subprocess.run(
+        [
+            str(BINARY),
+            str(LEX_COS_TIE_INSTANCE),
+            "--solver",
+            str(TIMEOUT_INCUMBENT_STUB),
+            "--timeout",
+            "0.5",
+            "--solver-shutdown-grace",
+            "2",
+            "--align-evalmaxsat-tct",
+            "--method",
+            "lex-cos",
+            "--cardinality-encoding",
+            "totalizer",
+            "--print-assignments",
+        ],
+        check=False,
+        text=True,
+        capture_output=True,
+        timeout=5,
+    )
+    result = json.loads(completed.stdout)
+    assert completed.returncode == 2
+    assert result["status"] == "TIMEOUT_FEASIBLE"
+    assert result["metrics"]["verified"] is True
+    assert result["certified_lexicographic_prefix"] == 2
+    assert result["incumbent_stage_index"] == 2
+    assert len(result["assignments"]) == result["metrics"]["coverage"]
+    assert [stage["status"] for stage in result["stages"]] == [
+        "OPTIMUM",
+        "OPTIMUM",
+        "TIMEOUT_FEASIBLE",
+    ]
+    assert result["stages"][2]["optimum"] is None
+    assert result["stages"][2]["incumbent"] == result["metrics"]["similarity"]
+    assert all(stage["solver_target_seconds"] is not None for stage in result["stages"])
+
+
+def test_cpp_verifies_a_single_call_timeout_incumbent_without_certifying_it() -> None:
+    completed = subprocess.run(
+        [
+            str(BINARY),
+            str(LEX_COS_TIE_INSTANCE),
+            "--solver",
+            str(TIMEOUT_INCUMBENT_STUB),
+            "--timeout",
+            "0.5",
+            "--solver-shutdown-grace",
+            "2",
+            "--align-evalmaxsat-tct",
+            "--method",
+            "lex-cos-one-shot",
+            "--cardinality-encoding",
+            "totalizer",
+            "--print-assignments",
+        ],
+        check=False,
+        text=True,
+        capture_output=True,
+        timeout=5,
+    )
+    result = json.loads(completed.stdout)
+    assert completed.returncode == 2
+    assert result["status"] == "TIMEOUT_FEASIBLE"
+    assert result["metrics"]["verified"] is True
+    assert result["solver_calls"] == 1
+    assert result["certified_lexicographic_prefix"] == 0
+    assert result["incumbent_stage_index"] == 0
+    assert result["stages"][0]["status"] == "TIMEOUT_FEASIBLE"
+    assert result["stages"][0]["optimum"] is None
+    assert result["stages"][0]["incumbent"] is not None
 
 
 def test_cpp_default_method_remains_weighted_b0() -> None:

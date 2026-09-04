@@ -8,8 +8,8 @@ toàn bằng C++ để tránh so runtime Python với baseline C++.
 Các thành phần chính:
 
 - `bin/release/hcorap2sat`: encoder C++ của tác giả, dùng cho audit/tái lập;
-- `bin/release/hcorap_multi`: weighted, hai policy lexicographic và
-  epsilon-constraint bằng C++;
+- `bin/release/hcorap_multi`: weighted, các policy lexicographic tuần tự hoặc
+  một lần gọi, và epsilon-constraint bằng C++;
 - `bin/release/hcorap_commercial`: cùng policy/verifier cho Gurobi MIP,
   CPLEX MIP và hai formulation CP Optimizer;
 - `src/proposed/cpp/encodings`: hard model C++ và các strategy encoding dùng
@@ -26,7 +26,34 @@ chi tiết nằm trong `docs/FAIR_EXPERIMENT_PROTOCOL.md`.
 
 Pipeline đang được khóa cho bản thảo nằm trong
 [`experiments/README.md`](experiments/README.md). Không dùng các legacy 8-config
-scripts bên dưới để bổ sung vào publication dataset. Kiểm tra contract bằng:
+scripts bên dưới để bổ sung vào publication dataset.
+
+Thiết kế main-paper hiện tại chỉ còn hai studies. Phần cần chạy mới là ma trận
+`48 Original × 2 policies × 2 encodings`, IC và SB đều tắt, timeout 3.600 giây.
+Hướng dẫn và evidence gates nằm trong
+[`docs/COMPACT_RESULTS_RUNBOOK.md`](docs/COMPACT_RESULTS_RUNBOOK.md). Entry point
+trên GCP là:
+
+```sh
+./experiments/run_compact_policy_encoding.sh preflight
+export CONFIRM_COMPACT_POLICY_ENCODING=YES
+./experiments/run_compact_policy_encoding.sh all
+```
+
+Sau khi hai study đều qua evidence gate, sinh bảng bốn cells và macro LaTeX
+từ các CSV đã kiểm định bằng:
+
+```sh
+./experiments/run_compact_policy_encoding.sh manuscript
+```
+
+Phase này yêu cầu analysis Corrected-v2 và analysis mới cùng có trên máy; xem
+biến `HCORAP_POLICY_ANALYSIS` và `HCORAP_MANUSCRIPT_RESULTS` trong runbook.
+
+Manifest 924 runs bên dưới được giữ để kiểm toán thiết kế rộng trước đây, không
+phải campaign mặc định cho outline compact mới.
+
+Kiểm tra contract của campaign lịch sử bằng:
 
 ```sh
 python3 experiments/validate_publication_campaign.py
@@ -36,6 +63,11 @@ python3 experiments/validate_publication_campaign.py
 `experiments/run_remaining_corrected_evidence.sh`; hướng dẫn môi trường,
 checkpoint và resume nằm trong
 [`docs/GCP_EXPERIMENT_RUNBOOK.md`](docs/GCP_EXPERIMENT_RUNBOOK.md).
+
+Chiến dịch bổ sung đánh giá EvalMaxSAT LEX-COS với timeout 3.600 giây dùng
+`experiments/run_maxsat_lex_3600.sh`. Ma trận pilot, quy tắc chọn đúng một
+candidate và hướng dẫn GCP nằm trong
+[`docs/MAXSAT_LEX_3600_RUNBOOK.md`](docs/MAXSAT_LEX_3600_RUNBOOK.md).
 
 ## Build C++
 

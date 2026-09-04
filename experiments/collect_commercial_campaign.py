@@ -21,7 +21,7 @@ from run_reproducible_campaign import _instance_dimensions  # noqa: E402
 
 SUCCESS = {"OPTIMUM", "INFEASIBLE"}
 RAW_COLUMNS = (
-    "run_id", "instance", "instance_sha256", "users", "agents", "visits",
+    "run_id", "schema_version", "instance", "instance_sha256", "users", "agents", "visits",
     "seed_instance", "load_profile", "backend", "formulation", "solver_version",
     "method", "objective_mode", "objective_policy", "delta", "wc", "wo", "soft_coverage",
     "status", "exit_code", "hard_timeout", "validation_errors", "elapsed_seconds",
@@ -113,6 +113,7 @@ def flatten(result_dir: Path) -> list[dict[str, Any]]:
         rows.append(
             {
                 "run_id": record["run_id"],
+                "schema_version": payload.get("schema_version"),
                 "instance": record["instance"],
                 "instance_sha256": record["instance_sha256"],
                 "users": dimensions["users"],

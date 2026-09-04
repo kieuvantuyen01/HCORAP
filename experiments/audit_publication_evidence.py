@@ -18,6 +18,13 @@ except ImportError:
     from publication_contract import DEFAULT_MANIFEST, ROOT
 
 
+LEX_TRANSFER_PILOT = {
+    "name": "corrected_v2_lex_encoding_transfer_pilot",
+    "config": "gcp_corrected_lex_encoding_transfer_pilot.json",
+    "expected_runs": 32,
+}
+
+
 def _json(path: Path) -> dict[str, Any]:
     value = json.loads(path.read_text(encoding="utf-8"))
     if not isinstance(value, dict):
@@ -95,6 +102,31 @@ def _analysis_check(path: Path, key: str) -> dict[str, Any]:
     }
 
 
+def _lex_transfer_check(path: Path) -> dict[str, Any]:
+    payload = _json(path) if path.is_file() else {}
+    gates = payload.get("gates")
+    checks = {
+        "structurally_valid": payload.get("structurally_valid") is True,
+        "scope": payload.get("scope") == "corrected-v2-lex-encoding-transfer",
+        "decision_stop": payload.get("decision") == "STOP",
+        "runs": payload.get("runs") == 32,
+        "instances": payload.get("instances") == 16,
+        "no_optima": payload.get("totalizer_only_optima") == 0
+        and payload.get("full_optima") == 0,
+        "no_stage_wins": payload.get("stage_wins") == 0,
+        "all_gates_false": isinstance(gates, dict)
+        and len(gates) == 3
+        and not any(gates.values()),
+    }
+    return {
+        "path": str(path),
+        "present": path.is_file(),
+        "decision": payload.get("decision"),
+        "checks": checks,
+        "pass": path.is_file() and all(checks.values()),
+    }
+
+
 def audit(results_root: Path, manifest_path: Path) -> dict[str, Any]:
     manifest = _json(manifest_path)
     campaigns = []
@@ -111,6 +143,14 @@ def audit(results_root: Path, manifest_path: Path) -> dict[str, Any]:
             )
             for declaration in declarations
         )
+    campaigns.append(
+        _campaign(
+            role="conditional-pilot",
+            declaration=LEX_TRANSFER_PILOT,
+            config_root=manifest_path.parent,
+            results_root=results_root,
+        )
+    )
 
     measured = [row for row in campaigns if row["role"] == "measured"]
     observed_measured_rows = sum(int(row["observed_rows"]) for row in measured)
@@ -151,6 +191,11 @@ def audit(results_root: Path, manifest_path: Path) -> dict[str, Any]:
         ),
         "screening": _analysis_check(
             results_root / "screening_decision.json", "hard_stop_pass"
+        ),
+        "lex_encoding_transfer": _lex_transfer_check(
+            results_root
+            / "gcp_corrected_lex_encoding_transfer_pilot_analysis"
+            / "lex_encoding_transfer_validation.json"
         ),
     }
     campaign_matrix_complete = all(row["complete"] for row in campaigns)
