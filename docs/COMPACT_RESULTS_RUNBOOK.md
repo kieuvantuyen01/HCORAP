@@ -1,6 +1,6 @@
-# Kế hoạch kết quả compact cho bản thảo ICIIT 2027
+# Kế hoạch kết quả compact cho bản thảo SOICT 2026
 
-Cập nhật ngày 04/09/2026. Tài liệu này thay thế cách tổ chức kết quả theo bốn
+Cập nhật trạng thái ngày 07/09/2026. Tài liệu này thay thế cách tổ chức kết quả theo bốn
 RQ và bảng đếm 924 runs trong bản thảo chính. Dữ liệu cũ không bị xóa; chúng
 được giữ trong artifact để kiểm toán và để giải thích việc chọn cấu hình.
 
@@ -8,7 +8,8 @@ RQ và bảng đếm 924 runs trong bản thảo chính. Dữ liệu cũ không 
 
 ### Thiết kế A: ảnh hưởng của chính sách tối ưu
 
-- Dataset: 48 Corrected-v2 critical instances, đủ 16 lớp, ba seeds mỗi lớp.
+- Dataset: 48 HCORAP-LC instances, lưu trong các thư mục phân tích
+  `corrected_v2`, đủ 16 lớp và ba seeds mỗi lớp.
 - So sánh chính: weighted với LEX-COS.
 - Solver tạo bằng chứng chính: Gurobi MIP-E, timeout 300 s, một thread.
 - Kết quả đã có: 96/96 main-policy runs đạt `OPTIMUM`.
@@ -43,8 +44,10 @@ Ma trận cuối cùng có đúng hai yếu tố và bốn cells:
 - Số runs: `48 × 2 × 2 = 192`.
 
 Gurobi MIP-E chạy cùng 48 instances và hai policies để tạo 96 exact-reference
-rows. Runtime Gurobi không được dùng để tuyên bố MaxSAT nhanh hơn hoặc chậm hơn;
-reference chỉ xác nhận status và objective vector.
+rows. Để hoàn tất đối chứng commercial, CPLEX MIP-E được chạy trên cùng ma trận
+48 instances, hai policies, timeout 3.600 s và một thread. So sánh encoding vẫn
+chỉ dùng EvalMaxSAT; bảng so sánh phương pháp sẽ báo riêng EvalMaxSAT-Totalizer,
+Gurobi MIP-E và CPLEX MIP-E.
 
 ## 2. Vai trò của ablation cũ
 
@@ -64,10 +67,16 @@ configuration-selection ngắn; bảng đầy đủ nằm trong artifact.
   `experiments/configs/gcp_original_policy_encoding_3600.json`;
 - Gurobi reference config:
   `experiments/configs/gcp_original_policy_reference_3600.json`;
+- CPLEX baseline config:
+  `experiments/configs/gcp_original_cplex_reference_3600.json`;
 - runner một lệnh:
   `experiments/run_compact_policy_encoding.sh`;
+- runner CPLEX có resume:
+  `experiments/run_full_cplex_baseline.sh`;
 - analyzer và evidence gate:
   `experiments/analyze_policy_encoding_matrix.py`;
+- analyzer ba phương pháp chính xác:
+  `experiments/analyze_full_commercial_baseline.py`;
 - generator LaTeX có evidence gate:
   `experiments/generate_compact_manuscript_results.py`.
 
@@ -79,10 +88,11 @@ Analyzer tạo bốn bảng và một validation report:
 - `policy_encoding_reference_agreement.csv`: MaxSAT so với Gurobi;
 - `policy_encoding_validation.json`: structural, correctness và claim gates.
 
-Sau khi cả Thiết kế A và B qua gate, generator tạo đúng ba artifact, không
+Sau khi cả Thiết kế A và B qua gate, generator tạo bốn artifact, không
 chèn số trực tiếp vào câu văn:
 
 - `compact_result_macros.tex`: các đại lượng dùng trong prose;
+- `compact_policy_table.tex`: bảng policy effect;
 - `compact_encoding_table.tex`: bảng bốn cells;
 - `compact_result_provenance.json`: hash của mọi input và output.
 
@@ -122,20 +132,38 @@ Có thể chạy và resume từng phase:
 ./experiments/run_compact_policy_encoding.sh analyze
 ```
 
+Hoàn tất CPLEX baseline sau khi đã commit và push source mới:
+
+```bash
+export CPLEX_STUDIO_DIR=/absolute/path/to/CPLEX_Studio
+export HCORAP_EXPECTED_COMMIT=$(git rev-parse HEAD)
+export HCORAP_MAXSAT_RESULTS=experiments/results/gcp_original_policy_encoding_3600
+export HCORAP_GUROBI_RESULTS=experiments/results/gcp_original_policy_reference_3600
+./experiments/run_full_cplex_baseline.sh preflight
+export CONFIRM_FULL_CPLEX_BASELINE=YES
+./experiments/run_full_cplex_baseline.sh all
+```
+
+Không ghép 40 CPLEX runs cũ trên 20 instances vào campaign này vì chúng dùng
+timeout 300 s. Lệnh `all` chạy hoặc resume đúng 96 CPLEX runs ở timeout 3.600 s,
+thu thập kết quả và đối chiếu với cả EvalMaxSAT-Totalizer lẫn Gurobi.
+
 Sau khi đồng bộ thư mục phân tích mới về cùng máy đang chứa kết quả
 Corrected-v2 đã kiểm định, sinh các fragment cho bản thảo:
 
 ```bash
 export HCORAP_POLICY_ANALYSIS=results_v2/gcp_corrected_exact_analysis
+export HCORAP_ENCODING_ANALYSIS=\
+hcorap_compact_policy_encoding_3600_20260907_082501/analysis
 export HCORAP_MANUSCRIPT_RESULTS=LaTeX-Templates/paper/generated_compact
 ./experiments/run_compact_policy_encoding.sh manuscript
 ```
 
 Lệnh này dừng nếu một trong hai validation report không qua gate. Sau khi sinh,
-kiểm tra `compact_result_provenance.json`, thay bảng preliminary trong
-`main_soict.tex` bằng `\input{generated_compact/compact_encoding_table}`, và
-đọc các con số trong prose từ `compact_result_macros.tex`. Không tạo hoặc sửa
-thủ công các fragment được sinh.
+kiểm tra `compact_result_provenance.json`. `main_soict.tex` đọc trực tiếp
+`compact_policy_table.tex`, `compact_encoding_table.tex` và các macro dùng cho
+hai figure cùng phần diễn giải. Không tạo hoặc sửa thủ công các fragment được
+sinh.
 
 Runner luôn dùng `--resume`. Không xóa result directory giữa các lần chạy.
 
@@ -144,6 +172,7 @@ Runner luôn dùng `--resume`. Không xóa result directory giữa các lần ch
 - MaxSAT worst case: `192 × 3.600 s = 192 core-hour`.
 - Gurobi worst case theo timeout: 96 core-hour, nhưng các lớp hiện có thường
   hoàn tất trong vài giây.
+- CPLEX worst case theo timeout: 96 core-hour; runner dùng resume và một worker.
 - Ước lượng MaxSAT thực tế từ dữ liệu 300 s là khoảng 9--12 giờ tuần tự vì phần
   lớn instances đã kết thúc trước 300 s. Đây chỉ là ước lượng vận hành, không
   phải giới hạn khoa học hoặc kết quả được phép trích dẫn.
@@ -163,6 +192,12 @@ cạnh tranh CPU hoặc RAM. Publication timing dùng một worker.
 6. Gurobi chứng minh optimum hoặc infeasibility cho đủ 96 rows;
 7. mọi MaxSAT result đã quyết định có status phù hợp với Gurobi;
 8. mọi MaxSAT `OPTIMUM` có objective vector khớp Gurobi.
+
+CPLEX baseline chỉ qua gate khi có đủ 96 rows, CPLEX và Gurobi đều chứng minh
+toàn bộ 96 trường hợp, status và objective vector khớp trên mọi cặp, và mọi
+MaxSAT result đã quyết định khớp hai commercial references. Analyzer còn kiểm
+tra cùng instance hashes, timeout, số thread, CPU affinity và phần source mô
+hình giữa các commit.
 
 Timeout không bị ánh xạ thành infeasible. `TIMEOUT_FEASIBLE` chỉ được giữ khi
 assignment qua verifier; nó vẫn nhận penalty `2T` trong PAR-2.
@@ -186,16 +221,18 @@ số runs trong main paper.
 Phần Results có cấu trúc:
 
 1. `Effect of the lexicographic policy`: Table policy delta và một scatter plot
-   trên Corrected-v2;
+   trên HCORAP-LC;
 2. `Effect of the cardinality encoding`: một bảng bốn rows grouped theo policy,
    cùng một paired speedup plot hoặc cactus plot;
 3. `Independent validation`: một paragraph về CPLEX audit, Gurobi reference và
-   verifier, không trình bày như study thứ ba.
+   verifier;
+4. một bảng compact so sánh EvalMaxSAT-Totalizer, Gurobi MIP-E và CPLEX MIP-E
+   sau khi full CPLEX gate hợp lệ. Bảng này là đối chứng phương pháp, không trộn
+   vào kết luận về SN so với Totalizer.
 
-Không điền số LEX-COS/SN/TOT vào TeX trước khi validation report pass. Các số
+Validation report đã pass ngày 07/09/2026. Các số
 trong Abstract, Results và Conclusion phải lấy từ các macro/table được sinh sau
-khi freeze artifact. Trước data freeze, bản thảo chỉ được giữ một đoạn có nhãn
-`preliminary` để minh họa vị trí, không được trình bày nó như kết quả cuối.
+khi freeze artifact. Bản thảo hiện không còn nhánh kết quả `preliminary`.
 
 ## 8. Nhánh không chạy mặc định
 

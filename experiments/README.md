@@ -2,9 +2,8 @@
 
 ## Current compact manuscript campaign
 
-The main ICIIT 2027 result plan now has two studies.  The Corrected-v2 policy
-study is complete.  The only new measured campaign is the fixed Original-suite
-Policy x Encoding matrix:
+The SOICT 2026 result plan has two studies. The HCORAP-LC policy study and the
+fixed Original-suite Policy x Encoding matrix are complete:
 
 ```text
 48 instances x {weighted, LEX-COS} x {sorting network, Totalizer}
@@ -30,6 +29,28 @@ The compact campaign has three direct sources of truth:
 `analyze_policy_encoding_matrix.py`. The analyzer rejects any row outside the
 fixed matrix and compares every decided MaxSAT result with its Gurobi
 objective-vector reference.
+
+### Full CPLEX baseline extension
+
+The final commercial baseline adds CPLEX MIP-E on the same 48 Original
+instances, two policies, one thread, and 3,600-second limit as the Gurobi
+reference. It is a separate 96-run campaign so rebuilding the commercial
+binary with CPLEX cannot invalidate the existing Gurobi run identities.
+
+```bash
+export CPLEX_STUDIO_DIR=/absolute/path/to/CPLEX_Studio
+export HCORAP_EXPECTED_COMMIT=$(git rev-parse HEAD)
+./experiments/run_full_cplex_baseline.sh preflight
+export CONFIRM_FULL_CPLEX_BASELINE=YES
+./experiments/run_full_cplex_baseline.sh all
+```
+
+The runner resumes only the unfinished 3,600-second tasks. It intentionally
+does not reuse the older 20-instance CPLEX audit because that campaign used a
+300-second limit. The final analyzer validates all three exact approaches:
+EvalMaxSAT with Totalizer, Gurobi MIP-E, and CPLEX MIP-E. It writes
+`exact_method_summary.csv`, `cross_solver_pairs.csv`, and
+`full_exact_baseline_validation.json`.
 
 The publication pipeline separates execution, collection, analysis, evidence
 gates, and artifact generation. Do not add manuscript numbers directly to TeX.
@@ -63,6 +84,8 @@ totals.
 
 - Current compact Policy x Encoding campaign:
   `run_compact_policy_encoding.sh`; see `docs/COMPACT_RESULTS_RUNBOOK.md`.
+- Full 96-run CPLEX baseline and three-method comparison:
+  `run_full_cplex_baseline.sh`; see `docs/COMPACT_RESULTS_RUNBOOK.md`.
 - Full clean-room campaign: `run_all_remaining_publication.sh`.
 - Only the corrected-v2 exact-policy supplement after C1--C5 already exist:
   `run_remaining_corrected_evidence.sh`.

@@ -13,6 +13,7 @@ import csv
 import hashlib
 import json
 import math
+import re
 import statistics
 from pathlib import Path
 from typing import Any, Iterable
@@ -55,8 +56,29 @@ def _number(value: Any, digits: int = 2) -> str:
     if value in (None, ""):
         return "--"
     rendered = f"{float(value):.{digits}f}"
-    rendered = rendered.rstrip("0").rstrip(".")
+    if "." in rendered:
+        rendered = rendered.rstrip("0").rstrip(".")
     return "0" if rendered == "-0" else rendered
+
+
+def _fixed(value: Any, digits: int = 1) -> str:
+    if value in (None, ""):
+        return "--"
+    return f"{float(value):.{digits}f}"
+
+
+def _percentile(values: Iterable[float], fraction: float) -> float:
+    """Return a linearly interpolated sample percentile."""
+    ordered = sorted(values)
+    if not ordered:
+        raise ValueError("cannot compute a percentile of an empty sample")
+    position = (len(ordered) - 1) * fraction
+    lower = math.floor(position)
+    upper = math.ceil(position)
+    if lower == upper:
+        return ordered[lower]
+    weight = position - lower
+    return ordered[lower] * (1 - weight) + ordered[upper] * weight
 
 
 def _grouped(value: Any) -> str:
@@ -97,6 +119,7 @@ def generate(
     policy_pair_details_path = policy_analysis / "corrected_pairwise_pairs.csv"
     encoding_validation_path = encoding_analysis / "policy_encoding_validation.json"
     encoding_summary_path = encoding_analysis / "policy_encoding_summary.csv"
+    encoding_pairs_path = encoding_analysis / "policy_encoding_pairs.csv"
     encoding_contrasts_path = encoding_analysis / "policy_encoding_contrasts.csv"
 
     inputs = (
@@ -105,6 +128,7 @@ def generate(
         policy_pair_details_path,
         encoding_validation_path,
         encoding_summary_path,
+        encoding_pairs_path,
         encoding_contrasts_path,
     )
     missing = [str(path) for path in inputs if not path.is_file()]
@@ -155,6 +179,13 @@ def generate(
     similarity_changes = [
         float(row["delta_similarity"]) for row in policy_pair_details
     ]
+    similarity_relative_changes = [
+        100 * float(row["delta_similarity"]) / float(row["left_similarity"])
+        for row in policy_pair_details
+        if float(row["left_similarity"]) != 0
+    ]
+    if len(similarity_relative_changes) != 48:
+        raise ValueError("policy detail file must contain 48 nonzero baseline similarities")
     summary_checks = {
         "continuity_improved": sum(value < 0 for value in continuity_changes)
         == _integer(policy_row["continuity_improved"]),
@@ -194,6 +225,13 @@ def generate(
             if _integer(row["runs"]) != 48:
                 raise ValueError(f"{method}/{encoding} must contain 48 runs")
             cells[(method, encoding)] = row
+        status_fields = ("optimum_runs", "unsat_runs", "proved_runs", "timeout_runs")
+        if any(
+            _integer(cells[(method, ENCODINGS[0])][field])
+            != _integer(cells[(method, ENCODINGS[1])][field])
+            for field in status_fields
+        ):
+            raise ValueError(f"{method} encodings must have matching status counts")
 
     contrast_by_policy: dict[str, dict[str, str]] = {}
     for method in POLICIES:
@@ -206,14 +244,122 @@ def generate(
             raise ValueError(f"{method} contrast must contain 48 pairs")
         contrast_by_policy[method] = contrast
 
+    encoding_pairs = _read_csv(encoding_pairs_path)
+    if len(encoding_pairs) != 96:
+        raise ValueError("encoding pair file must contain 96 policy-instance pairs")
+    size_fields = ("users", "agents", "visits")
+    size_strata_support: dict[str, bool] = {}
+    for method in POLICIES:
+        proved_pairs = [
+            row
+            for row in encoding_pairs
+            if row.get("method") == method and _truth(row.get("both_proved"))
+        ]
+        if len(proved_pairs) != _integer(
+            contrast_by_policy[method]["both_proved_pairs"]
+        ):
+            raise ValueError(f"{method} pair and contrast counts disagree")
+        parsed: list[dict[str, Any]] = []
+        for row in proved_pairs:
+            match = re.search(
+                r"instance_(\d+)_(\d+)_(\d+)_(\d+)\.txt$",
+                row.get("instance", ""),
+            )
+            if match is None:
+                raise ValueError(f"cannot parse Original instance size: {row.get('instance')}")
+            enriched: dict[str, Any] = dict(row)
+            enriched.update(zip((*size_fields, "seed"), match.groups()))
+            parsed.append(enriched)
+        stratum_medians = [
+            statistics.median(
+                float(row["speedup_sorting_over_totalizer"])
+                for row in parsed
+                if row[field] == value
+            )
+            for field in size_fields
+            for value in sorted({row[field] for row in parsed}, key=int)
+        ]
+        size_strata_support[method] = all(value > 1 for value in stratum_medians)
+
     output.mkdir(parents=True, exist_ok=True)
     continuity_reduction = -statistics.median(continuity_changes)
     overtime_reduction = -statistics.median(overtime_changes)
     compatibility_change = statistics.median(similarity_changes)
+    compatibility_relative_change = statistics.median(
+        similarity_relative_changes
+    )
+    variable_reductions = {
+        method: 100
+        * (
+            float(cells[(method, "sorting-network")]["median_variables"])
+            - float(cells[(method, "totalizer")]["median_variables"])
+        )
+        / float(cells[(method, "sorting-network")]["median_variables"])
+        for method in POLICIES
+    }
+    par2_reductions = {
+        method: 100
+        * (
+            float(cells[(method, "sorting-network")]["par2_seconds"])
+            - float(cells[(method, "totalizer")]["par2_seconds"])
+        )
+        / float(cells[(method, "sorting-network")]["par2_seconds"])
+        for method in POLICIES
+    }
     both_improved = sum(
         float(row["delta_continuity"]) < 0 and float(row["delta_overtime"]) < 0
         for row in policy_pair_details
     )
+    claim_support = {
+        method: _truth(contrast_by_policy[method]["totalizer_faster_claim_supported"])
+        for method in POLICIES
+    }
+    if claim_support["weighted"] and claim_support["lex-cos"]:
+        cross_policy_conclusion = (
+            "Under both policies, Totalizer proves the same number of runs as "
+            "the sorting network and produces lower PAR-2.  Both 95\\% paired "
+            "speedup intervals lie above one, so the runtime evidence consistently "
+            "favors Totalizer."
+        )
+        cross_policy_conclusion_short = (
+            "The runtime evidence favors Totalizer under both policies."
+        )
+    elif claim_support["weighted"]:
+        cross_policy_conclusion = (
+            "Totalizer improves the weighted formulation, but the LEX-COS "
+            "evidence does not establish the same advantage.  The encoding "
+            "effect is therefore policy-dependent rather than universal."
+        )
+        cross_policy_conclusion_short = (
+            "The Totalizer advantage is limited to the weighted policy in this study."
+        )
+    elif claim_support["lex-cos"]:
+        cross_policy_conclusion = (
+            "Totalizer improves the LEX-COS formulation, but the weighted "
+            "evidence does not establish the same advantage.  The encoding "
+            "effect is therefore policy-dependent rather than universal."
+        )
+        cross_policy_conclusion_short = (
+            "The Totalizer advantage is limited to LEX-COS in this study."
+        )
+    else:
+        cross_policy_conclusion = (
+            "Neither policy establishes a consistent Totalizer advantage under "
+            "the completion, PAR-2, and paired-runtime criteria.  Encoding "
+            "choice remains instance-dependent in this study."
+        )
+        cross_policy_conclusion_short = (
+            "The experiment does not establish a policy-wide Totalizer advantage."
+        )
+    if all(size_strata_support.values()):
+        size_strata_conclusion = (
+            "For every grouping by patient count, caregiver count, or services per "
+            "patient, the median SN/TOT runtime ratio is above one under both policies."
+        )
+    else:
+        size_strata_conclusion = (
+            "The descriptive size strata do not show a uniform encoding effect."
+        )
 
     macro_lines = [
         "% Generated by experiments/generate_compact_manuscript_results.py.",
@@ -228,12 +374,48 @@ def generate(
         _macro("MedianContinuityReduction", _number(continuity_reduction, 1)),
         _macro("MedianOvertimeReduction", _number(overtime_reduction, 1)),
         _macro("MedianCompatibilityChange", _number(compatibility_change, 1)),
+        _macro("MedianCompatibilityReduction", _number(-compatibility_change, 1)),
+        _macro(
+            "MedianCompatibilityRelativeChange",
+            _number(compatibility_relative_change, 1),
+        ),
+        _macro(
+            "MedianCompatibilityReductionPercent",
+            _number(-compatibility_relative_change, 1),
+        ),
+        _macro("ContinuityEqualCount", sum(value == 0 for value in continuity_changes)),
+        _macro("ContinuityWorsenedCount", sum(value > 0 for value in continuity_changes)),
+        _macro("OvertimeEqualCount", sum(value == 0 for value in overtime_changes)),
+        _macro("OvertimeWorsenedCount", sum(value > 0 for value in overtime_changes)),
+        _macro("CompatibilityImprovedCount", sum(value > 0 for value in similarity_changes)),
+        _macro("CompatibilityEqualCount", sum(value == 0 for value in similarity_changes)),
+        _macro("CompatibilityWorsenedCount", sum(value < 0 for value in similarity_changes)),
+        _macro("ContinuityIqrLow", _number(_percentile(continuity_changes, 0.25), 1)),
+        _macro("ContinuityIqrHigh", _number(_percentile(continuity_changes, 0.75), 1)),
+        _macro("OvertimeIqrLow", _number(_percentile(overtime_changes, 0.25), 1)),
+        _macro("OvertimeIqrHigh", _number(_percentile(overtime_changes, 0.75), 1)),
+        _macro("CompatibilityIqrLow", _number(_percentile(similarity_changes, 0.25), 1)),
+        _macro("CompatibilityIqrHigh", _number(_percentile(similarity_changes, 0.75), 1)),
+        _macro(
+            "PolicyEffectCoordinates",
+            " ".join(
+                "({},{})".format(
+                    _number(-float(row["delta_continuity"]), 1),
+                    _number(-float(row["delta_overtime"]), 1),
+                )
+                for row in policy_pair_details
+            ),
+        ),
     ]
     for method in POLICIES:
         prefix = "Weighted" if method == "weighted" else "LexCos"
         contrast = contrast_by_policy[method]
+        status_row = cells[(method, "totalizer")]
         macro_lines.extend(
             (
+                _macro(f"{prefix}OptimalCount", _integer(status_row["optimum_runs"])),
+                _macro(f"{prefix}InfeasibleCount", _integer(status_row["unsat_runs"])),
+                _macro(f"{prefix}TimeoutCount", _integer(status_row["timeout_runs"])),
                 _macro(
                     f"{prefix}EncodingPairCount",
                     _integer(contrast["both_proved_pairs"]),
@@ -254,24 +436,80 @@ def generate(
                     f"{prefix}EncodingSpeedupHigh",
                     _number(contrast["bootstrap_95_ci_high"]),
                 ),
+                _macro(
+                    f"{prefix}VariableReductionPercent",
+                    _number(variable_reductions[method], 0),
+                ),
+                _macro(
+                    f"{prefix}ParTwoReductionPercent",
+                    _number(par2_reductions[method], 1),
+                ),
             )
         )
+    macro_lines.append(
+        _macro("CrossPolicyEncodingConclusion", cross_policy_conclusion)
+    )
+    macro_lines.append(
+        _macro("CrossPolicyEncodingConclusionShort", cross_policy_conclusion_short)
+    )
+    macro_lines.append(_macro("EncodingSizeStrataConclusion", size_strata_conclusion))
     macros_path = output / "compact_result_macros.tex"
     macros_path.write_text("\n".join(macro_lines) + "\n", encoding="utf-8")
 
+    policy_table_lines = [
+        "% Generated by experiments/generate_compact_manuscript_results.py.",
+        r"\begin{table}[H]",
+        rf"\caption{{The table compares LEX-COS with Weighted on {len(policy_pair_details)} "
+        r"HCORAP-LC instances. The second column reports whether LEX-COS is better, "
+        r"the same, or worse. Both solutions in every pair are proved optimal.}",
+        r"\label{tab:policy}",
+        r"\centering",
+        r"\small",
+        r"\setlength{\tabcolsep}{3.8pt}",
+        r"\renewcommand{\arraystretch}{1.08}",
+        r"\begin{tabular}{@{}llll@{}}",
+        r"\toprule",
+        r"Measure & Better / same / worse & Median difference & Middle 50\%\\",
+        r"\midrule",
+        rf"Continuity ($\CONT\downarrow$) & {sum(value < 0 for value in continuity_changes)} / "
+        rf"{sum(value == 0 for value in continuity_changes)} / {sum(value > 0 for value in continuity_changes)} & "
+        rf"${_fixed(continuity_reduction)}$ fewer & "
+        rf"[${_fixed(_percentile((-value for value in continuity_changes), 0.25))}$, "
+        rf"${_fixed(_percentile((-value for value in continuity_changes), 0.75))}$] fewer\\",
+        rf"Overtime ($\OT\downarrow$) & {sum(value < 0 for value in overtime_changes)} / "
+        rf"{sum(value == 0 for value in overtime_changes)} / {sum(value > 0 for value in overtime_changes)} & "
+        rf"${_fixed(overtime_reduction)}$ fewer & "
+        rf"[${_fixed(_percentile((-value for value in overtime_changes), 0.25))}$, "
+        rf"${_fixed(_percentile((-value for value in overtime_changes), 0.75))}$] fewer\\",
+        rf"Compatibility ($\SIM\uparrow$) & {sum(value > 0 for value in similarity_changes)} / "
+        rf"{sum(value == 0 for value in similarity_changes)} / {sum(value < 0 for value in similarity_changes)} & "
+        rf"${_fixed(-compatibility_change)}$ lower (${_fixed(-compatibility_relative_change)}\%$) & "
+        rf"[${_fixed(_percentile((-value for value in similarity_changes), 0.25))}$, "
+        rf"${_fixed(_percentile((-value for value in similarity_changes), 0.75))}$] lower\\",
+        r"\midrule",
+        rf"\multicolumn{{4}}{{@{{}}l}}{{\textit{{Continuity and overtime both improve in {both_improved} of {len(policy_pair_details)} pairs.}}}}\\",
+        r"\bottomrule",
+        r"\end{tabular}",
+        r"\end{table}",
+    ]
+    policy_table_path = output / "compact_policy_table.tex"
+    policy_table_path.write_text(
+        "\n".join(policy_table_lines) + "\n", encoding="utf-8"
+    )
+
     table_lines = [
         "% Generated by experiments/generate_compact_manuscript_results.py.",
-        r"\begin{table}[t]",
-        r"\caption{EvalMaxSAT results for the fixed Policy $\times$ Encoding "
-        r"design on 48 Original instances. All runs use a 3600\,s limit; "
-        r"IC and SB are disabled.}",
+        r"\begin{table}[H]",
+        r"\caption{EvalMaxSAT results on 48 Original instances. Each policy is "
+        r"tested with a sorting network (SN) and a Totalizer (TOT) under a "
+        r"3600\,s limit. Median runtime is calculated over proved runs.}",
         r"\label{tab:policy-encoding}",
         r"\centering",
         r"\small",
         r"\setlength{\tabcolsep}{3.4pt}",
         r"\begin{tabular}{@{}llrrrrrr@{}}",
         r"\toprule",
-        r"Policy & Enc. & Completed & PAR-2 & Med. time & RSS & Variables & Hard clauses\\",
+        r"Policy & Enc. & Proved & PAR-2 & Median & Memory & Variables & Constraint clauses\\",
         r" & & (/48) & (s) & (s) & (MB) & & \\",
         r"\midrule",
     ]
@@ -283,9 +521,9 @@ def generate(
                     _policy_label(method),
                     _encoding_label(encoding),
                     _integer(row["proved_runs"]),
-                    _number(row["par2_seconds"], 1),
-                    _number(row["median_proved_seconds"], 1),
-                    _number(row["median_peak_rss_mb"], 1),
+                    _fixed(row["par2_seconds"]),
+                    _fixed(row["median_proved_seconds"]),
+                    _fixed(row["median_peak_rss_mb"]),
                     _grouped(row["median_variables"]),
                     _grouped(row["median_hard_clauses"]),
                 )
@@ -296,10 +534,6 @@ def generate(
     table_path = output / "compact_encoding_table.tex"
     table_path.write_text("\n".join(table_lines) + "\n", encoding="utf-8")
 
-    claim_support = {
-        method: _truth(contrast_by_policy[method]["totalizer_faster_claim_supported"])
-        for method in POLICIES
-    }
     provenance = {
         "schema_version": 1,
         "scope": "two-study-compact-manuscript-results",
@@ -312,6 +546,7 @@ def generate(
         },
         "outputs": {
             macros_path.name: _sha256(macros_path),
+            policy_table_path.name: _sha256(policy_table_path),
             table_path.name: _sha256(table_path),
         },
     }

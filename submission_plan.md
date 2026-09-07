@@ -1,11 +1,17 @@
-# Kế hoạch hoàn thiện và nộp bài ICIIT 2027
+# Kế hoạch hoàn thiện thực nghiệm và nộp bài SOICT 2026
 
-Cập nhật ngày 04/09/2026. Kế hoạch này thay thế ma trận 924 runs và bốn RQ
+Quality gate và checklist submission:
+[`docs/SOICT_2026_A_STAR_QUALITY_RUBRIC.md`](docs/SOICT_2026_A_STAR_QUALITY_RUBRIC.md).
+
+Thiết kế thực nghiệm compact trong tài liệu này là kế hoạch hoàn thiện evidence
+cho SOICT 2026.
+
+Cập nhật trạng thái ngày 07/09/2026. Kế hoạch này thay thế ma trận 924 runs và bốn RQ
 trước đây. Bản thảo chính chỉ còn hai thiết kế thực nghiệm. Validation,
 sensitivity và ablation là bằng chứng hỗ trợ, không được trình bày như các
 nghiên cứu ngang hàng.
 
-Runbook chi tiết cho campaign còn thiếu:
+Runbook chi tiết và quy trình tái sinh kết quả:
 [`docs/COMPACT_RESULTS_RUNBOOK.md`](docs/COMPACT_RESULTS_RUNBOOK.md).
 
 Không chạy measured phase cho tới khi code và configs được review, commit,
@@ -18,7 +24,8 @@ Nghiên cứu không tuyên bố MaxSAT nhanh hơn các commercial solvers. Đó
 
 1. xây dựng một chính sách HCORAP theo thứ tự ưu tiên tường minh:
    `continuity → overtime → compatibility`;
-2. xây dựng Corrected-v2 để các mục tiêu continuity và overtime thực sự thay
+2. xây dựng HCORAP-LC, được lưu dưới tên `corrected_v2` trong artifact, để các
+   mục tiêu continuity và overtime thực sự thay
    đổi trong nghiệm được chọn;
 3. đánh giá một phương pháp MaxSAT chính xác với hai cardinality encodings,
    đồng thời kiểm tra encoding effect dưới cả weighted và LEX-COS;
@@ -48,7 +55,7 @@ validation và priority-order sensitivity.
 
 ## 3. Thiết kế A: policy study đã hoàn tất
 
-- Dataset: 48 Corrected-v2 critical instances.
+- Dataset: 48 HCORAP-LC instances.
 - Cấu trúc: 16 size categories × 3 evaluation seeds.
 - Main policies: weighted và LEX-COS.
 - Primary solver: Gurobi MIP-E, 300 s, một thread.
@@ -66,7 +73,13 @@ Nguồn được phép dùng:
 - `results_v2/gcp_corrected_exact_analysis/corrected_policy_summary.csv`;
 - `results_v2/gcp_corrected_exact_analysis/corrected_exact_validation.json`.
 
-## 4. Thiết kế B: policy-by-encoding cần chạy
+## 4. Thiết kế B: policy-by-encoding đã hoàn tất
+
+Gói kết quả đã kiểm định:
+`hcorap_compact_policy_encoding_3600_20260907_082501/`. Gói chứa đủ 192
+EvalMaxSAT runs và 96 Gurobi references. Validation báo
+`evidence_valid=true`, không có objective mismatch hoặc status contradiction.
+Claim gate của Totalizer đạt dưới cả Weighted và LEX-COS.
 
 ### MaxSAT matrix
 
@@ -84,21 +97,25 @@ ba LEX-COS stages. Bốn tasks của cùng instance tạo thành một randomize
 
 ### Exact reference
 
-Gurobi MIP-E chạy hai policies trên cùng 48 instances:
+Gurobi MIP-E đã chạy hai policies trên cùng 48 instances. CPLEX MIP-E sẽ chạy
+đủ cùng ma trận để hoàn tất commercial baseline:
 
 | Backend | Policies | Instances | Timeout | Runs |
 |---|---:|---:|---:|---:|
 | Gurobi MIP-E | 2 | 48 | 3.600 s | 96 |
+| CPLEX MIP-E | 2 | 48 | 3.600 s | 96 |
 
-Gurobi reference không phải runtime baseline. Nó xác nhận mọi MaxSAT result đã
-quyết định và objective vector của mọi MaxSAT `OPTIMUM`.
+Gurobi và CPLEX xác nhận status và objective vector. Sau khi CPLEX gate pass,
+một bảng riêng sẽ so sánh EvalMaxSAT-Totalizer, Gurobi MIP-E và CPLEX MIP-E.
+So sánh này không được dùng để thay thế thí nghiệm SN/TOT cùng EvalMaxSAT.
 
 ### Tổng khối lượng mới
 
 - 192 EvalMaxSAT rows;
 - 96 Gurobi reference rows;
-- tổng 288 records;
-- chỉ bốn MaxSAT configurations, không phải 288 thiết kế.
+- 96 CPLEX baseline rows cần chạy;
+- tổng 384 records sau khi hoàn tất;
+- chỉ bốn MaxSAT configurations, không phải 384 thiết kế.
 
 MaxSAT worst case là 192 core-hour. Dữ liệu 300 s hiện có cho thấy ước lượng
 thực tế khoảng 9--12 giờ tuần tự, nhưng con số này chỉ dùng để vận hành VM.
@@ -108,7 +125,7 @@ thực tế khoảng 9--12 giờ tuần tự, nhưng con số này chỉ dùng �
 | Nguồn | Vai trò mới |
 |---|---|
 | 8-cell weighted factorial | giải thích vì sao IC và SB bị tắt |
-| weighted SN/TOT 300 s | evidence sơ bộ, sẽ bị thay bởi matrix 3.600 s |
+| weighted SN/TOT 300 s | ablation và lịch sử thiết kế; không dùng trong main result |
 | original 42-instance weighted/LEX-COS | diagnostic về objective activity |
 | corrected-v2 EvalMaxSAT 300 s | historical scalability diagnostic, không dùng ở main results |
 | three-solver 20-instance subset | correctness check bổ sung |
@@ -150,11 +167,13 @@ Runner hỗ trợ resume theo phase:
 ./experiments/run_compact_policy_encoding.sh analyze
 ```
 
-Sau khi đồng bộ kết quả về máy chứa analysis Corrected-v2, sinh bảng và macro
+Sau khi đồng bộ kết quả về máy chứa analysis HCORAP-LC, sinh bảng và macro
 LaTeX bằng evidence gate:
 
 ```bash
 export HCORAP_POLICY_ANALYSIS=results_v2/gcp_corrected_exact_analysis
+export HCORAP_ENCODING_ANALYSIS=\
+hcorap_compact_policy_encoding_3600_20260907_082501/analysis
 export HCORAP_MANUSCRIPT_RESULTS=LaTeX-Templates/paper/generated_compact
 ./experiments/run_compact_policy_encoding.sh manuscript
 ```
@@ -272,15 +291,13 @@ quả.
 - encoding effect có transfer giữa policies hay không;
 - vai trò khác nhau của Original và Corrected-v2.
 
-### 8. Limitations
+Discussion tích hợp ngắn gọn phạm vi áp dụng và các giới hạn: synthetic
+instances với ba seeds mỗi stratum, hai dataset có mục đích khác nhau,
+solver/hardware dependence, không có routing/uncertainty/operational data và
+proof files nếu trạng thái này vẫn đúng khi freeze. Không tạo section
+`Limitations and Threats to Validity` riêng.
 
-- synthetic instances và ba seeds mỗi stratum;
-- hai dataset có mục đích khác nhau;
-- solver/hardware dependence;
-- không có routing/uncertainty/operational data;
-- proof files chưa có nếu trạng thái này vẫn đúng khi freeze.
-
-### 9. Conclusion
+### 8. Conclusion
 
 - một kết luận về objective policy;
 - một kết luận về encoding effect, có điều kiện theo claim gate;
@@ -309,7 +326,6 @@ EvalMaxSAT completion table. Full factorial, per-instance records và provenance
 - relaxed/saturated load profiles;
 - Open-WBO;
 - full 8-cell factorial ở 3.600 s;
-- full CPLEX trên 48 Original instances;
 - lặp lại deterministic solver nhiều lần trên cùng instance.
 
 Campaign Corrected-v2 MaxSAT 3.600 s chỉ được mở nếu nhóm tác giả thay đổi scope
@@ -317,17 +333,20 @@ Campaign Corrected-v2 MaxSAT 3.600 s chỉ được mở nếu nhóm tác giả 
 
 ## 11. Definition of done
 
-- [ ] Source/config review hoàn tất; frozen commit đã push.
-- [ ] `preflight` pass trên GCP.
-- [ ] Đủ 192 MaxSAT + 96 Gurobi rows.
-- [ ] `policy_encoding_validation.json` có `evidence_valid=true`.
-- [ ] Claim gate được đọc riêng cho weighted và LEX-COS.
-- [ ] Table/figure được sinh từ CSV đã freeze, không chép số bằng tay.
-- [ ] Xóa đoạn thông báo “matrix has not yet been collected” khỏi bản thảo sau
+- [x] Source/config review hoàn tất; frozen commit `b7a56dd4` đã có trên
+      `origin/main`.
+- [x] `preflight` và environment gate pass trên GCP.
+- [x] Đủ 192 MaxSAT + 96 Gurobi rows.
+- [x] `policy_encoding_validation.json` có `evidence_valid=true`.
+- [x] Claim gate được đọc riêng cho weighted và LEX-COS.
+- [x] Hai bảng và dữ liệu của hai figure được sinh từ CSV đã freeze, không chép
+      số kết quả bằng tay.
+- [x] Xóa đoạn thông báo “matrix has not yet been collected” khỏi bản thảo sau
       khi dữ liệu pass gate.
-- [ ] Abstract, Results, Discussion và Conclusion thống nhất cùng số liệu.
-- [ ] Artifact giữ configs, resolved matrix, raw JSON, logs, environment và
+- [x] Abstract, Results, Discussion và Conclusion thống nhất cùng số liệu.
+- [x] Artifact giữ configs, resolved matrix, raw JSON, logs, environment và
       checksums.
 - [ ] Khôi phục hai Git objects cũ nếu vẫn phân phối historical artifact.
-- [ ] Build PDF, kiểm tra overflow, font embedding và page count.
-- [ ] Xác minh metadata, deadline và yêu cầu ICIIT 2027 trước khi upload.
+- [x] Build PDF; không có overflow, mọi font được nhúng, phần thân kết thúc
+      trong trang 12 và references bắt đầu ở trang 12.
+- [ ] Xác minh metadata, deadline và yêu cầu SOICT 2026 trước khi upload.

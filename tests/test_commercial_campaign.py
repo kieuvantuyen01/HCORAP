@@ -16,6 +16,7 @@ ROOT = Path(__file__).resolve().parents[1]
     ("name", "expected_instances", "expected_tasks"),
     [
         ("gcp_commercial_original.json", 20, 80),
+        ("gcp_original_cplex_reference_3600.json", 48, 96),
         ("gcp_commercial_correctness_smoke.json", 3, 18),
     ],
 )

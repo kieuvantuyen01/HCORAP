@@ -1,4 +1,7 @@
-# Hướng dẫn biên soạn bản thảo ICIIT 2027
+# Hướng dẫn biên soạn bản thảo SOICT 2026
+
+Quality gate và rubric kiểm tra nội bộ nằm trong
+[`docs/SOICT_2026_A_STAR_QUALITY_RUBRIC.md`](docs/SOICT_2026_A_STAR_QUALITY_RUBRIC.md).
 
 Tài liệu này quy định cách trình bày. Thiết kế nghiên cứu, ma trận thực nghiệm,
 lịch chạy và deadline nằm trong [`submission_plan.md`](submission_plan.md).
@@ -7,41 +10,44 @@ Protocol thực thi chi tiết nằm trong
 
 ## 1. Phạm vi và định dạng
 
-- Track: ICIIT 2027 Conference Proceedings.
+- Venue: SOICT 2026.
+- Phạm vi phù hợp: Applied Operations Research and Optimization, healthcare
+  applications và decision support.
 - Ngôn ngữ: tiếng Anh học thuật.
-- Mục tiêu: 5 trang double-column, bao gồm hình, bảng và tài liệu tham khảo.
-- Dùng LaTeX template do hội nghị cung cấp trong `LaTeX-Templates/`.
+- Bản thảo dùng Springer CCIS/LNCS template, tối đa 12 trang không tính phần
+  tài liệu tham khảo.
+- Quy trình review là single-blind, vì vậy bản nộp giữ tên và affiliation của
+  tác giả.
+- Bản nộp là PDF và không có số trang.
+- Abstract deadline: 09/09/2026; full-paper deadline: 16/09/2026. Phải kiểm
+  tra lại giờ đóng hệ thống submission trước ngày nộp.
+- Source đang hoạt động là `LaTeX-Templates/paper/main_soict.tex`.
 - Không tự điền DOI, ISBN hoặc copyright metadata trước khi hội nghị cung cấp.
 - Chỉ dùng kết quả đã qua validation và data freeze; không đưa pilot hoặc raw
   runtime thiếu provenance vào bảng chính.
 
-### Ba chế độ build bắt buộc
+### Source và bản build chính thức
 
-- `main.tex` tạo PDF sạch để đánh giá hình thức. Khi bundle kết quả sinh tự động
-  đã đầy đủ, PDF này hiển thị Abstract findings, Results và Conclusion để rà
-  soát; đây vẫn chưa phải bản submission nếu thiếu freeze marker.
-- `review.tex` chỉ dùng nội bộ để kiểm tra cấu trúc bằng chứng đang chờ. Không
-  gửi PDF này cho hội nghị.
-- `submission.tex` là release build duy nhất được phép gửi. Build phải dừng với
-  lỗi nếu thiếu bất kỳ frozen file bắt buộc nào.
-- Abstract findings, Results và Conclusion chỉ được nạp vào `main.tex` khi bộ ba
-  file cùng `manuscript-provenance.json` trong
-  `LaTeX-Templates/paper/generated/` đã được sinh đầy đủ. `submission.tex` còn
-  yêu cầu freeze marker; không điền số thủ công để làm bản thảo trông hoàn chỉnh.
+- Chỉ cập nhật `main_soict.tex`. Các file `main.tex`, `review.tex` và
+  `submission.tex` thuộc pipeline cũ và không phải source của bản SOICT.
+- Build bằng lệnh được ghi trong `LaTeX-Templates/paper/README.md`.
+- Các bảng, hình và macro định lượng phải được sinh từ frozen results. Không
+  điền tay con số vào Abstract, Results, Discussion hoặc Conclusion.
+- Trước khi nộp, lưu source commit, result freeze ID và SHA-256 của PDF.
 
-Page budget mục tiêu: khoảng 0,8 trang cho title/abstract/Introduction; 0,5
-trang cho Related Work; 1,5--1,7 trang cho model và phương pháp; 0,6--0,8 trang
-cho experimental setup; tối thiểu 1,2 trang cho Results/Conclusion; phần còn lại
-cho limitations và references. Trước data freeze, khoảng trống trong PDF sạch
-là ngân sách dành cho Results, không phải phần cần lấp bằng background.
+Page budget định hướng cho phần nội dung chính: khoảng 2 trang cho Abstract và
+Introduction; 1 trang cho Related Work; 3 trang cho formulation và solution
+design; 1,5 trang cho methodology; 3 trang cho Results; 1,5 trang cho Discussion
+và Conclusion. Đây là ngân sách biên tập, không phải lý do cắt bỏ định nghĩa,
+bằng chứng hoặc phân tích cần thiết. References nằm ngoài giới hạn 12 trang.
 
 ## 2. Tác giả và đơn vị
 
 Thứ tự tác giả dự kiến:
 
-1. Tuyen Van Kieu — `tuyenkv@vnu.edu.vn`;
-2. Khanh Ngoc Do — `2302061@vnu.edu.vn`;
-3. Khanh Van To — `khanhtv@vnu.edu.vn`.
+1. Tuyen Van Kieu: `tuyenkv@vnu.edu.vn`;
+2. Khanh Ngoc Do: `2302061@vnu.edu.vn`;
+3. Khanh Van To: `khanhtv@vnu.edu.vn`.
 
 Affiliation thống nhất:
 
@@ -51,14 +57,12 @@ VNU University of Engineering and Technology, Vietnam
 ```
 
 Phải xác nhận lại thứ tự tác giả, corresponding author, ORCID và cách viết tên
-tiếng Anh với cả ba đồng tác giả, rồi khóa metadata nội bộ trước 31/08/2026.
+tiếng Anh với cả ba đồng tác giả trước khi đăng ký abstract.
 
-Với `acmart`, giữ mỗi người trong một lệnh `\author` riêng để metadata và chỉ mục
-tác giả đúng. Vì cả ba cùng một đơn vị, đặt ba khối `\author`/`\email` liên tiếp
-rồi khai báo **một** `\affiliation` chung sau tác giả cuối; đây là cách shared
-affiliation trong sample chính thức của class. Không gộp ba tên vào một lệnh
-`\author`. Dùng nhất quán tên không dấu ở PDF, submission system, ORCID và
-artifact metadata; `\shortauthors` là `Kieu et al.`.
+Với `llncs`, liệt kê các tác giả trong một khối `\author` và ngăn cách bằng
+`\and`. Vì cả ba tác giả cùng một đơn vị, dùng một khối `\institute` chung.
+Dùng nhất quán tên không dấu ở PDF, submission system, ORCID và artifact
+metadata; `\authorrunning` là `Kieu et al.`.
 
 ## 3. Cấu trúc bản thảo
 
@@ -67,7 +71,7 @@ artifact metadata; `\shortauthors` là `Kieu et al.`.
 Nêu ngắn gọn bài toán, hạn chế của weighted objective/encoding gốc, bốn thành
 phần đóng góp, protocol và các kết quả định lượng chính. Không đưa số liệu chưa
 được sinh từ frozen tables. Tránh claim “state of the art” nếu không có benchmark
-và baseline tương ứng. Dùng abstract draft không số trong `main.tex` ngay từ
+và baseline tương ứng. Dùng abstract draft không số trong `main_soict.tex` ngay từ
 giai đoạn chạy; sau data freeze chỉ thay một câu bằng 2--3 kết quả truy vết được.
 
 ### Introduction
@@ -77,7 +81,8 @@ Mạch lập luận nên theo thứ tự:
 1. HCORAP và ý nghĩa vận hành;
 2. cách tiếp cận MaxSAT hiện có;
 3. sự mơ hồ của weighted optimum và chi phí encoding;
-4. khoảng trống về lexicographic policy, Totalizer và constraint strengthening;
+4. khoảng trống về đánh giá objective policy và cardinality encoding trong
+   HCORAP;
 5. contributions và research questions.
 
 ### Related Work
@@ -113,43 +118,38 @@ hypotheses và analysis đã được khóa trước primary runs.
 
 ### Results
 
-Ưu tiên ba nhóm bằng chứng:
+Ưu tiên hai nghiên cứu chính và một lớp validation:
 
-1. paired factorial/encoding-size performance;
-2. weighted so với LEX-COS và LEX-OCS sensitivity;
-3. corrected-v2 và Gurobi/CPLEX validation.
+1. ảnh hưởng của weighted và LEX-COS trên 48 HCORAP-LC instances;
+2. ảnh hưởng của sorting network và Totalizer dưới cả weighted và LEX-COS trên
+   48 Original instances;
+3. Gurobi, CPLEX và independent solution checker chỉ đóng vai trò xác nhận tính
+   đúng của objective values và nghiệm.
 
 Các nhánh epsilon, weight, uncertainty và routing nằm ngoài measured compact
 campaign. Báo cả timeout, PAR-2, peak RSS và số cặp cùng optimum; không chỉ báo
 trung bình trên các run giải được.
 
-Thứ tự trình bày theo ba claim thay vì lặp lại nhãn RQ: (i) policy ưu tiên làm
-thay đổi lịch được chọn, (ii) Totalizer có direct effect nhất quán trong khi
-implied/symmetry không tạo thêm lợi ích, và (iii) các kiểm tra độc lập xác nhận
-objective values nhưng cũng chỉ ra giới hạn scalability. Bản 5 trang dùng ba
-visual bổ trợ lẫn nhau:
+Thứ tự trình bày theo claim thay vì liệt kê log chạy: (i) LEX-COS thay đổi ba
+tiêu chí như thế nào, (ii) Totalizer thay đổi hiệu năng và kích thước công thức
+như thế nào dưới từng policy, và (iii) các kiểm tra độc lập xác nhận objective
+values. Implied constraints, symmetry breaking và LEX-OT chỉ là supporting
+evidence.
 
-1. một figure full-width hai panel, đặt ngay đầu Results, tóm tắt policy deltas
-   trên corrected-v2 và bốn khoảng tin cậy sorting-network/Totalizer;
-2. một bảng compact đủ tám factorial cells với PAR-2, peak RSS và số biến;
-3. một evidence map compact gộp direct-factor conclusions, end-to-end B--R,
-   corrected-v2 và agreement EvalMaxSAT/Gurobi/CPLEX.
+Main paper dự kiến giữ bốn visual: policy-effect table, CONT/OT scatter plot,
+four-cell encoding table và paired speedup plot có 95% confidence intervals.
+Cactus plot chỉ thay thế paired speedup plot nếu nó giải thích timeout tốt hơn;
+không thêm visual chỉ để tăng số lượng. Các số và phần prose định lượng phải
+được sinh từ frozen results và có provenance.
 
-Đủ 12 direct contrasts và các cột phân tích chi tiết vẫn nằm trong artifact;
-main paper chỉ giữ các contrast cần để kiểm tra trực tiếp claims.
+### Discussion and Conclusion
 
-Không thêm biểu đồ Pareto, cactus/scatter hoặc weight-sensitivity vào main paper
-trừ khi thay thế một trong ba visual hiện có và chứng minh được lượng thông tin
-tăng lên. Các số và cả đoạn prose định lượng phải do
-`experiments/generate_manuscript_results.py` sinh; data-freeze phải kiểm tra
-`manuscript-provenance.json`, không chỉ kiểm tra file LaTeX tồn tại.
-
-### Threats and Conclusion
-
-Nêu thẳng các giới hạn: benchmark gốc ít excess workload, corrected-v2 là
-synthetic, LEX chạy theo staged solving, một solver MaxSAT/version, tập
-cross-solver validation nhỏ, không có routing và uncertainty campaign xác nhận.
-Conclusion chỉ nhắc lại claim đã có bảng/hình hỗ trợ.
+Discussion giải thích ý nghĩa vận hành của policy trade-off, điều kiện encoding
+effect chuyển giữa hai policies và vai trò khác nhau của Original với HCORAP-LC.
+Các giới hạn về synthetic instances, solver/hardware dependence, routing,
+uncertainty và operational data được tích hợp vào Discussion, không tạo một
+section `Limitations and Threats to Validity` riêng. Conclusion chỉ nhắc lại
+claim đã có bảng hoặc hình hỗ trợ.
 
 ## 4. Quy tắc văn phong
 
@@ -168,14 +168,14 @@ Conclusion chỉ nhắc lại claim đã có bảng/hình hỗ trợ.
 
 ## 5. Hình, bảng và khả năng tái lập
 
-- tối đa ba visual kết quả trong bản 5 trang: main-effects figure, full
-  factorial footprint và compact evidence map;
+- giữ tối đa bốn visual chính đã nêu trong phần Results; mỗi visual phải trả lời
+  một câu hỏi nghiên cứu hoặc hỗ trợ một claim;
 - tránh các nhãn nội bộ khó hiểu như `cross-paradigm`, `treatment bundle` hoặc
   `reference configuration` khi có thể nói trực tiếp solver/cấu hình nào được
   so sánh;
 - mọi bảng/hình phải được sinh từ script và frozen raw data;
 - caption phải tự giải thích được metric, sample và hướng tốt/xấu;
-- biểu đồ dùng font/kích thước đọc được ở double-column;
+- biểu đồ dùng font và kích thước đọc được trong bố cục CCIS;
 - dùng bảng thay cho hình khi cần đối chiếu nhiều giá trị chính xác;
 - color palette phải phân biệt được khi in grayscale;
 - không chỉnh tay số trong LaTeX sau khi collector đã sinh bảng;
@@ -190,10 +190,11 @@ Conclusion chỉ nhắc lại claim đã có bảng/hình hỗ trợ.
 - [ ] Ký hiệu toán học khớp code và dùng nhất quán.
 - [ ] Related-work table có citation đầy đủ, không biến thành danh sách tóm tắt.
 - [ ] Methods đủ chi tiết để tái triển khai.
-- [ ] Experimental setup khớp exact scope trong `screening_decision.json`
-  (đúng 924 measured runs).
+- [ ] Experimental setup khớp hai thiết kế đã khóa: Design A gồm 48 cặp policy;
+      Design B gồm 48 instances x 2 policies x 2 encodings ở 3.600 s.
 - [ ] Mọi dòng `OPTIMUM` trong bảng có nghiệm qua independent solution verifier;
       không gọi đó là independently certified optimum nếu chưa kiểm tra proof
       trace.
-- [ ] Threats đề cập routing, uncertainty và synthetic corrected-v2.
+- [ ] Discussion tích hợp phạm vi áp dụng và các giới hạn về routing,
+      uncertainty, synthetic instances và solver/hardware dependence.
 - [ ] BibTeX/DOI, author metadata, page limit và PDF fonts đã được kiểm tra.
