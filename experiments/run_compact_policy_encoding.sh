@@ -7,9 +7,9 @@ cd "$PROJECT_ROOT"
 
 MAXSAT_CONFIG=experiments/configs/gcp_original_policy_encoding_3600.json
 REFERENCE_CONFIG=experiments/configs/gcp_original_policy_reference_3600.json
-MAXSAT_RESULTS=experiments/results/gcp_original_policy_encoding_3600
-REFERENCE_RESULTS=experiments/results/gcp_original_policy_reference_3600
-ANALYSIS_RESULTS=${HCORAP_ENCODING_ANALYSIS:-experiments/results/gcp_original_policy_encoding_3600_analysis}
+MAXSAT_RESULTS=experiments/results/gcp_original_policy_encoding_cardinality_aligned_3600
+REFERENCE_RESULTS=experiments/results/gcp_original_policy_reference_cardinality_aligned_3600
+ANALYSIS_RESULTS=${HCORAP_ENCODING_ANALYSIS:-experiments/results/gcp_original_policy_encoding_cardinality_aligned_3600_analysis}
 POLICY_ANALYSIS=${HCORAP_POLICY_ANALYSIS:-results_v2/gcp_corrected_exact_analysis}
 MANUSCRIPT_RESULTS=${HCORAP_MANUSCRIPT_RESULTS:-LaTeX-Templates/paper/generated_compact}
 PINNED_EVALMAXSAT_SHA256=$(python3 -c \
@@ -48,7 +48,9 @@ Optional:
 
 The MaxSAT matrix is 48 Original instances x 2 policies x 2 encodings, with
 Totalizer and sorting network both using no implied constraints and no symmetry
-breaking. Every top-level run has one cumulative 3,600-second budget.
+breaking. The selected encoding is used for workload constraints and all
+unit-coefficient bounds between policy stages. Every top-level run has one
+cumulative 3,600-second budget.
 EOF
 }
 

@@ -62,6 +62,29 @@ void HCORAPMultiObjectiveEncoding::addCardinalityAtMost(
     formula->addClause(!thresholds[bound]);
 }
 
+void HCORAPMultiObjectiveEncoding::addCardinalityAtLeast(
+    SMTFormula *formula,
+    const vector<literal> &values,
+    int bound
+) {
+    if (bound <= 0)
+        return;
+    if (bound > static_cast<int>(values.size())) {
+        formula->addClause(formula->falseVar());
+        return;
+    }
+    if (bound == static_cast<int>(values.size())) {
+        for (const literal &value : values)
+            formula->addClause(value);
+        return;
+    }
+    vector<literal> thresholds;
+    addHCORAPCardinalityNetwork(
+        formula, values, thresholds, cardinalityEncoding
+    );
+    formula->addClause(thresholds[bound - 1]);
+}
+
 void HCORAPMultiObjectiveEncoding::addCardinalityExactly(
     SMTFormula *formula,
     const vector<literal> &values,
@@ -504,14 +527,31 @@ void HCORAPMultiObjectiveEncoding::addPBAtLeast(
     const vector<literal> &values,
     int lowerBound
 ) {
+    if (weights.size() != values.size())
+        throw invalid_argument("PB weights and literals must have equal size");
+    if (lowerBound <= 0)
+        return;
+
     vector<literal> negated;
     negated.reserve(values.size());
-    int totalWeight = 0;
+    long long totalWeight = 0;
     for (size_t index = 0; index < values.size(); ++index) {
+        if (weights[index] <= 0)
+            throw invalid_argument("PB weights must be positive");
         negated.push_back(!values[index]);
         totalWeight += weights[index];
     }
-    formula->addPB(weights, negated, totalWeight - lowerBound);
+    if (totalWeight < lowerBound) {
+        formula->addClause(formula->falseVar());
+        return;
+    }
+    if (totalWeight > numeric_limits<int>::max())
+        throw runtime_error("PB total weight exceeds supported integer range");
+    formula->addPB(
+        weights,
+        negated,
+        static_cast<int>(totalWeight) - lowerBound
+    );
 }
 
 SMTFormula *HCORAPMultiObjectiveEncoding::encode(int, int) {
@@ -724,10 +764,11 @@ void HCORAPMultiObjectiveEncoding::addBounds(SMTFormula *formula) {
     vector<int> weights;
     vector<literal> values;
 
-    if (bounds.minCoverage >= 0) {
-        weights.assign(performed.size(), 1);
-        addPBAtLeast(formula, weights, performed, bounds.minCoverage);
-    }
+    // All unit-coefficient objective bounds use the selected cardinality
+    // encoding.  This makes --cardinality-encoding apply consistently to the
+    // constraints that link successive stages of lexicographic optimisation.
+    if (bounds.minCoverage >= 0)
+        addCardinalityAtLeast(formula, performed, bounds.minCoverage);
 
     if (bounds.minSimilarity >= 0) {
         weights.clear();
@@ -748,36 +789,27 @@ void HCORAPMultiObjectiveEncoding::addBounds(SMTFormula *formula) {
     }
 
     if (bounds.maxContinuity >= 0) {
-        weights.clear();
         values.clear();
         for (int sequence = 0; sequence < static_cast<int>(instance->SEQ.size()); ++sequence) {
             for (int agent = 0; agent < instance->A; ++agent) {
-                weights.push_back(1);
                 values.push_back(sequenceAgent[agent][sequence]);
             }
-            weights.push_back(1);
             values.push_back(!sequenceActive[sequence]);
         }
-        if (!values.empty()) {
-            formula->addPB(
-                weights,
-                values,
-                bounds.maxContinuity + static_cast<int>(instance->SEQ.size())
-            );
-        }
+        addCardinalityAtMost(
+            formula,
+            values,
+            bounds.maxContinuity + static_cast<int>(instance->SEQ.size())
+        );
     }
 
     if (bounds.maxOvertime >= 0) {
-        weights.clear();
         values.clear();
         for (const vector<literal> &agentThresholds : overtimeThreshold) {
-            for (const literal &threshold : agentThresholds) {
-                weights.push_back(1);
+            for (const literal &threshold : agentThresholds)
                 values.push_back(threshold);
-            }
         }
-        if (!values.empty())
-            formula->addPB(weights, values, bounds.maxOvertime);
+        addCardinalityAtMost(formula, values, bounds.maxOvertime);
     }
 }
 

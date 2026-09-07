@@ -216,6 +216,8 @@ def _maxsat_row_valid(row: dict[str, str]) -> bool:
             method in METHODS,
             row.get("variant") == expected_variant,
             row.get("cardinality") in {"sorting-network", "totalizer"},
+            row.get("unit_objective_bound_encoding") == row.get("cardinality"),
+            row.get("weighted_similarity_bound_encoding") == "pb-bdd",
             row.get("implied") == "none",
             row.get("symmetry") == "none",
             _truth(row.get("align_evalmaxsat_tct")),

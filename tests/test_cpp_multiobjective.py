@@ -176,6 +176,8 @@ def test_cpp_methods_recover_expected_tradeoffs(
     assert result["status"] == "OPTIMUM"
     assert result["language"] == "C++"
     assert result["cardinality_encoding"] == "sorting-network"
+    assert result["unit_objective_bound_encoding"] == "sorting-network"
+    assert result["weighted_similarity_bound_encoding"] == "pb-bdd"
     assert result["implied_constraints"] == "none"
     assert result["symmetry_breaking"] == "none"
     assert metrics["verified"] is True
@@ -600,6 +602,8 @@ def test_cpp_totalizer_result_is_labeled_and_verified() -> None:
     result = _run("weighted", "--cardinality-encoding", "totalizer")
     assert result["status"] == "OPTIMUM"
     assert result["cardinality_encoding"] == "totalizer"
+    assert result["unit_objective_bound_encoding"] == "totalizer"
+    assert result["weighted_similarity_bound_encoding"] == "pb-bdd"
     assert result["metrics"]["verified"] is True
 
 

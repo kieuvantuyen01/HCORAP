@@ -25,7 +25,8 @@ RAW_COLUMNS = (
     "run_id", "schema_version", "instance", "instance_sha256", "users", "agents", "visits",
     "seed", "load_profile", "rho", "variant", "method", "objective_mode",
     "objective_policy", "delta", "wc", "wo", "soft_coverage", "cardinality", "implied",
-    "symmetry", "align_evalmaxsat_tct", "stage3_incumbent_bound",
+    "symmetry", "unit_objective_bound_encoding",
+    "weighted_similarity_bound_encoding", "align_evalmaxsat_tct", "stage3_incumbent_bound",
     "lexicographic_implementation", "status", "exit_code", "hard_timeout", "validation_errors",
     "elapsed_seconds", "wall_seconds", "timeout_seconds", "peak_rss_mb",
     "coverage", "similarity", "continuity", "overtime", "overtime_cost",
@@ -160,6 +161,12 @@ def flatten(result_dir: Path) -> list[dict[str, Any]]:
             "cardinality": specification["cardinality"],
             "implied": specification["implied"],
             "symmetry": specification["symmetry"],
+            "unit_objective_bound_encoding": payload.get(
+                "unit_objective_bound_encoding"
+            ),
+            "weighted_similarity_bound_encoding": payload.get(
+                "weighted_similarity_bound_encoding"
+            ),
             "align_evalmaxsat_tct": specification.get(
                 "align_evalmaxsat_tct", False
             ),

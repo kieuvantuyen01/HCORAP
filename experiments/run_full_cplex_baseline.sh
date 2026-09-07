@@ -6,10 +6,10 @@ PROJECT_ROOT=$(cd "$(dirname "$0")/.." && pwd)
 cd "$PROJECT_ROOT"
 
 CPLEX_CONFIG=experiments/configs/gcp_original_cplex_reference_3600.json
-CPLEX_RESULTS=experiments/results/gcp_original_cplex_reference_3600
-MAXSAT_RESULTS=${HCORAP_MAXSAT_RESULTS:-experiments/results/gcp_original_policy_encoding_3600}
-GUROBI_RESULTS=${HCORAP_GUROBI_RESULTS:-experiments/results/gcp_original_policy_reference_3600}
-ANALYSIS_RESULTS=${HCORAP_COMMERCIAL_ANALYSIS:-experiments/results/gcp_original_commercial_baseline_3600_analysis}
+CPLEX_RESULTS=experiments/results/gcp_original_cplex_reference_cardinality_aligned_3600
+MAXSAT_RESULTS=${HCORAP_MAXSAT_RESULTS:-experiments/results/gcp_original_policy_encoding_cardinality_aligned_3600}
+GUROBI_RESULTS=${HCORAP_GUROBI_RESULTS:-experiments/results/gcp_original_policy_reference_cardinality_aligned_3600}
+ANALYSIS_RESULTS=${HCORAP_COMMERCIAL_ANALYSIS:-experiments/results/gcp_original_commercial_baseline_cardinality_aligned_3600_analysis}
 BUILD_JOBS=${HCORAP_BUILD_JOBS:-8}
 CPU_CORE=${HCORAP_CPU_CORE:-}
 RUNNER_PREFIX=()

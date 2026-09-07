@@ -142,6 +142,7 @@ static void usage(const char *program) {
         << "  --wc INTEGER              continuity weight (weighted)\n"
         << "  --wo INTEGER              overtime multiplier (weighted)\n"
         << "  --cardinality-encoding sorting-network|totalizer\n"
+        << "                            encode workloads and unit objective bounds\n"
         << "  --implied-constraints none|user-slots|slot-capacity|both|both-plus\n"
         << "  --symmetry-breaking none|slots|services|slot-service|all\n"
         << "  --delta DECIMAL           similarity loss budget\n"
@@ -1081,6 +1082,10 @@ static void writeResult(
            << "  \"cardinality_encoding\": \""
            << hcorapCardinalityEncodingName(options.cardinalityEncoding)
            << "\",\n"
+           << "  \"unit_objective_bound_encoding\": \""
+           << hcorapCardinalityEncodingName(options.cardinalityEncoding)
+           << "\",\n"
+           << "  \"weighted_similarity_bound_encoding\": \"pb-bdd\",\n"
            << "  \"implied_constraints\": \""
            << hcorapImpliedConfigName(options.impliedConfig)
            << "\",\n"

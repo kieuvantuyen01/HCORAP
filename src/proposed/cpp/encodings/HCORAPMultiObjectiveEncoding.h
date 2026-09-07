@@ -70,6 +70,11 @@ class HCORAPMultiObjectiveEncoding : public Encoding {
         const std::vector<literal> &values,
         int bound
     );
+    void addCardinalityAtLeast(
+        SMTFormula *formula,
+        const std::vector<literal> &values,
+        int bound
+    );
     void addCardinalityExactly(
         SMTFormula *formula,
         const std::vector<literal> &values,

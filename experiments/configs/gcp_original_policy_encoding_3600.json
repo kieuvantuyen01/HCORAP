@@ -1,7 +1,7 @@
 {
   "binary": "../../bin/release/hcorap_multi",
   "solver": "${EVALMAXSAT_BIN}",
-  "result_dir": "../results/gcp_original_policy_encoding_3600",
+  "result_dir": "../results/gcp_original_policy_encoding_cardinality_aligned_3600",
   "instances": [
     "../../instances/paperInstances/**/*.txt"
   ],

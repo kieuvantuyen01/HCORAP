@@ -1,6 +1,6 @@
 {
   "binary": "../../bin/release/hcorap_commercial",
-  "result_dir": "../results/gcp_original_policy_reference_3600",
+  "result_dir": "../results/gcp_original_policy_reference_cardinality_aligned_3600",
   "instances": [
     "../../instances/paperInstances/**/*.txt"
   ],

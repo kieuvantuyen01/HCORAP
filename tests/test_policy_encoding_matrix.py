@@ -49,6 +49,8 @@ def _maxsat_row(index: int, method: str, encoding: str) -> dict[str, object]:
         "variant": "weighted" if method == "weighted" else "staged-aligned",
         "method": method,
         "cardinality": encoding,
+        "unit_objective_bound_encoding": encoding,
+        "weighted_similarity_bound_encoding": "pb-bdd",
         "implied": "none",
         "symmetry": "none",
         "align_evalmaxsat_tct": "True",
@@ -222,6 +224,20 @@ def test_analyzer_rejects_an_objective_mismatch_against_reference(
     assert report["objective_mismatches"] == 1
 
 
+def test_analyzer_rejects_unaligned_objective_bound_encoding(
+    tmp_path: Path,
+) -> None:
+    maxsat, exact, output = _campaigns(tmp_path)
+    rows = list(csv.DictReader((maxsat / "runs.csv").open(newline="", encoding="utf-8")))
+    rows[0]["unit_objective_bound_encoding"] = "totalizer"
+    _write_csv(maxsat / "runs.csv", rows)
+
+    report = analyze(maxsat, exact, output, expected_instances=8)
+
+    assert report["structurally_valid"] is False
+    assert report["evidence_valid"] is False
+
+
 def test_analyzer_keeps_timeout_as_unresolved_not_infeasible(tmp_path: Path) -> None:
     maxsat, exact, output = _campaigns(tmp_path)
     rows = list(csv.DictReader((maxsat / "runs.csv").open(newline="", encoding="utf-8")))
@@ -270,6 +286,8 @@ def test_fixed_configs_contain_only_the_declared_matrix() -> None:
     assert maxsat["timeout_seconds"] == exact["timeout_seconds"] == 3600
     assert maxsat["expected_runs"] == 192
     assert exact["expected_runs"] == 96
+    assert maxsat["result_dir"].endswith("cardinality_aligned_3600")
+    assert exact["result_dir"].endswith("cardinality_aligned_3600")
     assert {item["method"] for item in maxsat["runs"]} == {"weighted", "lex-cos"}
     assert {item["cardinality"] for item in maxsat["configurations"]} == {
         "sorting-network",

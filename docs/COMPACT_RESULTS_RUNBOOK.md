@@ -43,6 +43,17 @@ Ma trận cuối cùng có đúng hai yếu tố và bốn cells:
 - Worker: một process, một vCPU được pin.
 - Số runs: `48 × 2 × 2 = 192`.
 
+Trong mã nguồn hiện hành, sorting network hoặc Totalizer đã chọn được dùng cho
+cả ràng buộc workload và các bound hệ số 1 nối các bước tối ưu, gồm coverage,
+continuity và overtime. Chỉ bound similarity có các hệ số phù hợp khác nhau mới
+dùng PB/BDD. Mỗi JSON kết quả phải ghi đúng hai trường
+`unit_objective_bound_encoding` và `weighted_similarity_bound_encoding`; runner
+và analyzer sẽ từ chối kết quả thiếu hoặc không khớp các trường này.
+
+Không resume campaign mới vào thư mục kết quả cũ. Ba config hiện ghi vào các
+thư mục có hậu tố `cardinality_aligned_3600`. Gurobi và CPLEX cũng phải được
+chạy từ cùng commit mới để kiểm tra provenance giữa các phương pháp hợp lệ.
+
 Gurobi MIP-E chạy cùng 48 instances và hai policies để tạo 96 exact-reference
 rows. Để hoàn tất đối chứng commercial, CPLEX MIP-E được chạy trên cùng ma trận
 48 instances, hai policies, timeout 3.600 s và một thread. So sánh encoding vẫn
@@ -124,6 +135,21 @@ export CONFIRM_COMPACT_POLICY_ENCODING=YES
 ./experiments/run_compact_policy_encoding.sh all
 ```
 
+Để chạy hoặc resume toàn bộ ma trận đã sửa và cả 96 CPLEX rows còn thiếu bằng
+một entry point, thiết lập thêm `CPLEX_STUDIO_DIR` và hai biến xác nhận, sau đó
+dùng:
+
+```bash
+export CPLEX_STUDIO_DIR=/absolute/path/to/CPLEX_Studio
+export CONFIRM_COMPACT_POLICY_ENCODING=YES
+export CONFIRM_FULL_CPLEX_BASELINE=YES
+./experiments/run_cardinality_aligned_full_campaign.sh all
+```
+
+Runner kết hợp gọi campaign Gurobi và EvalMaxSAT trước, rồi mới chạy CPLEX. Mỗi
+runner con dùng chế độ resume và chỉ chạy lại task thiếu hoặc không hợp lệ trong
+các thư mục `cardinality_aligned_3600`.
+
 Có thể chạy và resume từng phase:
 
 ```bash
@@ -137,8 +163,8 @@ Hoàn tất CPLEX baseline sau khi đã commit và push source mới:
 ```bash
 export CPLEX_STUDIO_DIR=/absolute/path/to/CPLEX_Studio
 export HCORAP_EXPECTED_COMMIT=$(git rev-parse HEAD)
-export HCORAP_MAXSAT_RESULTS=experiments/results/gcp_original_policy_encoding_3600
-export HCORAP_GUROBI_RESULTS=experiments/results/gcp_original_policy_reference_3600
+export HCORAP_MAXSAT_RESULTS=experiments/results/gcp_original_policy_encoding_cardinality_aligned_3600
+export HCORAP_GUROBI_RESULTS=experiments/results/gcp_original_policy_reference_cardinality_aligned_3600
 ./experiments/run_full_cplex_baseline.sh preflight
 export CONFIRM_FULL_CPLEX_BASELINE=YES
 ./experiments/run_full_cplex_baseline.sh all

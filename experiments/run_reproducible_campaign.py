@@ -467,6 +467,14 @@ def _run_task(
             ):
                 if payload.get(result_key) != specification[key]:
                     validation_errors.append(f"{result_key} mismatch")
+            if payload.get("unit_objective_bound_encoding") != specification[
+                "cardinality"
+            ]:
+                validation_errors.append("unit_objective_bound_encoding mismatch")
+            if payload.get("weighted_similarity_bound_encoding") != "pb-bdd":
+                validation_errors.append(
+                    "weighted_similarity_bound_encoding mismatch"
+                )
             if payload.get("status") == "OPTIMUM" and not (
                 payload.get("metrics") or {}
             ).get("verified"):

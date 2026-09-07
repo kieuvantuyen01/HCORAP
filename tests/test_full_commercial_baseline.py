@@ -52,6 +52,8 @@ def _maxsat_row(index: int, method: str, cardinality: str) -> dict[str, object]:
         "method": method,
         "variant": "weighted" if method == "weighted" else "staged-aligned",
         "cardinality": cardinality,
+        "unit_objective_bound_encoding": cardinality,
+        "weighted_similarity_bound_encoding": "pb-bdd",
         "implied": "none",
         "symmetry": "none",
         "align_evalmaxsat_tct": "True",

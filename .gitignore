@@ -64,6 +64,7 @@ experiments/results/*
 /experiments/archive/
 /results_reduced/
 /results_v2/
+/hcorap_compact_policy_encoding_*/
 
 # Local literature library (do not redistribute third-party PDFs)
 /docs/*.pdf

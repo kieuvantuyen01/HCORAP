@@ -2,13 +2,19 @@
 
 ## Current compact manuscript campaign
 
-The SOICT 2026 result plan has two studies. The HCORAP-LC policy study and the
-fixed Original-suite Policy x Encoding matrix are complete:
+The SOICT 2026 result plan has two studies. The HCORAP-LC policy study is
+complete. The fixed Original-suite Policy x Encoding execution contract is:
 
 ```text
 48 instances x {weighted, LEX-COS} x {sorting network, Totalizer}
 IC=none, SB=none, timeout=3,600 s, one worker
 ```
+
+The Original-suite matrix must be rerun after the cardinality-bound correction.
+The selected cardinality encoding applies to workload constraints and to all
+unit-coefficient bounds between optimization stages. Weighted similarity bounds
+remain PB/BDD constraints. New measurements use result directories suffixed
+with `cardinality_aligned_3600` so they cannot be mixed with earlier binaries.
 
 Run its Gurobi reference, EvalMaxSAT matrix, and evidence gate with:
 
@@ -16,6 +22,13 @@ Run its Gurobi reference, EvalMaxSAT matrix, and evidence gate with:
 ./experiments/run_compact_policy_encoding.sh preflight
 export CONFIRM_COMPACT_POLICY_ENCODING=YES
 ./experiments/run_compact_policy_encoding.sh all
+```
+
+To run or resume the corrected Policy x Encoding matrix and the missing full
+CPLEX baseline in one command, use:
+
+```bash
+./experiments/run_cardinality_aligned_full_campaign.sh all
 ```
 
 The scientific contract and manuscript mapping are documented in
@@ -84,6 +97,8 @@ totals.
 
 - Current compact Policy x Encoding campaign:
   `run_compact_policy_encoding.sh`; see `docs/COMPACT_RESULTS_RUNBOOK.md`.
+- Combined cardinality-aligned campaign including the full CPLEX baseline:
+  `run_cardinality_aligned_full_campaign.sh`.
 - Full 96-run CPLEX baseline and three-method comparison:
   `run_full_cplex_baseline.sh`; see `docs/COMPACT_RESULTS_RUNBOOK.md`.
 - Full clean-room campaign: `run_all_remaining_publication.sh`.
