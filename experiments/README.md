@@ -16,7 +16,8 @@ unit-coefficient bounds between optimization stages. Weighted similarity bounds
 remain PB/BDD constraints. New measurements use result directories suffixed
 with `cardinality_aligned_3600` so they cannot be mixed with earlier binaries.
 
-Run its Gurobi reference, EvalMaxSAT matrix, and evidence gate with:
+Validate/reuse its Gurobi reference, run the EvalMaxSAT matrix, and apply the
+evidence gate with:
 
 ```bash
 ./experiments/run_compact_policy_encoding.sh preflight
@@ -28,8 +29,13 @@ To run or resume the corrected Policy x Encoding matrix and the missing full
 CPLEX baseline in one command, use:
 
 ```bash
+export HCORAP_GUROBI_RESULTS=/absolute/path/to/gcp_original_policy_reference_3600
 ./experiments/run_cardinality_aligned_full_campaign.sh all
 ```
+
+`GUROBI_HOME` is not required when that directory passes the reuse validator.
+The validator checks the complete 96-row protocol and verifies that all MIP-E
+source paths are identical between the recorded and current commits.
 
 The scientific contract and manuscript mapping are documented in
 `docs/COMPACT_RESULTS_RUNBOOK.md`.  The older 924-row manifest remains an

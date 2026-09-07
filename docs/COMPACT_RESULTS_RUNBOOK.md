@@ -50,9 +50,11 @@ dùng PB/BDD. Mỗi JSON kết quả phải ghi đúng hai trường
 `unit_objective_bound_encoding` và `weighted_similarity_bound_encoding`; runner
 và analyzer sẽ từ chối kết quả thiếu hoặc không khớp các trường này.
 
-Không resume campaign mới vào thư mục kết quả cũ. Ba config hiện ghi vào các
-thư mục có hậu tố `cardinality_aligned_3600`. Gurobi và CPLEX cũng phải được
-chạy từ cùng commit mới để kiểm tra provenance giữa các phương pháp hợp lệ.
+Không resume campaign MaxSAT mới vào thư mục kết quả cũ. Config MaxSAT và CPLEX
+ghi vào các thư mục có hậu tố `cardinality_aligned_3600`. Campaign Gurobi cũ có
+thể được tái sử dụng vì thay đổi hiện tại chỉ nằm trong MaxSAT. Trước khi tái sử
+dụng, validator kiểm tra đủ 96 rows, cấu hình đo, trạng thái chứng minh, môi
+trường chạy và sự tương đương của toàn bộ source MIP-E giữa hai commit.
 
 Gurobi MIP-E chạy cùng 48 instances và hai policies để tạo 96 exact-reference
 rows. Để hoàn tất đối chứng commercial, CPLEX MIP-E được chạy trên cùng ma trận
@@ -115,14 +117,18 @@ code, config, tests và outline được review.
 
 ```bash
 export EVALMAXSAT_BIN=/opt/evalmaxsat/EvalMaxSAT_bin
-export GUROBI_HOME=/absolute/path/to/gurobi/platform
 export HCORAP_CPU_CORE=0
 export HCORAP_EXPECTED_COMMIT=$(git rev-parse HEAD)
 export HCORAP_BACKUP_DIR=/mnt/hcorap-backup
+export HCORAP_GUROBI_RESULTS=/absolute/path/to/gcp_original_policy_reference_3600
 ```
 
-Preflight build cả hai binaries, chạy tests, kiểm hash solver và resolve chính
-xác 192 + 96 tasks:
+Không cần đặt `GUROBI_HOME` khi `HCORAP_GUROBI_RESULTS` trỏ đến campaign cũ
+hợp lệ. Nếu không tìm thấy reference có thể tái sử dụng, runner dừng và yêu cầu
+`GUROBI_HOME` để tạo 96 rows mới.
+
+Preflight build MaxSAT, chạy tests, kiểm hash solver, resolve chính xác 192 tasks
+và kiểm định 96 Gurobi rows cũ:
 
 ```bash
 ./experiments/run_compact_policy_encoding.sh preflight
@@ -146,9 +152,9 @@ export CONFIRM_FULL_CPLEX_BASELINE=YES
 ./experiments/run_cardinality_aligned_full_campaign.sh all
 ```
 
-Runner kết hợp gọi campaign Gurobi và EvalMaxSAT trước, rồi mới chạy CPLEX. Mỗi
-runner con dùng chế độ resume và chỉ chạy lại task thiếu hoặc không hợp lệ trong
-các thư mục `cardinality_aligned_3600`.
+Runner kết hợp kiểm định và tái sử dụng campaign Gurobi, chạy EvalMaxSAT, rồi
+chạy CPLEX. Các runner đo dùng chế độ resume và chỉ chạy lại task thiếu hoặc
+không hợp lệ trong các thư mục `cardinality_aligned_3600`.
 
 Có thể chạy và resume từng phase:
 
@@ -164,7 +170,7 @@ Hoàn tất CPLEX baseline sau khi đã commit và push source mới:
 export CPLEX_STUDIO_DIR=/absolute/path/to/CPLEX_Studio
 export HCORAP_EXPECTED_COMMIT=$(git rev-parse HEAD)
 export HCORAP_MAXSAT_RESULTS=experiments/results/gcp_original_policy_encoding_cardinality_aligned_3600
-export HCORAP_GUROBI_RESULTS=experiments/results/gcp_original_policy_reference_cardinality_aligned_3600
+export HCORAP_GUROBI_RESULTS=/absolute/path/to/gcp_original_policy_reference_3600
 ./experiments/run_full_cplex_baseline.sh preflight
 export CONFIRM_FULL_CPLEX_BASELINE=YES
 ./experiments/run_full_cplex_baseline.sh all
@@ -196,8 +202,7 @@ Runner luôn dùng `--resume`. Không xóa result directory giữa các lần ch
 ## 5. Ngân sách
 
 - MaxSAT worst case: `192 × 3.600 s = 192 core-hour`.
-- Gurobi worst case theo timeout: 96 core-hour, nhưng các lớp hiện có thường
-  hoàn tất trong vài giây.
+- Gurobi: tái sử dụng 96 rows đã kiểm định; không phát sinh thời gian đo mới.
 - CPLEX worst case theo timeout: 96 core-hour; runner dùng resume và một worker.
 - Ước lượng MaxSAT thực tế từ dữ liệu 300 s là khoảng 9--12 giờ tuần tự vì phần
   lớn instances đã kết thúc trước 300 s. Đây chỉ là ước lượng vận hành, không
@@ -218,6 +223,11 @@ cạnh tranh CPU hoặc RAM. Publication timing dùng một worker.
 6. Gurobi chứng minh optimum hoặc infeasibility cho đủ 96 rows;
 7. mọi MaxSAT result đã quyết định có status phù hợp với Gurobi;
 8. mọi MaxSAT `OPTIMUM` có objective vector khớp Gurobi.
+
+Ngoài các gate trên, tái sử dụng Gurobi qua commit chỉ hợp lệ khi các file định
+nghĩa input, parser, MIP-E, commercial CLI, Gurobi adapter và cấu hình
+build không đổi. Thay đổi tài liệu, runner hoặc MaxSAT encoding không làm mất
+hiệu lực Gurobi; thay đổi bất kỳ source thương mại nào sẽ buộc chạy lại.
 
 CPLEX baseline chỉ qua gate khi có đủ 96 rows, CPLEX và Gurobi đều chứng minh
 toàn bộ 96 trường hợp, status và objective vector khớp trên mọi cặp, và mọi

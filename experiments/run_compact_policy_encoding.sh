@@ -8,7 +8,10 @@ cd "$PROJECT_ROOT"
 MAXSAT_CONFIG=experiments/configs/gcp_original_policy_encoding_3600.json
 REFERENCE_CONFIG=experiments/configs/gcp_original_policy_reference_3600.json
 MAXSAT_RESULTS=experiments/results/gcp_original_policy_encoding_cardinality_aligned_3600
-REFERENCE_RESULTS=experiments/results/gcp_original_policy_reference_cardinality_aligned_3600
+LEGACY_REFERENCE_RESULTS=experiments/results/gcp_original_policy_reference_3600
+NEW_REFERENCE_RESULTS=experiments/results/gcp_original_policy_reference_cardinality_aligned_3600
+REFERENCE_OVERRIDE=${HCORAP_GUROBI_RESULTS:-}
+REFERENCE_RESULTS=
 ANALYSIS_RESULTS=${HCORAP_ENCODING_ANALYSIS:-experiments/results/gcp_original_policy_encoding_cardinality_aligned_3600_analysis}
 POLICY_ANALYSIS=${HCORAP_POLICY_ANALYSIS:-results_v2/gcp_corrected_exact_analysis}
 MANUSCRIPT_RESULTS=${HCORAP_MANUSCRIPT_RESULTS:-LaTeX-Templates/paper/generated_compact}
@@ -24,14 +27,16 @@ Usage: experiments/run_compact_policy_encoding.sh PHASE
 
 Phases:
   preflight  Build, test, verify tools, and resolve the two fixed matrices
-  reference  Run/resume 96 Gurobi reference rows
+  reference  Reuse a validated Gurobi reference, or run/resume 96 rows
   maxsat     Run/resume 192 EvalMaxSAT Policy x Encoding rows
   analyze    Validate and analyze the two completed campaigns
   manuscript Generate gated LaTeX result fragments from both validated studies
-  all        Run preflight, reference, MaxSAT, and analysis
+  all        Run preflight, reuse/run reference, run MaxSAT, and analyze
 
 Required:
   EVALMAXSAT_BIN    pinned Linux x86-64 EvalMaxSAT executable
+
+Required only when no safe reusable 96-row Gurobi reference is found:
   GUROBI_HOME       Gurobi installation containing include/ and lib/
 
 Required for measured phases (reference, maxsat, and all):
@@ -42,6 +47,7 @@ Optional:
   HCORAP_CPU_CORE=<allowed logical CPU>  default: first allowed CPU
   HCORAP_BUILD_JOBS=<positive integer>   default: 8
   HCORAP_BACKUP_DIR=<external directory> checkpoint after each phase
+  HCORAP_GUROBI_RESULTS=<directory>       existing 96-row Gurobi campaign
   HCORAP_POLICY_ANALYSIS=<directory>      validated Corrected-v2 analysis
   HCORAP_ENCODING_ANALYSIS=<directory>    validated Policy x Encoding analysis
   HCORAP_MANUSCRIPT_RESULTS=<directory>   generated LaTeX fragments
@@ -84,12 +90,15 @@ check_machine_and_tools() {
         die "Expected at least 10 GB free disk; found $free_disk_kib KiB."
 }
 
-check_solvers() {
+check_evalmaxsat() {
     [ -n "${EVALMAXSAT_BIN:-}" ] && [ -x "$EVALMAXSAT_BIN" ] || \
         die "Set EVALMAXSAT_BIN to the executable EvalMaxSAT binary."
     observed_hash=$(sha256sum "$EVALMAXSAT_BIN" | awk '{print $1}')
     [ "$observed_hash" = "$PINNED_EVALMAXSAT_SHA256" ] || \
         die "EvalMaxSAT SHA-256 mismatch. Expected $PINNED_EVALMAXSAT_SHA256; found $observed_hash."
+}
+
+check_gurobi() {
     [ -n "${GUROBI_HOME:-}" ] || die "Set GUROBI_HOME before running this campaign."
     [ -f "$GUROBI_HOME/include/gurobi_c++.h" ] || \
         die "GUROBI_HOME does not contain include/gurobi_c++.h."
@@ -114,6 +123,33 @@ PY
     RUNNER_PREFIX=(taskset --cpu-list "$CPU_CORE")
 }
 
+validate_reference_candidate() {
+    candidate=$1
+    [ -d "$candidate" ] || return 1
+    local arguments=("$candidate" --expected-instances 48)
+    if [ -n "$CPU_CORE" ]; then
+        arguments+=(--cpu-core "$CPU_CORE")
+    fi
+    python3 experiments/validate_reusable_gurobi_reference.py \
+        "${arguments[@]}" >/dev/null 2>&1
+}
+
+select_reusable_reference() {
+    local candidates=()
+    if [ -n "$REFERENCE_OVERRIDE" ]; then
+        candidates=("$REFERENCE_OVERRIDE")
+    else
+        candidates=("$LEGACY_REFERENCE_RESULTS" "$NEW_REFERENCE_RESULTS")
+    fi
+    for candidate in "${candidates[@]}"; do
+        if validate_reference_candidate "$candidate"; then
+            REFERENCE_RESULTS=$candidate
+            return 0
+        fi
+    done
+    return 1
+}
+
 check_measured_authorization() {
     [ "${CONFIRM_COMPACT_POLICY_ENCODING:-}" = "YES" ] || \
         die "Set CONFIRM_COMPACT_POLICY_ENCODING=YES after reviewing docs/COMPACT_RESULTS_RUNBOOK.md."
@@ -130,21 +166,32 @@ check_measured_authorization() {
 
 build_and_test() {
     make -j"$BUILD_JOBS" YICES=0 hcorap_multi
-    make -B -j"$BUILD_JOBS" YICES=0 GUROBI=1 hcorap_commercial
+    make -B -j"$BUILD_JOBS" YICES=0 hcorap_commercial
     python3 -m pytest -q
 }
 
-validate_configs() {
-    python3 experiments/run_reproducible_campaign.py "$MAXSAT_CONFIG" --dry-run
+build_and_validate_gurobi() {
+    check_gurobi
+    make -B -j"$BUILD_JOBS" YICES=0 GUROBI=1 hcorap_commercial
     python3 experiments/run_commercial_campaign.py "$REFERENCE_CONFIG" --dry-run
+}
+
+validate_maxsat_config() {
+    python3 experiments/run_reproducible_campaign.py "$MAXSAT_CONFIG" --dry-run
 }
 
 preflight() {
     check_machine_and_tools
-    check_solvers
+    check_evalmaxsat
     configure_affinity
     build_and_test
-    validate_configs
+    validate_maxsat_config
+    if select_reusable_reference; then
+        echo "Validated reusable Gurobi reference: $REFERENCE_RESULTS"
+    else
+        echo "No reusable Gurobi reference found; 96 new rows will be required."
+        build_and_validate_gurobi
+    fi
     echo "Preflight passed on CPU $CPU_CORE for the fixed 192 + 96 row matrix."
 }
 
@@ -191,11 +238,31 @@ PY
 }
 
 run_reference() {
+    REFERENCE_RESULTS=$NEW_REFERENCE_RESULTS
     "${RUNNER_PREFIX[@]}" python3 experiments/run_commercial_campaign.py \
         "$REFERENCE_CONFIG" --resume --workers 1
     python3 experiments/collect_commercial_campaign.py "$REFERENCE_RESULTS"
     validate_result_dir "$REFERENCE_RESULTS"
     checkpoint original-policy-reference-3600
+}
+
+prepare_reference() {
+    if select_reusable_reference; then
+        echo "Reusing validated Gurobi reference: $REFERENCE_RESULTS"
+        return 0
+    fi
+    if [ -n "$REFERENCE_OVERRIDE" ]; then
+        local arguments=("$REFERENCE_OVERRIDE" --expected-instances 48)
+        if [ -n "$CPU_CORE" ]; then
+            arguments+=(--cpu-core "$CPU_CORE")
+        fi
+        python3 experiments/validate_reusable_gurobi_reference.py \
+            "${arguments[@]}" || true
+        die "HCORAP_GUROBI_RESULTS is not safe to reuse."
+    fi
+    echo "No safe reusable Gurobi reference found; running 96 new rows."
+    build_and_validate_gurobi
+    run_reference
 }
 
 run_maxsat() {
@@ -207,6 +274,9 @@ run_maxsat() {
 }
 
 analyze_results() {
+    if [ -z "$REFERENCE_RESULTS" ] && ! select_reusable_reference; then
+        die "No validated Gurobi reference is available for analysis."
+    fi
     python3 experiments/analyze_policy_encoding_matrix.py \
         --maxsat-results "$MAXSAT_RESULTS" \
         --exact-results "$REFERENCE_RESULTS" \
@@ -231,12 +301,12 @@ case "$PHASE" in
         ;;
     reference|maxsat)
         check_machine_and_tools
-        check_solvers
         configure_affinity
         check_measured_authorization
         if [ "$PHASE" = "reference" ]; then
-            run_reference
+            prepare_reference
         else
+            check_evalmaxsat
             run_maxsat
         fi
         ;;
@@ -249,7 +319,7 @@ case "$PHASE" in
     all)
         preflight
         check_measured_authorization
-        run_reference
+        prepare_reference
         run_maxsat
         analyze_results
         ;;

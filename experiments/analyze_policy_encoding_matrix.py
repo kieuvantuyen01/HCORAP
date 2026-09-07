@@ -20,6 +20,14 @@ from decimal import Decimal, InvalidOperation
 from pathlib import Path
 from typing import Any, Iterable
 
+try:
+    from .source_provenance import (
+        GUROBI_SOURCE_PATHS,
+        git_paths_equivalent,
+    )
+except ImportError:
+    from source_provenance import GUROBI_SOURCE_PATHS, git_paths_equivalent
+
 
 METHODS = ("weighted", "lex-cos")
 ENCODINGS = ("sorting-network", "totalizer")
@@ -305,8 +313,11 @@ def _environment_checks(
     return {
         "maxsat_solver_hash": maxsat.get("solver_sha256")
         == PINNED_EVALMAXSAT_SHA256,
-        "same_source_commit": bool(maxsat_git.get("commit"))
-        and maxsat_git.get("commit") == exact_git.get("commit"),
+        "gurobi_source_equivalent": git_paths_equivalent(
+            str(maxsat_git.get("commit") or ""),
+            str(exact_git.get("commit") or ""),
+            GUROBI_SOURCE_PATHS,
+        ),
         "clean_source": maxsat_git.get("dirty") is False
         and exact_git.get("dirty") is False,
         "linux_x86_64": maxsat.get("machine") == "x86_64"

@@ -8,7 +8,10 @@ cd "$PROJECT_ROOT"
 CPLEX_CONFIG=experiments/configs/gcp_original_cplex_reference_3600.json
 CPLEX_RESULTS=experiments/results/gcp_original_cplex_reference_cardinality_aligned_3600
 MAXSAT_RESULTS=${HCORAP_MAXSAT_RESULTS:-experiments/results/gcp_original_policy_encoding_cardinality_aligned_3600}
-GUROBI_RESULTS=${HCORAP_GUROBI_RESULTS:-experiments/results/gcp_original_policy_reference_cardinality_aligned_3600}
+LEGACY_GUROBI_RESULTS=experiments/results/gcp_original_policy_reference_3600
+NEW_GUROBI_RESULTS=experiments/results/gcp_original_policy_reference_cardinality_aligned_3600
+GUROBI_OVERRIDE=${HCORAP_GUROBI_RESULTS:-}
+GUROBI_RESULTS=
 ANALYSIS_RESULTS=${HCORAP_COMMERCIAL_ANALYSIS:-experiments/results/gcp_original_commercial_baseline_cardinality_aligned_3600_analysis}
 BUILD_JOBS=${HCORAP_BUILD_JOBS:-8}
 CPU_CORE=${HCORAP_CPU_CORE:-}
@@ -103,6 +106,33 @@ PY
     RUNNER_PREFIX=(taskset --cpu-list "$CPU_CORE")
 }
 
+validate_gurobi_candidate() {
+    candidate=$1
+    [ -d "$candidate" ] || return 1
+    local arguments=("$candidate" --expected-instances 48)
+    if [ -n "$CPU_CORE" ]; then
+        arguments+=(--cpu-core "$CPU_CORE")
+    fi
+    python3 experiments/validate_reusable_gurobi_reference.py \
+        "${arguments[@]}" >/dev/null 2>&1
+}
+
+select_gurobi_results() {
+    local candidates=()
+    if [ -n "$GUROBI_OVERRIDE" ]; then
+        candidates=("$GUROBI_OVERRIDE")
+    else
+        candidates=("$LEGACY_GUROBI_RESULTS" "$NEW_GUROBI_RESULTS")
+    fi
+    for candidate in "${candidates[@]}"; do
+        if validate_gurobi_candidate "$candidate"; then
+            GUROBI_RESULTS=$candidate
+            return 0
+        fi
+    done
+    return 1
+}
+
 check_measured_authorization() {
     [ "${CONFIRM_FULL_CPLEX_BASELINE:-}" = "YES" ] || \
         die "Set CONFIRM_FULL_CPLEX_BASELINE=YES after reviewing the 96-run matrix."
@@ -176,6 +206,10 @@ preflight() {
     check_machine_and_tools
     check_cplex_installation
     configure_affinity
+    if ! select_gurobi_results; then
+        die "No safe reusable 96-row Gurobi reference was found. Set HCORAP_GUROBI_RESULTS to its directory."
+    fi
+    echo "Validated reusable Gurobi reference: $GUROBI_RESULTS"
     build_cplex_backend
     python3 -m pytest -q
     "${RUNNER_PREFIX[@]}" python3 experiments/run_commercial_campaign.py \
@@ -195,8 +229,18 @@ run_cplex() {
 analyze_results() {
     [ -d "$MAXSAT_RESULTS" ] || \
         die "EvalMaxSAT result directory is missing: $MAXSAT_RESULTS"
-    [ -d "$GUROBI_RESULTS" ] || \
-        die "Gurobi result directory is missing: $GUROBI_RESULTS"
+    if ! select_gurobi_results; then
+        if [ -n "$GUROBI_OVERRIDE" ]; then
+            local arguments=("$GUROBI_OVERRIDE" --expected-instances 48)
+            if [ -n "$CPU_CORE" ]; then
+                arguments+=(--cpu-core "$CPU_CORE")
+            fi
+            python3 experiments/validate_reusable_gurobi_reference.py \
+                "${arguments[@]}" || true
+        fi
+        die "No validated 96-row Gurobi reference is available."
+    fi
+    echo "Using validated Gurobi reference: $GUROBI_RESULTS"
     python3 experiments/analyze_full_commercial_baseline.py \
         --maxsat-results "$MAXSAT_RESULTS" \
         --gurobi-results "$GUROBI_RESULTS" \

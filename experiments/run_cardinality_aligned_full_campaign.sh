@@ -11,12 +11,14 @@ Usage: experiments/run_cardinality_aligned_full_campaign.sh PHASE
 
 Phases:
   preflight       Build and validate the EvalMaxSAT, Gurobi, and CPLEX campaigns
-  policy-encoding Run/resume 96 Gurobi and 192 EvalMaxSAT rows, then analyze them
+  policy-encoding Reuse Gurobi and run/resume 192 EvalMaxSAT rows, then analyze
   cplex           Run/resume 96 CPLEX rows, then analyze all three solvers
   all             Run/resume policy-encoding first and CPLEX second
 
 Required for preflight, policy-encoding, and all:
   EVALMAXSAT_BIN
+
+Required only when no safe reusable Gurobi campaign is found:
   GUROBI_HOME
 
 Required for preflight, cplex, and all:
@@ -29,7 +31,8 @@ Required for measured phases:
 
 All underlying runners are resumable. Completed valid run IDs are retained;
 only missing or invalid tasks in the new cardinality_aligned_3600 directories
-are executed again.
+are executed again. Set HCORAP_GUROBI_RESULTS when the old 96-row reference is
+not stored at experiments/results/gcp_original_policy_reference_3600.
 EOF
 }
 

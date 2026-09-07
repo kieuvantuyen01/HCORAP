@@ -7,14 +7,25 @@ import argparse
 import csv
 import json
 import statistics
-import subprocess
 from collections import defaultdict
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
 from typing import Any, Iterable
 
+try:
+    from .source_provenance import (
+        GUROBI_SOURCE_PATHS,
+        SHARED_PROBLEM_SOURCE_PATHS,
+        git_paths_equivalent,
+    )
+except ImportError:
+    from source_provenance import (
+        GUROBI_SOURCE_PATHS,
+        SHARED_PROBLEM_SOURCE_PATHS,
+        git_paths_equivalent,
+    )
 
-ROOT = Path(__file__).resolve().parents[1]
+
 METHODS = ("weighted", "lex-cos")
 BACKENDS = ("gurobi-mip", "cplex-mip")
 EXACT_PROVED = {"OPTIMUM", "INFEASIBLE"}
@@ -22,7 +33,6 @@ EXACT_ALLOWED = EXACT_PROVED | {"TIMEOUT", "TIMEOUT_FEASIBLE"}
 MAXSAT_PROVED = {"OPTIMUM", "UNSAT", "UNSATISFIABLE"}
 MAXSAT_ALLOWED = MAXSAT_PROVED | {"TIMEOUT", "TIMEOUT_FEASIBLE"}
 EXPECTED_TIMEOUT = Decimal("3600")
-MODEL_SOURCE_PATHS = ("Makefile", "src")
 
 
 def _read_object(path: Path) -> dict[str, Any]:
@@ -232,29 +242,6 @@ def _maxsat_row_valid(row: dict[str, str]) -> bool:
     )
 
 
-def _model_source_equivalent(left_commit: str, right_commit: str) -> bool:
-    if not left_commit or not right_commit:
-        return False
-    if left_commit == right_commit:
-        return True
-    completed = subprocess.run(
-        [
-            "git",
-            "diff",
-            "--quiet",
-            left_commit,
-            right_commit,
-            "--",
-            *MODEL_SOURCE_PATHS,
-        ],
-        cwd=ROOT,
-        check=False,
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-    )
-    return completed.returncode == 0
-
-
 def _environment_checks(
     maxsat: dict[str, Any], gurobi: dict[str, Any], cplex: dict[str, Any]
 ) -> dict[str, bool]:
@@ -268,11 +255,20 @@ def _environment_checks(
         "clean_source": maxsat_git.get("dirty") is False
         and gurobi_git.get("dirty") is False
         and cplex_git.get("dirty") is False,
-        "model_source_equivalent": _model_source_equivalent(
-            str(maxsat_git.get("commit", "")), str(cplex_git.get("commit", ""))
+        "shared_problem_source_equivalent": git_paths_equivalent(
+            str(maxsat_git.get("commit") or ""),
+            str(cplex_git.get("commit") or ""),
+            SHARED_PROBLEM_SOURCE_PATHS,
         )
-        and _model_source_equivalent(
-            str(gurobi_git.get("commit", "")), str(cplex_git.get("commit", ""))
+        and git_paths_equivalent(
+            str(gurobi_git.get("commit") or ""),
+            str(cplex_git.get("commit") or ""),
+            SHARED_PROBLEM_SOURCE_PATHS,
+        ),
+        "gurobi_source_equivalent": git_paths_equivalent(
+            str(gurobi_git.get("commit") or ""),
+            str(cplex_git.get("commit") or ""),
+            GUROBI_SOURCE_PATHS,
         ),
         "linux_x86_64": maxsat.get("machine") == "x86_64"
         and gurobi.get("machine") == "x86_64"
