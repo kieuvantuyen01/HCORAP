@@ -15,15 +15,17 @@ Phases:
   cplex           Run/resume 96 CPLEX rows, then analyze all three solvers
   all             Run/resume policy-encoding first and CPLEX second
 
-Required for every phase:
+Required for preflight, policy-encoding, and all:
   EVALMAXSAT_BIN
   GUROBI_HOME
+
+Required for preflight, cplex, and all:
   CPLEX_STUDIO_DIR
 
 Required for measured phases:
   HCORAP_EXPECTED_COMMIT=<full commit currently checked out>
-  CONFIRM_COMPACT_POLICY_ENCODING=YES
-  CONFIRM_FULL_CPLEX_BASELINE=YES
+  CONFIRM_COMPACT_POLICY_ENCODING=YES  for policy-encoding and all
+  CONFIRM_FULL_CPLEX_BASELINE=YES      for cplex and all
 
 All underlying runners are resumable. Completed valid run IDs are retained;
 only missing or invalid tasks in the new cardinality_aligned_3600 directories
