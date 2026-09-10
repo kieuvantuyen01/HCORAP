@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import csv
 import json
 from pathlib import Path
@@ -10,7 +11,7 @@ from experiments.analyze_weight_sensitivity import analyze
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def test_weight_analysis_tracks_scale_equivalent_runs(tmp_path: Path) -> None:
+def test_weight_analysis_tracks_common_penalty_multiplier(tmp_path: Path) -> None:
     result_dir = tmp_path / "results"
     result_dir.mkdir()
     (result_dir / "validation.json").write_text(
@@ -24,7 +25,7 @@ def test_weight_analysis_tracks_scale_equivalent_runs(tmp_path: Path) -> None:
     )
     base = {
         "instance": str(ROOT / "tests" / "instances" / "tradeoff.txt"),
-        "instance_sha256": "instance-1",
+        "instance_sha256": hashlib.sha256((ROOT / "tests/instances/tradeoff.txt").read_bytes()).hexdigest(),
         "users": "1",
         "agents": "2",
         "visits": "2",
@@ -46,5 +47,5 @@ def test_weight_analysis_tracks_scale_equivalent_runs(tmp_path: Path) -> None:
 
     result = analyze(result_dir, tmp_path / "analysis")
     assert result["valid"] is True
-    assert result["repeated_scale_groups"] == 1
-    assert result["scale_groups_with_one_vector"] == 1
+    assert result["repeated_penalty_ratio_groups"] == 1
+    assert result["penalty_ratio_groups_with_one_vector"] == 1

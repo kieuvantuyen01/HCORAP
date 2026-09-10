@@ -43,7 +43,7 @@ ALLOWED_CONFIGS = {
     ("cplex-cp", "cp-i"),
     ("reference-enumerator", "direct-schedule-enumeration"),
 }
-ALLOWED_METHODS = {"weighted", "lex-continuity", "lex-cos", "lex-overtime", "epsilon"}
+ALLOWED_METHODS = {"weighted", "lex-continuity", "lex-cos", "lex-overtime", "epsilon", "weighted-face", "continuity-budget"}
 
 
 def _inventory(binary: Path) -> dict[str, Any]:
@@ -120,6 +120,17 @@ def _validate_run(run: dict[str, Any]) -> None:
         raise ValueError(f"unsupported commercial method: {method}")
     if method == "epsilon" and not 0 <= float(run.get("delta", -1)) <= 1:
         raise ValueError("epsilon delta must lie in [0,1]")
+    if method == "continuity-budget":
+        slack = run.get("continuity_slack", 0)
+        if isinstance(slack, bool) or not isinstance(slack, int) or slack < 0:
+            raise ValueError("continuity_slack must be a non-negative integer")
+    if method == "weighted-face":
+        if run.get("probe_objective", "continuity") not in {"continuity", "overtime"}:
+            raise ValueError("invalid probe_objective")
+        if run.get("probe_sense", "min") not in {"min", "max"}:
+            raise ValueError("invalid probe_sense")
+    if method in {"weighted-face", "continuity-budget"} and run.get("soft_coverage", False):
+        raise ValueError("diagnostic modes require full coverage")
     if int(run.get("wc", 1)) < 0 or int(run.get("wo", 1)) < 0:
         raise ValueError("commercial objective weights must be non-negative")
 
@@ -179,6 +190,14 @@ def _build_tasks(
                     "mip_gap": mip_gap,
                     "absolute_mip_gap": absolute_mip_gap,
                 }
+                if requested["method"] in {"weighted-face", "continuity-budget"}:
+                    if commercial["backend"] == "cplex-cp":
+                        raise ValueError("diagnostic modes require MIP/reference backend")
+                    specification.update(
+                        continuity_slack=requested.get("continuity_slack", 0),
+                        probe_objective=requested.get("probe_objective", "continuity"),
+                        probe_sense=requested.get("probe_sense", "min"),
+                    )
                 identity = {
                     "instance_sha256": instance_hash,
                     "specification": specification,
@@ -225,6 +244,10 @@ def _command(
         "--absolute-mip-gap", str(item["absolute_mip_gap"]),
         "--output", str(temporary_result),
     ]
+    if item["method"] in {"weighted-face", "continuity-budget"}:
+        command.extend(["--continuity-slack", str(item["continuity_slack"]),
+                        "--probe-objective", item["probe_objective"],
+                        "--probe-sense", item["probe_sense"]])
     if item["method"] == "epsilon":
         command.extend(["--delta", item["delta"]])
     if item["soft_coverage"]:
@@ -243,6 +266,20 @@ def _validate_payload(payload: dict[str, Any], specification: dict[str, Any]) ->
     for key in ("backend", "formulation", "method"):
         if payload.get(key) != specification[key]:
             errors.append(f"{key} mismatch")
+    if specification["method"] in {"weighted-face", "continuity-budget"}:
+        for key in ("continuity_slack", "probe_objective", "probe_sense"):
+            if payload.get(key) != specification[key]:
+                errors.append(f"{key} mismatch")
+        if payload.get("status") == "OPTIMUM":
+            metrics = payload.get("metrics") or {}
+            if specification["method"] == "weighted-face":
+                ref = payload.get("weighted_optimum_reference")
+                if ref is None or metrics.get("weighted_reference_score") != ref:
+                    errors.append("weighted face reference mismatch")
+            else:
+                ref = payload.get("continuity_optimum_reference")
+                if ref is None or metrics.get("continuity", float("inf")) > ref + specification["continuity_slack"]:
+                    errors.append("continuity budget reference mismatch")
     if payload.get("threads") != specification["threads"]:
         errors.append("thread count mismatch")
     if payload.get("seed") != specification["seed"]:

@@ -13,7 +13,9 @@ enum HCORAPCommercialObjective {
     COMMERCIAL_COVERAGE,
     COMMERCIAL_SIMILARITY,
     COMMERCIAL_CONTINUITY,
-    COMMERCIAL_OVERTIME
+    COMMERCIAL_OVERTIME,
+    COMMERCIAL_MAX_CONTINUITY,
+    COMMERCIAL_MAX_OVERTIME
 };
 
 enum HCORAPCommercialStatus {
@@ -29,6 +31,10 @@ struct HCORAPCommercialBounds {
     int minSimilarity;
     int maxContinuity;
     int maxOvertime;
+    bool fixWeighted;
+    int weightedScore;
+    int weightedContinuityCoefficient;
+    int weightedOvertimeCoefficient;
 
     HCORAPCommercialBounds();
 };

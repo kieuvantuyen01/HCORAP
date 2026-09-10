@@ -1,0 +1,134 @@
+{
+  "binary": "../../bin/release/hcorap_commercial",
+  "timeout_seconds": 300,
+  "preflight_timeout_seconds": 30,
+  "hard_grace_seconds": 60,
+  "threads": 1,
+  "seed": 0,
+  "mip_gap": 0,
+  "absolute_mip_gap": 0,
+  "workers": 1,
+  "order_seed": 20260909,
+  "commercial_configurations": [
+    {
+      "backend": "gurobi-mip",
+      "formulation": "mip-e"
+    }
+  ],
+  "instances": [
+    "../../instances/corrected_v2_reduced_suite/evaluation_critical/evaluation/critical/instance_u30_a10_v4_seed1001_critical.txt",
+    "../../instances/corrected_v2_reduced_suite/evaluation_critical/evaluation/critical/instance_u30_a10_v4_seed1002_critical.txt",
+    "../../instances/corrected_v2_reduced_suite/evaluation_critical/evaluation/critical/instance_u30_a10_v4_seed1003_critical.txt",
+    "../../instances/corrected_v2_reduced_suite/evaluation_critical/evaluation/critical/instance_u30_a10_v5_seed1001_critical.txt",
+    "../../instances/corrected_v2_reduced_suite/evaluation_critical/evaluation/critical/instance_u30_a10_v5_seed1002_critical.txt",
+    "../../instances/corrected_v2_reduced_suite/evaluation_critical/evaluation/critical/instance_u30_a10_v5_seed1003_critical.txt",
+    "../../instances/corrected_v2_reduced_suite/evaluation_critical/evaluation/critical/instance_u30_a15_v4_seed1001_critical.txt",
+    "../../instances/corrected_v2_reduced_suite/evaluation_critical/evaluation/critical/instance_u30_a15_v4_seed1002_critical.txt",
+    "../../instances/corrected_v2_reduced_suite/evaluation_critical/evaluation/critical/instance_u30_a15_v4_seed1003_critical.txt",
+    "../../instances/corrected_v2_reduced_suite/evaluation_critical/evaluation/critical/instance_u30_a15_v5_seed1001_critical.txt",
+    "../../instances/corrected_v2_reduced_suite/evaluation_critical/evaluation/critical/instance_u30_a15_v5_seed1002_critical.txt",
+    "../../instances/corrected_v2_reduced_suite/evaluation_critical/evaluation/critical/instance_u30_a15_v5_seed1003_critical.txt",
+    "../../instances/corrected_v2_reduced_suite/evaluation_critical/evaluation/critical/instance_u30_a20_v4_seed1001_critical.txt",
+    "../../instances/corrected_v2_reduced_suite/evaluation_critical/evaluation/critical/instance_u30_a20_v4_seed1002_critical.txt",
+    "../../instances/corrected_v2_reduced_suite/evaluation_critical/evaluation/critical/instance_u30_a20_v4_seed1003_critical.txt",
+    "../../instances/corrected_v2_reduced_suite/evaluation_critical/evaluation/critical/instance_u30_a20_v5_seed1001_critical.txt",
+    "../../instances/corrected_v2_reduced_suite/evaluation_critical/evaluation/critical/instance_u30_a20_v5_seed1002_critical.txt",
+    "../../instances/corrected_v2_reduced_suite/evaluation_critical/evaluation/critical/instance_u30_a20_v5_seed1003_critical.txt",
+    "../../instances/corrected_v2_reduced_suite/evaluation_critical/evaluation/critical/instance_u30_a25_v4_seed1001_critical.txt",
+    "../../instances/corrected_v2_reduced_suite/evaluation_critical/evaluation/critical/instance_u30_a25_v4_seed1002_critical.txt",
+    "../../instances/corrected_v2_reduced_suite/evaluation_critical/evaluation/critical/instance_u30_a25_v4_seed1003_critical.txt",
+    "../../instances/corrected_v2_reduced_suite/evaluation_critical/evaluation/critical/instance_u30_a25_v5_seed1001_critical.txt",
+    "../../instances/corrected_v2_reduced_suite/evaluation_critical/evaluation/critical/instance_u30_a25_v5_seed1002_critical.txt",
+    "../../instances/corrected_v2_reduced_suite/evaluation_critical/evaluation/critical/instance_u30_a25_v5_seed1003_critical.txt",
+    "../../instances/corrected_v2_reduced_suite/evaluation_critical/evaluation/critical/instance_u40_a10_v4_seed1001_critical.txt",
+    "../../instances/corrected_v2_reduced_suite/evaluation_critical/evaluation/critical/instance_u40_a10_v4_seed1002_critical.txt",
+    "../../instances/corrected_v2_reduced_suite/evaluation_critical/evaluation/critical/instance_u40_a10_v4_seed1003_critical.txt",
+    "../../instances/corrected_v2_reduced_suite/evaluation_critical/evaluation/critical/instance_u40_a10_v5_seed1001_critical.txt",
+    "../../instances/corrected_v2_reduced_suite/evaluation_critical/evaluation/critical/instance_u40_a10_v5_seed1002_critical.txt",
+    "../../instances/corrected_v2_reduced_suite/evaluation_critical/evaluation/critical/instance_u40_a10_v5_seed1003_critical.txt",
+    "../../instances/corrected_v2_reduced_suite/evaluation_critical/evaluation/critical/instance_u40_a15_v4_seed1001_critical.txt",
+    "../../instances/corrected_v2_reduced_suite/evaluation_critical/evaluation/critical/instance_u40_a15_v4_seed1002_critical.txt",
+    "../../instances/corrected_v2_reduced_suite/evaluation_critical/evaluation/critical/instance_u40_a15_v4_seed1003_critical.txt",
+    "../../instances/corrected_v2_reduced_suite/evaluation_critical/evaluation/critical/instance_u40_a15_v5_seed1001_critical.txt",
+    "../../instances/corrected_v2_reduced_suite/evaluation_critical/evaluation/critical/instance_u40_a15_v5_seed1002_critical.txt",
+    "../../instances/corrected_v2_reduced_suite/evaluation_critical/evaluation/critical/instance_u40_a15_v5_seed1003_critical.txt",
+    "../../instances/corrected_v2_reduced_suite/evaluation_critical/evaluation/critical/instance_u40_a20_v4_seed1001_critical.txt",
+    "../../instances/corrected_v2_reduced_suite/evaluation_critical/evaluation/critical/instance_u40_a20_v4_seed1002_critical.txt",
+    "../../instances/corrected_v2_reduced_suite/evaluation_critical/evaluation/critical/instance_u40_a20_v4_seed1003_critical.txt",
+    "../../instances/corrected_v2_reduced_suite/evaluation_critical/evaluation/critical/instance_u40_a20_v5_seed1001_critical.txt",
+    "../../instances/corrected_v2_reduced_suite/evaluation_critical/evaluation/critical/instance_u40_a20_v5_seed1002_critical.txt",
+    "../../instances/corrected_v2_reduced_suite/evaluation_critical/evaluation/critical/instance_u40_a20_v5_seed1003_critical.txt",
+    "../../instances/corrected_v2_reduced_suite/evaluation_critical/evaluation/critical/instance_u40_a25_v4_seed1001_critical.txt",
+    "../../instances/corrected_v2_reduced_suite/evaluation_critical/evaluation/critical/instance_u40_a25_v4_seed1002_critical.txt",
+    "../../instances/corrected_v2_reduced_suite/evaluation_critical/evaluation/critical/instance_u40_a25_v4_seed1003_critical.txt",
+    "../../instances/corrected_v2_reduced_suite/evaluation_critical/evaluation/critical/instance_u40_a25_v5_seed1001_critical.txt",
+    "../../instances/corrected_v2_reduced_suite/evaluation_critical/evaluation/critical/instance_u40_a25_v5_seed1002_critical.txt",
+    "../../instances/corrected_v2_reduced_suite/evaluation_critical/evaluation/critical/instance_u40_a25_v5_seed1003_critical.txt"
+  ],
+  "expected_instances": 48,
+  "expected_runs": 480,
+  "runs": [
+    {
+      "method": "weighted",
+      "print_assignments": true,
+      "native_log": true
+    },
+    {
+      "method": "lex-cos",
+      "print_assignments": true,
+      "native_log": true
+    },
+    {
+      "method": "lex-overtime",
+      "print_assignments": true,
+      "native_log": true
+    },
+    {
+      "method": "weighted-face",
+      "probe_objective": "continuity",
+      "probe_sense": "min",
+      "print_assignments": true,
+      "native_log": true
+    },
+    {
+      "method": "weighted-face",
+      "probe_objective": "continuity",
+      "probe_sense": "max",
+      "print_assignments": true,
+      "native_log": true
+    },
+    {
+      "method": "weighted-face",
+      "probe_objective": "overtime",
+      "probe_sense": "min",
+      "print_assignments": true,
+      "native_log": true
+    },
+    {
+      "method": "weighted-face",
+      "probe_objective": "overtime",
+      "probe_sense": "max",
+      "print_assignments": true,
+      "native_log": true
+    },
+    {
+      "method": "continuity-budget",
+      "continuity_slack": 0,
+      "print_assignments": true,
+      "native_log": true
+    },
+    {
+      "method": "continuity-budget",
+      "continuity_slack": 1,
+      "print_assignments": true,
+      "native_log": true
+    },
+    {
+      "method": "continuity-budget",
+      "continuity_slack": 2,
+      "print_assignments": true,
+      "native_log": true
+    }
+  ],
+  "result_dir": "../results/research_depth_diagnostics_full"
+}

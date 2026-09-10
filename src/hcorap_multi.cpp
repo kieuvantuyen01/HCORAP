@@ -43,6 +43,7 @@ struct Options {
     bool printAssignments;
     bool alignEvalMaxSATTargetTime;
     bool stage3IncumbentBound;
+    bool zeroContinuityLocal;
 
     Options()
         : method("weighted"), solverPath("EvalMaxSAT_bin"), delta("0.05"),
@@ -53,7 +54,7 @@ struct Options {
           symmetryBreaking(HCORAP_SYMMETRY_NONE),
           fullCoverage(true), encodeOnly(false), keepFiles(false),
           printAssignments(false), alignEvalMaxSATTargetTime(false),
-          stage3IncumbentBound(false) {}
+          stage3IncumbentBound(false), zeroContinuityLocal(false) {}
 };
 
 enum ExternalStatus {
@@ -138,6 +139,7 @@ static void usage(const char *program) {
         << "  --solver-shutdown-grace SECONDS\n"
         << "                            time to collect a model after SIGTERM\n"
         << "  --align-evalmaxsat-tct    pass the remaining budget via --TCT\n"
+        << "  --zero-continuity-local  use sequence AMOs when CONT is fixed to zero\n"
         << "  --stage3-incumbent-bound  constrain final similarity by Stage 2 incumbent\n"
         << "  --wc INTEGER              continuity weight (weighted)\n"
         << "  --wo INTEGER              overtime multiplier (weighted)\n"
@@ -177,6 +179,8 @@ static Options parseOptions(int argc, char **argv) {
                 stod(requireValue(argc, argv, index));
         } else if (argument == "--align-evalmaxsat-tct") {
             options.alignEvalMaxSATTargetTime = true;
+        } else if (argument == "--zero-continuity-local") {
+            options.zeroContinuityLocal = true;
         } else if (argument == "--stage3-incumbent-bound") {
             options.stage3IncumbentBound = true;
         } else if (argument == "--wc") {
@@ -597,7 +601,8 @@ static ExternalStatus solveStage(
         options.cardinalityEncoding,
         options.impliedConfig,
         options.symmetryBreaking,
-        bounds
+        bounds,
+        options.zeroContinuityLocal
     );
     SMTFormula *formula = encoding.encode();
     double encodeSeconds = chrono::duration<double>(
@@ -1059,6 +1064,8 @@ static void writeResult(
            << (options.alignEvalMaxSATTargetTime ? "true" : "false") << ",\n"
            << "  \"stage3_incumbent_bound\": "
            << (options.stage3IncumbentBound ? "true" : "false") << ",\n"
+           << "  \"zero_continuity_local\": "
+           << (options.zeroContinuityLocal ? "true" : "false") << ",\n"
            << "  \"elapsed_seconds\": " << setprecision(10) << totalSeconds << ",\n"
            << "  \"solver_calls\": " << state.solverCalls << ",\n"
            << "  \"proved_stage_count\": " << state.provedStages << ",\n"
@@ -1230,7 +1237,8 @@ int main(int argc, char **argv) {
                 options.cardinalityEncoding,
                 options.impliedConfig,
                 options.symmetryBreaking,
-                bounds
+                bounds,
+                options.zeroContinuityLocal
             );
             SMTFormula *formula = encoding.encode();
             writeLegacyWCNF(cout, formula);

@@ -87,3 +87,6 @@ experiments/results/*
 
 # Manuscript folder (keep local only, do not track in repository)
 /LaTeX-Templates/
+
+# Reproducible capacity variants (generator and manifest checks are tracked)
+/instances/research_depth_load_sweep/

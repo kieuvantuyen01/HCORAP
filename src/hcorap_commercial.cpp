@@ -32,12 +32,16 @@ struct Options {
     bool listBackends;
     int continuityWeight;
     int overtimeWeight;
+    int continuitySlack;
+    string probeObjective;
+    string probeSense;
     HCORAPBackendConfig backendConfig;
 
     Options()
         : method("weighted"), delta("0.05"), timeoutSeconds(3600.0),
           fullCoverage(true), printAssignments(false), listBackends(false),
-          continuityWeight(1), overtimeWeight(1) {}
+          continuityWeight(1), overtimeWeight(1), continuitySlack(0),
+          probeObjective("continuity"), probeSense("min") {}
 };
 
 struct StageRecord {
@@ -63,11 +67,15 @@ struct RunState {
     string error;
     int similarityReferenceOptimum;
     int similarityLowerBound;
+    bool hasWeightedReference;
+    int weightedReference;
+    int continuityReference;
 
     RunState()
         : status(COMMERCIAL_ERROR), hasMetrics(false),
           metricsStageIndex(-1), solverCalls(0),
-          similarityReferenceOptimum(-1), similarityLowerBound(-1) {}
+          similarityReferenceOptimum(-1), similarityLowerBound(-1),
+          hasWeightedReference(false), weightedReference(0), continuityReference(-1) {}
 };
 
 static void usage(const char *program) {
@@ -80,6 +88,9 @@ static void usage(const char *program) {
         << "  mip-e (MIP), cp-t or cp-i (CP Optimizer)\n"
         << "Optimization:\n"
         << "  --method weighted|lex-continuity|lex-cos|lex-overtime|epsilon\n"
+        << "  --method weighted-face|continuity-budget (MIP/reference diagnostics)\n"
+        << "  --probe-objective continuity|overtime --probe-sense min|max\n"
+        << "  --continuity-slack INTEGER  extra violations above proved minimum\n"
         << "  --soft-coverage           maximize and fix coverage first\n"
         << "  --wc INTEGER              continuity weight in weighted mode\n"
         << "  --wo INTEGER              overtime multiplier in weighted mode\n"
@@ -193,6 +204,15 @@ static Options parseOptions(int argc, char **argv) {
         } else if (argument == "--wo") {
             options.overtimeWeight =
                 stoi(requireValue(argc, argv, index));
+        } else if (argument == "--continuity-slack") {
+            const string value = requireValue(argc, argv, index);
+            size_t end = 0;
+            options.continuitySlack = stoi(value, &end);
+            if (end != value.size()) throw runtime_error("invalid continuity slack");
+        } else if (argument == "--probe-objective") {
+            options.probeObjective = requireValue(argc, argv, index);
+        } else if (argument == "--probe-sense") {
+            options.probeSense = requireValue(argc, argv, index);
         } else if (argument == "--delta") {
             options.delta = requireValue(argc, argv, index);
         } else if (argument == "--soft-coverage") {
@@ -251,8 +271,19 @@ static Options parseOptions(int argc, char **argv) {
         options.method != "lex-continuity" &&
         options.method != "lex-cos" &&
         options.method != "lex-overtime" &&
-        options.method != "epsilon")
+        options.method != "epsilon" &&
+        options.method != "weighted-face" &&
+        options.method != "continuity-budget")
         throw runtime_error("unsupported method: " + options.method);
+    if (options.continuitySlack < 0) throw runtime_error("continuity slack must be non-negative");
+    if (options.probeObjective != "continuity" && options.probeObjective != "overtime")
+        throw runtime_error("probe objective must be continuity or overtime");
+    if (options.probeSense != "min" && options.probeSense != "max")
+        throw runtime_error("probe sense must be min or max");
+    if (options.method == "weighted-face" || options.method == "continuity-budget") {
+        if (!options.fullCoverage || options.backend == "cplex-cp")
+            throw runtime_error("diagnostic modes require full coverage and MIP/reference backend");
+    }
     if (!isfinite(options.timeoutSeconds) ||
         options.timeoutSeconds <= 0)
         throw runtime_error("timeout must be finite and positive");
@@ -503,7 +534,39 @@ static RunState solvePolicy(
         );
     }
 
-    if (status == COMMERCIAL_OPTIMUM && options.method == "weighted") {
+    if (status == COMMERCIAL_OPTIMUM && options.method == "weighted-face") {
+        status = executeStage(backend, instance, options, bounds, COMMERCIAL_WEIGHTED,
+            "weighted_reference", false, overallStarted, state);
+        if (status == COMMERCIAL_OPTIMUM) {
+            bounds.fixWeighted = true;
+            bounds.weightedScore = hcorapCommercialObjectiveValue(COMMERCIAL_WEIGHTED,
+                state.metrics, instance, options.continuityWeight, options.overtimeWeight);
+            bounds.weightedContinuityCoefficient = options.continuityWeight;
+            bounds.weightedOvertimeCoefficient = options.overtimeWeight * abs(instance->P);
+            state.hasWeightedReference = true;
+            state.weightedReference = bounds.weightedScore;
+            HCORAPCommercialObjective probe = options.probeObjective == "continuity"
+                ? (options.probeSense == "min" ? COMMERCIAL_CONTINUITY : COMMERCIAL_MAX_CONTINUITY)
+                : (options.probeSense == "min" ? COMMERCIAL_OVERTIME : COMMERCIAL_MAX_OVERTIME);
+            status = executeStage(backend, instance, options, bounds, probe,
+                "weighted_face_" + options.probeObjective + "_" + options.probeSense,
+                false, overallStarted, state);
+        }
+    } else if (status == COMMERCIAL_OPTIMUM && options.method == "continuity-budget") {
+        status = executeStage(backend, instance, options, bounds, COMMERCIAL_CONTINUITY,
+            "continuity_reference", false, overallStarted, state);
+        if (status == COMMERCIAL_OPTIMUM) {
+            state.continuityReference = state.metrics.continuity;
+            if (options.continuitySlack > numeric_limits<int>::max() - state.continuityReference)
+                throw runtime_error("continuity budget exceeds integer range");
+            bounds.maxContinuity = state.continuityReference + options.continuitySlack;
+            status = executeStage(backend, instance, options, bounds, COMMERCIAL_OVERTIME,
+                "overtime", true, overallStarted, state);
+        }
+        if (status == COMMERCIAL_OPTIMUM)
+            status = executeStage(backend, instance, options, bounds, COMMERCIAL_SIMILARITY,
+                "similarity", false, overallStarted, state);
+    } else if (status == COMMERCIAL_OPTIMUM && options.method == "weighted") {
         status = executeStage(
             backend, instance, options, bounds, COMMERCIAL_WEIGHTED,
             "weighted_score", false, overallStarted, state
@@ -595,6 +658,8 @@ static void jsonString(ostream &output, const string &value) {
 }
 
 static const char *objectiveMode(const string &method) {
+    if (method == "weighted-face") return "optimal-face-probe";
+    if (method == "continuity-budget") return "continuity-budget";
     if (method == "weighted")
         return "weighted";
     if (method == "epsilon")
@@ -603,6 +668,8 @@ static const char *objectiveMode(const string &method) {
 }
 
 static const char *objectivePolicy(const string &method) {
+    if (method == "weighted-face") return "weighted-optimal-face";
+    if (method == "continuity-budget") return "continuity-budget-overtime-similarity";
     if (method == "lex-continuity")
         return "continuity-priority";
     if (method == "lex-cos")
@@ -714,6 +781,13 @@ static void writeResult(
     else
         output << "null";
 
+    output << ",\n  \"continuity_slack\": " << options.continuitySlack;
+    output << ",\n  \"probe_objective\": "; jsonString(output, options.probeObjective);
+    output << ",\n  \"probe_sense\": "; jsonString(output, options.probeSense);
+    output << ",\n  \"weighted_optimum_reference\": ";
+    writeNullableNumber(output, state.hasWeightedReference, state.weightedReference);
+    output << ",\n  \"continuity_optimum_reference\": ";
+    writeNullableNumber(output, state.continuityReference >= 0, state.continuityReference);
     output << ",\n  \"stages\": [";
     for (size_t index = 0; index < state.stages.size(); ++index) {
         const StageRecord &stage = state.stages[index];

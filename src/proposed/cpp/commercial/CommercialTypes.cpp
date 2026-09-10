@@ -12,7 +12,8 @@ using namespace std;
 
 HCORAPCommercialBounds::HCORAPCommercialBounds()
     : minCoverage(-1), minSimilarity(-1), maxContinuity(-1),
-      maxOvertime(-1) {}
+      maxOvertime(-1), fixWeighted(false), weightedScore(0),
+      weightedContinuityCoefficient(1), weightedOvertimeCoefficient(1) {}
 
 HCORAPCommercialMetrics::HCORAPCommercialMetrics()
     : valid(false), coverage(0), similarity(0), continuity(0), overtime(0),
@@ -38,7 +39,9 @@ const char *hcorapCommercialObjectiveName(
     switch (objective) {
         case COMMERCIAL_COVERAGE: return "coverage";
         case COMMERCIAL_SIMILARITY: return "similarity";
+        case COMMERCIAL_MAX_CONTINUITY:
         case COMMERCIAL_CONTINUITY: return "continuity";
+        case COMMERCIAL_MAX_OVERTIME:
         case COMMERCIAL_OVERTIME: return "overtime";
         case COMMERCIAL_WEIGHTED:
         default: return "weighted_score";
@@ -75,8 +78,10 @@ int hcorapCommercialObjectiveValue(
             return metrics.coverage;
         case COMMERCIAL_SIMILARITY:
             return metrics.similarity;
+        case COMMERCIAL_MAX_CONTINUITY:
         case COMMERCIAL_CONTINUITY:
             return metrics.continuity;
+        case COMMERCIAL_MAX_OVERTIME:
         case COMMERCIAL_OVERTIME:
             return metrics.overtime;
         case COMMERCIAL_WEIGHTED:
@@ -92,6 +97,11 @@ bool hcorapCommercialBoundsSatisfied(
     const HCORAPCommercialMetrics &metrics
 ) {
     return
+        (!bounds.fixWeighted ||
+         static_cast<long long>(metrics.similarity)
+         - static_cast<long long>(bounds.weightedContinuityCoefficient) * metrics.continuity
+         - static_cast<long long>(bounds.weightedOvertimeCoefficient) * metrics.overtime
+         == bounds.weightedScore) &&
         (bounds.minCoverage < 0 || metrics.coverage >= bounds.minCoverage) &&
         (bounds.minSimilarity < 0 ||
          metrics.similarity >= bounds.minSimilarity) &&

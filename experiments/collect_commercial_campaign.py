@@ -33,11 +33,13 @@ RAW_COLUMNS = (
     "variables_max", "constraints_max", "search_nodes_or_branches_sum",
     "relative_gap_max", "stage_names", "stage_incumbents",
     "similarity_reference_optimum", "similarity_lower_bound", "result",
-    "native_log", "stderr_log",
+    "native_log", "stderr_log", "continuity_slack", "probe_objective", "probe_sense",
+    "weighted_optimum_reference", "continuity_optimum_reference",
 )
 GROUP_COLUMNS = (
     "backend", "formulation", "method", "objective_policy", "delta", "soft_coverage",
-    "users", "agents", "visits", "load_profile",
+    "users", "agents", "visits", "load_profile", "wc", "wo",
+    "continuity_slack", "probe_objective", "probe_sense",
 )
 
 
@@ -124,6 +126,11 @@ def flatten(result_dir: Path) -> list[dict[str, Any]]:
                 "backend": specification["backend"],
                 "formulation": specification["formulation"],
                 "solver_version": payload.get("solver_version"),
+                "continuity_slack": specification.get("continuity_slack", 0),
+                "probe_objective": specification.get("probe_objective", ""),
+                "probe_sense": specification.get("probe_sense", ""),
+                "weighted_optimum_reference": payload.get("weighted_optimum_reference"),
+                "continuity_optimum_reference": payload.get("continuity_optimum_reference"),
                 "method": specification["method"],
                 "objective_mode": payload.get("objective_mode"),
                 "objective_policy": payload.get("objective_policy"),
@@ -229,6 +236,7 @@ def backend_agreement(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
             key = (
                 row["instance_sha256"], row["method"], row["delta"],
                 row["wc"], row["wo"], row["soft_coverage"],
+                row.get("continuity_slack", 0), row.get("probe_objective", ""), row.get("probe_sense", ""),
             )
             groups[key].append(row)
     output = []
@@ -240,6 +248,14 @@ def backend_agreement(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
             for row in group
         }
         scores = {row["weighted_reference_score"] for row in group}
+        if key[1] == "weighted-face":
+            certified = {(row.get("weighted_optimum_reference"), row.get(key[7])) for row in group}
+        elif key[1] == "continuity-budget":
+            certified = {(row.get("continuity_optimum_reference"), row["overtime"], row["similarity"]) for row in group}
+        elif key[1] == "weighted":
+            certified = scores
+        else:
+            certified = vectors
         output.append(
             {
                 "instance_sha256": key[0],
@@ -249,7 +265,13 @@ def backend_agreement(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
                 "wc": key[3],
                 "wo": key[4],
                 "soft_coverage": key[5],
+                "continuity_slack": key[6],
+                "probe_objective": key[7],
+                "probe_sense": key[8],
+                "probe_value_agreement": (len({row.get(key[7]) for row in group}) == 1
+                                          if key[1] == "weighted-face" else None),
                 "backends": " | ".join(sorted({row["backend"] for row in group})),
+                "certified_objective_agreement": len(certified) == 1,
                 "objective_vector_agreement": len(vectors) == 1,
                 "weighted_score_agreement": len(scores) == 1,
                 "vectors": " | ".join(str(item) for item in sorted(vectors, key=str)),
@@ -278,6 +300,9 @@ def collect(result_dir: Path) -> dict[str, Any]:
         "runs": len(rows),
         "summary_groups": len(summaries),
         "paired_backend_rows": len(agreements),
+        "certified_objective_disagreements": sum(
+            item["certified_objective_agreement"] is False for item in agreements
+        ),
         "objective_vector_disagreements": sum(
             item["objective_vector_agreement"] is False for item in agreements
         ),

@@ -818,3 +818,34 @@ def test_cpp_rejects_unknown_symmetry_config() -> None:
     )
     assert completed.returncode != 0
     assert "unsupported symmetry-breaking configuration" in completed.stderr
+
+
+@pytest.mark.parametrize("cardinality", ["sorting-network", "totalizer"])
+@pytest.mark.parametrize("method", ["lex-cos", "lex-overtime", "lex-continuity"])
+@pytest.mark.parametrize("instance,extra", [
+    (LEX_COS_TIE_INSTANCE, ()),
+    (SYMMETRY_PARTIAL_INSTANCE, ("--soft-coverage",)),
+])
+def test_zero_continuity_local_preserves_objective_policy(cardinality, method, instance, extra):
+    common = ("--cardinality-encoding", cardinality, *extra)
+    original = _run_instance(instance, method, *common)
+    local = _run_instance(instance, method, *common, "--zero-continuity-local")
+    assert original["status"] == local["status"] == "OPTIMUM"
+    assert local["zero_continuity_local"] is True
+    assert original["zero_continuity_local"] is False
+    assert local["metrics"]["verified"] is True
+    assert tuple(local["metrics"][k] for k in ("coverage","continuity","overtime","similarity")) == tuple(original["metrics"][k] for k in ("coverage","continuity","overtime","similarity"))
+
+
+def test_local_continuity_falls_back_when_optimum_is_positive(tmp_path):
+    from dataclasses import replace
+    from hcorap.io import read_instance, write_instance
+    instance = replace(read_instance(INSTANCE), normal_hours=(1, 1), extra_hours=(0, 0))
+    path = tmp_path / "forced_split.txt"
+    write_instance(instance, path)
+    original = _run_instance(path, "lex-cos")
+    local = _run_instance(path, "lex-cos", "--zero-continuity-local")
+    assert original["status"] == local["status"] == "OPTIMUM"
+    assert original["metrics"]["continuity"] == local["metrics"]["continuity"] == 1
+    assert original["metrics"] == local["metrics"]
+    assert [s["hard_clauses"] for s in original["stages"]] == [s["hard_clauses"] for s in local["stages"]]

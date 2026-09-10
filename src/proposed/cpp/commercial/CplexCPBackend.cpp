@@ -62,6 +62,9 @@ static int addCPBoundsAndObjective(
     CPExpressions &expressions
 ) {
     int constraints = 0;
+    if (request.bounds.fixWeighted || request.objective == COMMERCIAL_MAX_CONTINUITY ||
+        request.objective == COMMERCIAL_MAX_OVERTIME)
+        throw runtime_error("diagnostic objectives require a MIP or reference backend");
     if (request.bounds.minCoverage >= 0) {
         model.add(expressions.coverage >= request.bounds.minCoverage);
         ++constraints;

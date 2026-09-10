@@ -1,0 +1,44 @@
+{
+  "binary": "../../bin/release/hcorap_multi",
+  "solver": "${EVALMAXSAT_BIN}",
+  "result_dir": "../results/research_depth_zero_continuity_local_check",
+  "instances": [
+    "../../instances/paperInstances/TXT_10-25_4-5_U30/instance_30_10_4_1.txt"
+  ],
+  "expected_instances": 1,
+  "expected_runs": 4,
+  "timeout_seconds": 120,
+  "solver_shutdown_grace_seconds": 5,
+  "hard_grace_seconds": 60,
+  "workers": 1,
+  "order_seed": 20260909,
+  "order_strategy": "blocked-instance",
+  "configurations": [
+    {
+      "cardinality": "sorting-network",
+      "implied": "none",
+      "symmetry": "none"
+    },
+    {
+      "cardinality": "totalizer",
+      "implied": "none",
+      "symmetry": "none"
+    }
+  ],
+  "runs": [
+    {
+      "variant": "zero-continuity-global",
+      "method": "lex-cos",
+      "align_evalmaxsat_tct": true,
+      "print_assignments": true,
+      "zero_continuity_local": false
+    },
+    {
+      "variant": "zero-continuity-local",
+      "method": "lex-cos",
+      "align_evalmaxsat_tct": true,
+      "print_assignments": true,
+      "zero_continuity_local": true
+    }
+  ]
+}

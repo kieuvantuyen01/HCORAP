@@ -26,7 +26,7 @@ RAW_COLUMNS = (
     "seed", "load_profile", "rho", "variant", "method", "objective_mode",
     "objective_policy", "delta", "wc", "wo", "soft_coverage", "cardinality", "implied",
     "symmetry", "unit_objective_bound_encoding",
-    "weighted_similarity_bound_encoding", "align_evalmaxsat_tct", "stage3_incumbent_bound",
+    "weighted_similarity_bound_encoding", "align_evalmaxsat_tct", "stage3_incumbent_bound", "zero_continuity_local",
     "lexicographic_implementation", "status", "exit_code", "hard_timeout", "validation_errors",
     "elapsed_seconds", "wall_seconds", "timeout_seconds", "peak_rss_mb",
     "coverage", "similarity", "continuity", "overtime", "overtime_cost",
@@ -44,7 +44,7 @@ RAW_COLUMNS = (
 METHOD_GROUP = (
     "variant", "method", "objective_policy", "delta", "wc", "wo", "soft_coverage",
     "cardinality", "implied", "symmetry", "align_evalmaxsat_tct",
-    "stage3_incumbent_bound", "lexicographic_implementation", "load_profile",
+    "stage3_incumbent_bound", "zero_continuity_local", "lexicographic_implementation", "load_profile",
 )
 CLASS_GROUP = METHOD_GROUP + ("users", "agents", "visits")
 EPSILON_POINT_COLUMNS = RAW_COLUMNS + (
@@ -170,6 +170,7 @@ def flatten(result_dir: Path) -> list[dict[str, Any]]:
             "align_evalmaxsat_tct": specification.get(
                 "align_evalmaxsat_tct", False
             ),
+            "zero_continuity_local": specification.get("zero_continuity_local", False),
             "stage3_incumbent_bound": specification.get(
                 "stage3_incumbent_bound", False
             ),

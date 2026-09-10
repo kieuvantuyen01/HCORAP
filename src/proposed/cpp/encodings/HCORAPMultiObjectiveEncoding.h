@@ -47,6 +47,7 @@ class HCORAPMultiObjectiveEncoding : public Encoding {
     HCORAPObjectiveKind objective;
     HCORAPObjectiveBounds bounds;
     bool fullCoverage;
+    bool zeroContinuityLocal;
     int continuityWeight;
     int overtimeWeight;
     HCORAPCardinalityEncoding cardinalityEncoding;
@@ -127,7 +128,8 @@ public:
         HCORAPCardinalityEncoding cardinalityEncoding,
         HCORAPImpliedConfig impliedConfig,
         HCORAPSymmetryBreaking symmetryBreaking,
-        const HCORAPObjectiveBounds &bounds
+        const HCORAPObjectiveBounds &bounds,
+        bool zeroContinuityLocal = false
     );
 
     SMTFormula *encode(int lb = INT_MIN, int ub = INT_MAX);

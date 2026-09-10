@@ -273,6 +273,10 @@ def _build_tasks(
                         requested.get("stage3_incumbent_bound", False)
                     ),
                 }
+                if "zero_continuity_local" in requested:
+                    if not isinstance(requested["zero_continuity_local"], bool):
+                        raise ValueError("zero_continuity_local must be boolean")
+                    specification["zero_continuity_local"] = requested["zero_continuity_local"]
                 identity = {
                     "instance_sha256": instance_sha,
                     "specification": specification,
@@ -407,6 +411,8 @@ def _run_task(
         command.extend(["--delta", specification["delta"]])
     if specification["align_evalmaxsat_tct"]:
         command.append("--align-evalmaxsat-tct")
+    if specification.get("zero_continuity_local", False):
+        command.append("--zero-continuity-local")
     if specification["stage3_incumbent_bound"]:
         command.append("--stage3-incumbent-bound")
     if specification["soft_coverage"]:
@@ -456,6 +462,8 @@ def _run_task(
                 "align_evalmaxsat_tct"
             ]:
                 validation_errors.append("align_evalmaxsat_tct mismatch")
+            if payload.get("zero_continuity_local", False) is not specification.get("zero_continuity_local", False):
+                validation_errors.append("zero_continuity_local mismatch")
             if payload.get("stage3_incumbent_bound") is not specification[
                 "stage3_incumbent_bound"
             ]:

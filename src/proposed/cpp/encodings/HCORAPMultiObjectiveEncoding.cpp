@@ -26,9 +26,11 @@ HCORAPMultiObjectiveEncoding::HCORAPMultiObjectiveEncoding(
     HCORAPCardinalityEncoding cardinalityEncoding,
     HCORAPImpliedConfig impliedConfig,
     HCORAPSymmetryBreaking symmetryBreaking,
-    const HCORAPObjectiveBounds &bounds
+    const HCORAPObjectiveBounds &bounds,
+    bool zeroContinuityLocal
 ) : instance(instance), objective(objective), bounds(bounds),
-    fullCoverage(fullCoverage), continuityWeight(continuityWeight),
+    fullCoverage(fullCoverage), zeroContinuityLocal(zeroContinuityLocal),
+    continuityWeight(continuityWeight),
     overtimeWeight(overtimeWeight), cardinalityEncoding(cardinalityEncoding),
     impliedConfig(impliedConfig), symmetryBreaking(symmetryBreaking) {}
 
@@ -788,7 +790,16 @@ void HCORAPMultiObjectiveEncoding::addBounds(SMTFormula *formula) {
         }
     }
 
-    if (bounds.maxContinuity >= 0) {
+    if (zeroContinuityLocal && bounds.maxContinuity == 0) {
+        // Each active sequence uses at least one agent; inactive sequences use
+        // none. CONT=0 is therefore exactly one local AMO per sequence.
+        for (int sequence = 0; sequence < static_cast<int>(instance->SEQ.size()); ++sequence) {
+            values.clear();
+            for (int agent = 0; agent < instance->A; ++agent)
+                values.push_back(sequenceAgent[agent][sequence]);
+            addAtMostOne(formula, values);
+        }
+    } else if (bounds.maxContinuity >= 0) {
         values.clear();
         for (int sequence = 0; sequence < static_cast<int>(instance->SEQ.size()); ++sequence) {
             for (int agent = 0; agent < instance->A; ++agent) {

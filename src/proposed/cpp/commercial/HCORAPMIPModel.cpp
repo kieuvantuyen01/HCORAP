@@ -379,6 +379,15 @@ HCORAPMIPModel buildHCORAPMIPModel(const HCORAPStageRequest &request) {
         );
     }
 
+    if (request.bounds.fixWeighted) {
+        HCORAPLinearExpression score;
+        score.add(model.similarity, 1);
+        score.add(model.continuity, -request.bounds.weightedContinuityCoefficient);
+        score.add(model.overtime, -request.bounds.weightedOvertimeCoefficient);
+        addExpressionBound(model, "bound_weighted_score", score,
+            HCORAP_LINEAR_EQ, request.bounds.weightedScore);
+    }
+
     switch (request.objective) {
         case COMMERCIAL_COVERAGE:
             model.objective = model.coverage;
@@ -388,13 +397,15 @@ HCORAPMIPModel buildHCORAPMIPModel(const HCORAPStageRequest &request) {
             model.objective = model.similarity;
             model.maximize = true;
             break;
+        case COMMERCIAL_MAX_CONTINUITY:
         case COMMERCIAL_CONTINUITY:
             model.objective = model.continuity;
-            model.maximize = false;
+            model.maximize = request.objective == COMMERCIAL_MAX_CONTINUITY;
             break;
+        case COMMERCIAL_MAX_OVERTIME:
         case COMMERCIAL_OVERTIME:
             model.objective = model.overtime;
-            model.maximize = false;
+            model.maximize = request.objective == COMMERCIAL_MAX_OVERTIME;
             break;
         case COMMERCIAL_WEIGHTED:
         default:
