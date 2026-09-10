@@ -62,6 +62,10 @@ def analyze(directory: Path, output: Path):
                 face['cos_continuity']=cos['metrics']['continuity']
                 face['cos_overtime']=cos['metrics']['overtime']
                 face['all_weighted_optima_have_worse_continuity']=face['continuity_min']>face['cos_continuity']
+                face['all_weighted_optima_have_worse_overtime']=face['overtime_min']>face['cos_overtime']
+                face['all_weighted_optima_have_worse_both']=face['all_weighted_optima_have_worse_continuity'] and face['all_weighted_optima_have_worse_overtime']
+            face['weighted_face_has_continuity_variation']=face['continuity_min']<face['continuity_max']
+            face['weighted_face_has_overtime_variation']=face['overtime_min']<face['overtime_max']
         faces.append(face)
         for cell,(record,p) in sorted(cells.items(),key=lambda item:str(item[0])):
             if cell[0]!='continuity-budget':continue
@@ -86,10 +90,17 @@ def analyze(directory: Path, output: Path):
                            'similarity_change':right['similarity']-left['similarity']})
     write_csv(output/'weighted_face_intervals.csv',faces);write_csv(output/'continuity_budget_curves.csv',curves)
     write_csv(output/'continuity_budget_changes.csv',checks)
+    budget_overtime_instances={r['instance_sha256'] for r in checks if r['overtime_reduction']>0}
     summary={'source':str(directory),'status_counts':dict(status),'blocks':len(blocks),
              'complete_face_blocks':sum(r['all_four_probes_optimum'] for r in faces),
              'certified_unavoidable_continuity_losses':sum(r.get('all_weighted_optima_have_worse_continuity',False) for r in faces),
+             'certified_unavoidable_overtime_losses':sum(r.get('all_weighted_optima_have_worse_overtime',False) for r in faces),
+             'certified_unavoidable_both_losses':sum(r.get('all_weighted_optima_have_worse_both',False) for r in faces),
+             'weighted_faces_with_continuity_variation':sum(r.get('weighted_face_has_continuity_variation',False) for r in faces),
+             'weighted_faces_with_overtime_variation':sum(r.get('weighted_face_has_overtime_variation',False) for r in faces),
              'verified_budget_steps':len(checks),
+             'budget_instances_with_overtime_reduction':len(budget_overtime_instances),
+             'total_overtime_reduction_across_adjacent_budgets':sum(r['overtime_reduction'] for r in checks),
              'all_runs_optimum':bool(status) and set(status)=={'OPTIMUM'},
              'interpretation':'CONT and OT intervals are separate extrema; endpoints need not occur in the same schedule. Incomplete or timed-out probes support no optimal-face claim. Budget k limits additional aggregate continuity penalty, not the number of affected patients.'}
     write_json(output/'policy_diagnostics_validation.json',summary);return summary

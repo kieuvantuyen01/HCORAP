@@ -1,5 +1,18 @@
 **Triển khai tăng chiều sâu nghiên cứu HCORAP — 09/09/2026**
 
+**Cập nhật pilot 10/09/2026.** Đã rà soát đủ 960/960 tác vụ trong
+`results_research_depth_pilot`: 896 lần commercial đều OPTIMUM; MaxSAT có 60
+OPTIMUM và 4 UNSATISFIABLE thuộc cùng một instance bất khả thi, không có lỗi
+solver hoặc timeout. Gurobi và CPLEX khớp ở 160/160 ô diagnostics. Kết quả đủ
+để mở rộng diagnostics, weights và load lên full 48 instance; MaxSAT được giữ
+làm ablation. Báo cáo định lượng và câu chữ claim-safe nằm tại
+[`RESEARCH_DEPTH_PILOT_REVIEW_20260910.md`](RESEARCH_DEPTH_PILOT_REVIEW_20260910.md).
+
+Trước khi công bố hoặc chạy full, cần đẩy commit được ghi trong metadata pilot
+`78d5a650a747824eb944352494b3d6ec3716e797` lên GitHub. Commit này hiện chưa có
+trên `origin`, dù các SHA-256 cấu hình đều khớp. Runner đã được tăng cường để
+từ chối measured run nếu commit dự kiến chưa nằm trên một branch của remote.
+
 Đã bổ sung công cụ để trả lời ba câu hỏi: khác biệt giữa COS và Weighted có còn tồn tại khi xét toàn bộ tập nghiệm đồng tối ưu; cần đánh đổi bao nhiêu CONT để giảm OT; và lợi ích của COS thay đổi thế nào khi năng lực giờ làm thay đổi. Phần MaxSAT kiểm tra một hệ quả cấu trúc của CONT = 0. Chưa đưa kết luận thực nghiệm mới vào bản thảo khi chưa có kết quả được chứng nhận.
 
 **Đã chạy và tận dụng được gì**

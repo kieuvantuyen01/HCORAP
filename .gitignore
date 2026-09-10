@@ -90,3 +90,4 @@ experiments/results/*
 
 # Reproducible capacity variants (generator and manifest checks are tracked)
 /instances/research_depth_load_sweep/
+/results_research_depth_*/

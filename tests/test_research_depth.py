@@ -173,6 +173,10 @@ def test_diagnostic_analysis_rejects_tampered_anchor(tmp_path):
     result=analyze(tmp_path/'result',tmp_path/'analysis')
     assert result['complete_face_blocks']==1
     assert result['verified_budget_steps']==2
+    assert result['certified_unavoidable_both_losses'] <= result['certified_unavoidable_continuity_losses']
+    assert result['certified_unavoidable_both_losses'] <= result['certified_unavoidable_overtime_losses']
+    assert result['weighted_faces_with_continuity_variation'] <= result['complete_face_blocks']
+    assert result['weighted_faces_with_overtime_variation'] <= result['complete_face_blocks']
     for path in (tmp_path/'result/raw').glob('*.json'):
         payload=json.loads(path.read_text())
         if payload['method']=='weighted-face':
@@ -206,4 +210,8 @@ def test_zero_continuity_collector_preserves_failure_without_speedup(tmp_path):
     result=analyze(tmp_path,tmp_path/'analysis')
     assert result['both_optimum_pairs']==0
     assert result['status_counts']=={'ERROR':2}
+    assert result['paired_runtime']['totalizer']['pairs']==0
+    assert result['paired_runtime']['totalizer']['median_global_over_local_elapsed'] is None
+    assert result['formula_reduction']['totalizer']['stage_2_median_global_over_local_hard_clauses']==5
+    assert result['formula_reduction']['totalizer']['stage_3_median_global_over_local_hard_clauses'] is None
     assert 'global_over_local_elapsed' not in (tmp_path/'analysis/zero_continuity_pairs.csv').read_text()

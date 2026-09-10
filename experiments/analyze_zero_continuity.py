@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 from collections import defaultdict
 from pathlib import Path
+import statistics
 import sys
 
 sys.path.insert(0,str(Path(__file__).resolve().parent))
@@ -42,9 +43,28 @@ def analyze(directory: Path,output: Path):
                 r[f'global_{metric}']=a.get(metric);r[f'local_{metric}']=b.get(metric)
             stage_rows.append(r)
     write_csv(output/'zero_continuity_pairs.csv',rows);write_csv(output/'zero_continuity_stages.csv',stage_rows)
+    paired_runtime={}
+    formula_reduction={}
+    for encoding in sorted({r['encoding'] for r in rows}):
+        decided=[r for r in rows if r['encoding']==encoding and r['both_optimum']]
+        ratios=[r['global_over_local_elapsed'] for r in decided]
+        paired_runtime[encoding]={
+            'pairs':len(ratios),
+            'local_faster_pairs':sum(ratio>1 for ratio in ratios),
+            'median_global_over_local_elapsed':statistics.median(ratios) if ratios else None,
+        }
+        formula_reduction[encoding]={}
+        for stage in (2,3):
+            reached=[r for r in stage_rows if r['encoding']==encoding and r['stage']==stage
+                     and r['global_stage_status']=='OPTIMUM' and r['local_stage_status']=='OPTIMUM'
+                     and r.get('global_hard_clauses') is not None and r.get('local_hard_clauses')]
+            ratios=[r['global_hard_clauses']/r['local_hard_clauses'] for r in reached]
+            formula_reduction[encoding][f'stage_{stage}_median_global_over_local_hard_clauses']=statistics.median(ratios) if ratios else None
     summary={'source':str(directory),'status_counts':dict(statuses),'paired_instances_encodings':len(rows),
              'both_optimum_pairs':sum(r['both_optimum'] for r in rows),
              'solver_errors':sum(count for name,count in statuses.items() if name not in {'OPTIMUM','UNSAT','UNSATISFIABLE','TIMEOUT','TIMEOUT_FEASIBLE'}),
+             'paired_runtime':paired_runtime,
+             'formula_reduction':formula_reduction,
              'interpretation':'Elapsed-time ratios require both complete optimal solves. Formula sizes can still diagnose the encoding when a later solver stage fails; these are not end-to-end speedups.'}
     write_json(output/'zero_continuity_analysis.json',summary);return summary
 

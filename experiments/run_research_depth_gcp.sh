@@ -8,6 +8,7 @@ cd "$PROJECT_ROOT"
 BUILD_JOBS=${HCORAP_BUILD_JOBS:-8}
 CPU_CORE=${HCORAP_CPU_CORE:-}
 EXPECTED_VCPUS=${HCORAP_EXPECTED_VCPUS:-8}
+PROVENANCE_REMOTE=${HCORAP_PROVENANCE_REMOTE:-origin}
 CORRECTED_SOURCE_RESULTS=${HCORAP_CORRECTED_SOURCE_RESULTS:-results_v2/gcp_commercial_corrected_primary}
 LOAD_MANIFEST=instances/research_depth_load_sweep/load_sweep_manifest.json
 BACKUP_ROOT=${HCORAP_BACKUP_DIR:-}
@@ -67,6 +68,7 @@ Optional:
   HCORAP_CPU_CORE=<allowed logical CPU>   default: first allowed CPU
   HCORAP_BUILD_JOBS=<positive integer>    default: 8
   HCORAP_EXPECTED_VCPUS=<positive integer> default: 8
+  HCORAP_PROVENANCE_REMOTE=<git remote>     default: origin
   HCORAP_BACKUP_DIR=<external directory>  checkpoint after each component
 
 Recommended GCP invocation:
@@ -109,7 +111,7 @@ check_machine() {
     [ "$(uname -s)" = Linux ] || die "Measured experiments require Linux."
     [ "$(uname -m)" = x86_64 ] || die "Measured experiments require x86_64."
     for name in python3 git make sha256sum taskset getconf awk df find wc \
-        realpath mktemp; do
+        realpath mktemp grep; do
         require_command "$name"
     done
     require_positive_integer "$BUILD_JOBS" HCORAP_BUILD_JOBS
@@ -175,6 +177,13 @@ check_measured_source() {
         die "Repository is at $observed, not expected commit $expected."
     [ -z "$(git status --porcelain)" ] || \
         die "Refusing measured runs from a dirty worktree. Commit the implementation first."
+    git remote get-url "$PROVENANCE_REMOTE" >/dev/null 2>&1 || \
+        die "Unknown provenance remote: $PROVENANCE_REMOTE"
+    git fetch --quiet "$PROVENANCE_REMOTE"
+    if ! git branch -r --contains "$expected" --format='%(refname:short)' | \
+            grep -q "^${PROVENANCE_REMOTE}/"; then
+        die "Commit $expected is not reachable from a branch on $PROVENANCE_REMOTE. Push it before collecting measured results."
+    fi
 }
 
 check_pilot_authorization() {
