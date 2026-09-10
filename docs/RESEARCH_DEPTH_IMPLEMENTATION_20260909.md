@@ -8,10 +8,13 @@ solver hoặc timeout. Gurobi và CPLEX khớp ở 160/160 ô diagnostics. Kết
 làm ablation. Báo cáo định lượng và câu chữ claim-safe nằm tại
 [`RESEARCH_DEPTH_PILOT_REVIEW_20260910.md`](RESEARCH_DEPTH_PILOT_REVIEW_20260910.md).
 
-Trước khi công bố hoặc chạy full, cần đẩy commit được ghi trong metadata pilot
-`78d5a650a747824eb944352494b3d6ec3716e797` lên GitHub. Commit này hiện chưa có
-trên `origin`, dù các SHA-256 cấu hình đều khớp. Runner đã được tăng cường để
-từ chối measured run nếu commit dự kiến chưa nằm trên một branch của remote.
+Commit được ghi trong metadata pilot
+`78d5a650a747824eb944352494b3d6ec3716e797` hiện chưa có trên `origin`, dù các
+SHA-256 cấu hình đều khớp. Theo quyết định ngày 10/09/2026, khác biệt này được
+xem là không ảnh hưởng đến kết quả và không chặn full run. Pilot chỉ dùng để
+chọn thiết kế; full run phải dùng một commit mới có thể truy xuất trên GitHub.
+Runner vẫn từ chối measured run nếu commit của chính full run chưa nằm trên một
+branch của remote.
 
 Đã bổ sung công cụ để trả lời ba câu hỏi: khác biệt giữa COS và Weighted có còn tồn tại khi xét toàn bộ tập nghiệm đồng tối ưu; cần đánh đổi bao nhiêu CONT để giảm OT; và lợi ích của COS thay đổi thế nào khi năng lực giờ làm thay đổi. Phần MaxSAT kiểm tra một hệ quả cấu trúc của CONT = 0. Chưa đưa kết luận thực nghiệm mới vào bản thảo khi chưa có kết quả được chứng nhận.
 

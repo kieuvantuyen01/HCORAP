@@ -11,12 +11,13 @@ Các kết luận dưới đây vẫn là kết quả pilot trên 16 instance đ
 đích. Chúng chưa thay thế kết quả full và chưa nên được trình bày như ước lượng
 cho toàn bộ HCORAP-LC.
 
-Có một điểm chặn về provenance trước khi số liệu được dùng trong bản nộp. Mọi
-`environment.json` ghi commit
+Có một giới hạn về provenance cần ghi nhận. Mọi `environment.json` ghi commit
 `78d5a650a747824eb944352494b3d6ec3716e797`, với worktree sạch, nhưng commit này
 chưa tồn tại trong clone hiện tại hoặc trên `origin`. Cấu hình pilot hiện tại
-khớp đúng tất cả SHA-256 đã ghi trong kết quả. Vì vậy dữ liệu đủ để đánh giá nội
-bộ, nhưng mã nguồn đã sinh binary chưa thể được người khác truy xuất từ GitHub.
+khớp đúng tất cả SHA-256 đã ghi trong kết quả. Theo quyết định ngày 10/09/2026,
+khác biệt commit được xem là không ảnh hưởng đến kết quả và không chặn lượt
+full. Pilot chỉ dùng để chọn thiết kế; các con số đưa vào bài sẽ lấy từ full run
+ở một commit có thể truy xuất trên GitHub.
 
 ## Tính toàn vẹn của dữ liệu
 
@@ -140,22 +141,25 @@ Kết quả này đủ cho một ablation giải thích hiệu quả mô hình h
 
 ## Cách dùng pilot để chạy full
 
-1. Lưu commit đã sinh dữ liệu lên GitHub từ VM trước. Có thể dùng:
+1. Chuyển VM sang phiên bản mới nhất đã có trên GitHub và cố định commit cho
+   toàn bộ full run:
 
    ```bash
-   git status --short
-   git show --stat 78d5a650a747824eb944352494b3d6ec3716e797
-   git push origin \
-     78d5a650a747824eb944352494b3d6ec3716e797:refs/heads/research-depth-pilot-source
-   git tag -a research-depth-pilot-20260910 \
-     78d5a650a747824eb944352494b3d6ec3716e797 \
-     -m "Source used for the research-depth pilot"
-   git push origin refs/tags/research-depth-pilot-20260910
+   git fetch origin
+   git switch --detach origin/main
+   export HCORAP_EXPECTED_COMMIT=$(git rev-parse HEAD)
    ```
 
-2. Không chạy lại pilot. Chạy full diagnostics, weights và load bằng một commit
-   đã push. Ba campaign full có 2.208 run; từ thời gian pilot, phần commercial
-   dự kiến chỉ cần khoảng 17 phút solver-time tuần tự, chưa kể build và I/O.
+2. Không chạy lại pilot. Chạy full diagnostics, weights và load. Ba campaign
+   full có 2.208 run; từ thời gian pilot, phần commercial dự kiến chỉ cần khoảng
+   17 phút solver-time tuần tự, chưa kể build và I/O:
+
+   ```bash
+   experiments/run_research_depth_gcp.sh preflight
+   export CONFIRM_RESEARCH_DEPTH_FULL=YES
+   nohup experiments/run_research_depth_gcp.sh full \
+     > research-depth-full.log 2>&1 &
+   ```
 
 3. Không mở rộng MaxSAT trong lượt full mặc định. Nếu cần claim hiệu năng mã
    hóa, thêm seed 2–3 và dùng instance family làm đơn vị phân tích; pilot hiện
@@ -164,6 +168,13 @@ Kết quả này đủ cho một ablation giải thích hiệu quả mô hình h
 4. Sau full, dùng 48 instance làm bảng kết quả chính. Pilot đã chọn có chủ đích
    và chứa ba conflict đã biết, nên không dùng tỷ lệ 10/16, 15/16 hoặc 3/16 làm
    tỷ lệ đại diện cuối cùng.
+
+Không cần chạy thêm CPLEX ở full: audit hiện tại đã phủ 16 lớp kích thước và
+khớp Gurobi ở 160/160 ô. Không cần lặp nhiều solver seed vì các run dùng một
+luồng, gap bằng 0 và chỉ lấy kết quả đã chứng minh tối ưu; seed lặp sẽ đo biến
+động runtime chứ không tăng bằng chứng về vector mục tiêu. Chỉ cân nhắc một sweep
+năng lực mịn quanh `rho=0.85` sau khi xem full, nếu mục tiêu của bài là xác định
+chính xác vùng chuyển tiếp COS--OCS.
 
 ## Câu chữ có thể dùng sau khi có full result
 
