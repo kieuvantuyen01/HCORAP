@@ -155,11 +155,14 @@ Kết quả này đủ cho một ablation giải thích hiệu quả mô hình h
    17 phút solver-time tuần tự, chưa kể build và I/O:
 
    ```bash
-   experiments/run_research_depth_gcp.sh preflight
-   export CONFIRM_RESEARCH_DEPTH_FULL=YES
-   nohup experiments/run_research_depth_gcp.sh full \
+   nohup experiments/launch_research_depth_full_gcp.sh \
+     /path/to/research_depth_gcp.env \
      > research-depth-full.log 2>&1 &
    ```
+
+   Launcher tự cố định `HCORAP_EXPECTED_COMMIT` ở HEAD, đặt xác nhận full và gọi
+   runner có cơ chế resume. Nếu các biến môi trường đã được export, bỏ đối số
+   file môi trường.
 
 3. Không mở rộng MaxSAT trong lượt full mặc định. Nếu cần claim hiệu năng mã
    hóa, thêm seed 2–3 và dùng instance family làm đơn vị phân tích; pilot hiện

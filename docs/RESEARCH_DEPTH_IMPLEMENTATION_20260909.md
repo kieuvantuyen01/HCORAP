@@ -103,6 +103,20 @@ nohup experiments/run_research_depth_gcp.sh full \
   > research-depth-full.log 2>&1 &
 ```
 
+Sau khi pilot đã được duyệt, có thể dùng launcher ngắn hơn. Launcher tự lấy
+commit hiện tại làm commit đo, đặt xác nhận full và gọi runner có cơ chế resume:
+
+```bash
+nohup experiments/launch_research_depth_full_gcp.sh \
+  /path/to/research_depth_gcp.env \
+  > research-depth-full.log 2>&1 &
+```
+
+Nếu các biến môi trường đã được `export`, bỏ đối số file môi trường. Không cần
+gọi `preflight` riêng ngay trước lệnh này: pha `full` tự kiểm tra máy, source,
+input, binary, license và ma trận campaign. Không có campaign CPLEX hoặc MaxSAT
+bổ sung trong launcher.
+
 `all` chạy preflight, pilot rồi full và đòi cả hai biến xác nhận. Các pha
 `analyze-pilot` và `analyze-full` không gọi solver. Script từ chối measured run
 nếu worktree bẩn hoặc HEAD khác `HCORAP_EXPECTED_COMMIT`; vì vậy cần commit/tag
