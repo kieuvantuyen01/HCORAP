@@ -1,7 +1,7 @@
 # HCORAP exact multi-criteria optimization
 
-This repository accompanies **Exact Multi-Criteria Optimization for Home-Care
-Resource Allocation with MaxSAT**. It contains the exact MaxSAT and commercial
+This repository accompanies **Continuity First in Home-Care Resource Allocation:
+An Ordered Objective and Its Trade-offs**. It contains the exact MaxSAT and commercial
 solver implementations, the benchmark instances used in the paper, the fixed
 experiment configurations, and a compact snapshot of the reported results.
 

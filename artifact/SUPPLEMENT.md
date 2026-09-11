@@ -1,7 +1,7 @@
 # Experimental supplement: exact multi-criteria HCORAP
 
-This supplement accompanies *Exact Multi-Criteria Optimization for Home-Care
-Resource Allocation with MaxSAT*. It contains objective derivations,
+This supplement accompanies *Continuity First in Home-Care Resource Allocation:
+An Ordered Objective and Its Trade-offs*. It contains objective derivations,
 implementation details, supplementary results, and reproduction instructions.
 The manuscript presents the allocation model, the CONT → OT → SIM policy,
 the experimental design, and the main findings.
@@ -115,6 +115,30 @@ within each policy. Peak RSS measures physical memory use. The
 [source table](results/encoding/policy_encoding_summary.csv) retains
 all counts and runtime summaries.
 
+### Counting constraints between stages
+
+The sequential MaxSAT driver preserves a proved continuity optimum $C^*$
+by imposing $\mathrm{CONT}\leq C^*$, and then preserves the proved overtime
+optimum $O^*$ by imposing $\mathrm{OT}\leq O^*$. Since no smaller value is
+feasible under the preceding restrictions, these upper bounds retain the
+optimal values exactly. The driver advances only after an optimal stage.
+
+In `HCORAPMultiObjectiveEncoding::addBounds`, the continuity bound counts
+caregiver--group indicators across all groups, with an adjustment for group
+activity; the overtime bound counts excess-workload thresholds across all
+caregivers. These aggregate counters supplement the local counts used by
+Weighted. Each uses the selected sorting-network or Totalizer encoding.
+
+The implemented Totalizer builds all thresholds and encodes both directions
+of each merge, so an output is true exactly when its threshold is reached.
+Its merge loops combine thresholds from both children, generating a quadratic
+number of clauses in the input count for a full tree. Large aggregate
+counters can therefore add substantially more clauses than local counters.
+This provides a structural explanation for the larger clause expansion
+observed under LEX-COS. Attributing runtime differences to individual counters
+would additionally require stage-level measurements. The reported ratios
+describe this full-threshold implementation and the tested formulations.
+
 ### Runtime variation by instance size
 
 The [size breakdown](results/encoding/runtime_by_size.csv) reports
@@ -174,6 +198,79 @@ optimal face was examined at the published setting. Detailed
 [weight results](results/weights/weight_optimum_runs.csv) and
 [instance summaries](results/weights/weight_instance_stability.csv)
 support these comparisons.
+
+Increasing both penalty weights together strengthens CONT and OT relative
+to SIM while retaining their relative weighting. Comparing the Weighted
+score of each returned vector with that of LEX-COS separates different
+optimal scores from ties:
+
+| Weights (wc, wo) | Returned vector matches COS | Different vector, same optimal score as COS | Different vector, higher Weighted score than COS |
+|---|---:|---:|---:|
+| (1,1) | 0 | 0 | 48 |
+| (1,4) | 0 | 3 | 45 |
+| (1,8) | 0 | 3 | 45 |
+| (4,1) | 0 | 2 | 46 |
+| (4,4) | 8 | 2 | 38 |
+| (4,8) | 10 | 0 | 38 |
+| (8,1) | 0 | 2 | 46 |
+| (8,4) | 17 | 11 | 20 |
+| (8,8) | 25 | 6 | 17 |
+
+At (8,8), the COS vector attains the optimal Weighted score in 31 instances;
+the returned vector matches COS in 25 and differs in six tied cases.
+For example, `instance_u30_a15_v5_seed1003_critical.txt` has COS vector
+(CONT, OT, SIM) = (0, 0, 491) and returned Weighted vector (1, 0, 499).
+Both score 491. These comparisons evaluate recorded feasible vectors
+against the reported optimal score; they do not enumerate all tied optima.
+At $(8,1)$, 32 returned solutions match the LEX-COS continuity value, but
+none matches its complete quality vector.
+
+The table can be reproduced from the published snapshot without solver calls.
+Run the following from the repository root:
+
+```bash
+python3 - <<'PY'
+import csv
+from collections import Counter
+from pathlib import Path
+
+root = Path('artifact/results')
+def read_rows(relative_path):
+    with (root / relative_path).open(newline='') as stream:
+        return list(csv.DictReader(stream))
+
+metrics = ('continuity', 'overtime', 'similarity')
+cos = {
+    row['instance_sha256']: tuple(int(float(row['right_' + m])) for m in metrics)
+    for row in read_rows('policy/corrected_pairwise_pairs.csv')
+    if row['comparison'] == 'weighted-to-continuity-first'
+}
+weights = read_rows('weights/weight_optimum_runs.csv')
+for wc in (1, 4, 8):
+    for wo in (1, 4, 8):
+        counts = Counter()
+        seen = set()
+        for row in weights:
+            if (int(row['wc']), int(row['wo'])) != (wc, wo):
+                continue
+            instance = row['instance_sha256']
+            assert instance not in seen
+            seen.add(instance)
+            actual = tuple(int(row[m]) for m in metrics)
+            reference = cos[instance]
+            penalty = int(row['overtime_penalty'])
+            def score(vector):
+                cont, ot, sim = vector
+                return sim - wc * cont - wo * penalty * ot
+            gap = score(actual) - score(reference)
+            assert gap >= 0
+            category = 'match' if actual == reference else ('tie' if gap == 0 else 'higher')
+            counts[category] += 1
+            counts['continuity_match'] += actual[0] == reference[0]
+        assert seen == set(cos) and len(seen) == 48
+        print((wc, wo), *(counts[k] for k in ('match', 'tie', 'higher', 'continuity_match')))
+PY
+```
 
 | Target load | Regular-capacity fraction | Weighted differs from COS (/48) | LEX-OT differs from COS (/48) |
 |---:|---:|---:|---:|

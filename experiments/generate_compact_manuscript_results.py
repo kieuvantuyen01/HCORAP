@@ -162,7 +162,7 @@ def _figure_fragments(
             r"\begin{minipage}[t]{0.32\textwidth}\centering",
             r"\begin{tikzpicture}\begin{axis}[",
             r"width=\linewidth,height=4.3cm,xmin=0,xmax=1.55,",
-            r"xtick={0.55,1.12},xticklabels={Instances,IQR \& Med.},",
+            r"xtick={0.55,1.12},xticklabels={Paired cases,Summary},",
             f"ymin={min(0, low)-0.06*span:.8f},ymax={high+0.15*span:.8f},",
             f"title={{{title}}},ylabel={{{ylabel}}},",
             r"title style={font=\small\bfseries},label style={font=\footnotesize},",
@@ -182,8 +182,8 @@ def _figure_fragments(
             policy.append(r"\hfill")
     policy.extend([
         r"\caption{Changes from Weighted to LEX-COS on 48 HCORAP-LC instances.",
-        r"Each dot represents one instance. Boxes show the middle 50\% of changes,",
-        r"central lines show medians, and whiskers show the full range.",
+        r"Dots show individual changes; boxes summarize the middle 50\%, median,",
+        r"and full range.",
         r"Panels (a) and (b) show improvements; panel (c) shows the compatibility",
         r"loss relative to Weighted. The panels use different units and scales.}",
         r"\label{fig:policy-effect}",
@@ -205,7 +205,7 @@ def _figure_fragments(
         f"xtick={ticks_str},",
         r"ytick={1,2},yticklabels={LEX-COS,Weighted},",
         r"xlabel={Runtime reduction with Totalizer (\%)},",
-        r"label style={font=\footnotesize},tick label style={font=\small},",
+        r"label style={font=\small},tick label style={font=\footnotesize},",
         r"xmajorgrids,grid style={black!8},axis line style={black!50}]",
         r"\draw[dashed,black!40,thick] (axis cs:0,0.45)--(axis cs:0,2.65);",
     ]
