@@ -889,6 +889,12 @@ def generate(
     for backend in expected_backends:
         for method in POLICIES:
             row = commercial_cells[(backend, method)]
+            optimal_runs = _integer(row["optimal_runs"])
+            infeasible_runs = _integer(row["infeasible_runs"])
+            timeout_runs = _integer(row["timeout_runs"])
+            result_counts = f"{optimal_runs} / {infeasible_runs} / {timeout_runs}"
+            if timeout_runs == 0:
+                result_counts = rf"\textbf{{{result_counts}}}"
             par2_val = float(row["par2_seconds"])
             med_val = completed_medians[(backend, method)]
             par2_str = f"{par2_val:.1f}" if par2_val >= 10.0 else f"{par2_val:.2f}"
@@ -898,10 +904,9 @@ def generate(
             if math.isclose(med_val, best_med_by_policy[method], rel_tol=1e-5, abs_tol=1e-5):
                 med_str = rf"\textbf{{{med_str}}}"
             commercial_table_lines.append(
-                "{} & {} & {} / {} / {} & {} & {}\\\\".format(
-                    backend_labels[backend], _policy_label(method),
-                    _integer(row["optimal_runs"]), _integer(row["infeasible_runs"]),
-                    _integer(row["timeout_runs"]), par2_str, med_str,
+                "{} & {} & {} & {} & {}\\\\".format(
+                    backend_labels[backend], _policy_label(method), result_counts,
+                    par2_str, med_str,
                 )
             )
         if backend != expected_backends[-1]:
@@ -911,7 +916,8 @@ def generate(
         r"\par\smallskip\begin{minipage}{\linewidth}\footnotesize",
         r"Opt, Inf, and TO denote optimal, infeasible, and timed-out runs, respectively. "
         r"EvalMaxSAT uses Totalizer. Median runtime includes proved runs; "
-        r"PAR-2 includes all 48 runs. Bold values mark the fastest runtime within each policy.",
+        r"PAR-2 includes all 48 runs. Bold result counts mark configurations without "
+        r"timeouts; bold runtimes mark the fastest solver within each policy.",
         r"\end{minipage}", r"\end{table}",
     ))
     commercial_table_path = output / "compact_commercial_table.tex"
