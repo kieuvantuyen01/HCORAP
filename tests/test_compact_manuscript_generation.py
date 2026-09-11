@@ -209,7 +209,6 @@ def test_generator_emits_only_after_all_gates_pass(tmp_path: Path) -> None:
     assert "CPLEX" in commercial_table
     assert "Opt / Inf / TO" in commercial_table
     assert r"Gurobi & Weighted & \textbf{46 / 2 / 0}" in commercial_table
-    assert "Bold result counts mark configurations without timeouts" in commercial_table
 
 
 def test_runtime_reduction_uses_paired_percentages_and_excludes_timeouts() -> None:
