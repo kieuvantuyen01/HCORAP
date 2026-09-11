@@ -161,7 +161,7 @@ def _figure_fragments(
         policy.extend([
             r"\begin{minipage}[t]{0.32\textwidth}\centering",
             r"\begin{tikzpicture}\begin{axis}[",
-            r"width=\linewidth,height=4.3cm,xmin=0,xmax=1.55,",
+            r"width=\linewidth,height=3.8cm,xmin=0,xmax=1.55,",
             r"xtick={0.55,1.12},xticklabels={Paired cases,Summary},",
             f"ymin={min(0, low)-0.06*span:.8f},ymax={high+0.15*span:.8f},",
             f"title={{{title}}},ylabel={{{ylabel}}},",
@@ -181,11 +181,9 @@ def _figure_fragments(
         if title != panels[-1][0]:
             policy.append(r"\hfill")
     policy.extend([
-        r"\caption{Changes from Weighted to LEX-COS on 48 HCORAP-LC instances.",
-        r"Dots show individual changes; boxes summarize the middle 50\%, median,",
-        r"and full range.",
-        r"Panels (a) and (b) show improvements; panel (c) shows the compatibility",
-        r"loss relative to Weighted. The panels use different units and scales.}",
+        r"\caption{Paired changes from Weighted to LEX-COS on 48 HCORAP-LC instances.",
+        r"Dots show instances; boxes show the interquartile range, median, and range.",
+        r"Panels (a)--(b) show improvements and (c) shows compatibility loss; scales differ.}",
         r"\label{fig:policy-effect}",
         r"\Description{Three distributions show fewer continuity violations, less overtime,",
         r"and the percentage loss of compatibility under the continuity-first policy.}",
@@ -200,12 +198,12 @@ def _figure_fragments(
     encoding = [r"% Generated from paired runtimes, not rounded speedup ratios.",
         r"\begin{figure}[tbp]\centering",
         r"\begin{tikzpicture}\begin{axis}[",
-        r"width=0.98\linewidth,height=3.8cm,",
+        r"width=0.96\linewidth,height=2.7cm,",
         f"xmin={x_min},xmax={x_max},ymin=0.45,ymax=2.65,",
         f"xtick={ticks_str},",
         r"ytick={1,2},yticklabels={LEX-COS,Weighted},",
         r"xlabel={Runtime reduction with Totalizer (\%)},",
-        r"label style={font=\small},tick label style={font=\footnotesize},",
+        r"label style={font=\footnotesize},tick label style={font=\footnotesize},",
         r"xmajorgrids,grid style={black!8},axis line style={black!50}]",
         r"\draw[dashed,black!40,thick] (axis cs:0,0.45)--(axis cs:0,2.65);",
     ]
@@ -214,21 +212,22 @@ def _figure_fragments(
         med_val = s['median']
         fill_left = min(0.0, med_val)
         fill_right = max(0.0, med_val)
+        if method == "weighted":
+            label_anchor, label_shift = "north", "-3pt"
+        else:
+            label_anchor, label_shift = "south", "3pt"
         encoding.extend([
             f"\\fill[hcorapblue!25] (axis cs:{fill_left},{y-0.18}) rectangle (axis cs:{fill_right},{y+0.18});",
             f"\\draw[hcorapblue,very thick] (axis cs:{s['ci_low']},{y})--(axis cs:{s['ci_high']},{y});",
             f"\\draw[hcorapblue,thick] (axis cs:{s['ci_low']},{y-0.08})--(axis cs:{s['ci_low']},{y+0.08});",
             f"\\draw[hcorapblue,thick] (axis cs:{s['ci_high']},{y-0.08})--(axis cs:{s['ci_high']},{y+0.08});",
             f"\\addplot[mark=*,mark size=2.2pt,hcorapblue] coordinates {{({med_val},{y})}};",
-            rf"\node[anchor=south,font=\small\bfseries,hcorapblue] at (axis cs:{med_val},{y+0.19}) {{{_fixed(med_val)}\%}};",
+            rf"\node[anchor={label_anchor},yshift={label_shift},font=\small\bfseries,hcorapblue] at (axis cs:{med_val},{y}) {{{_fixed(med_val)}\%}};",
         ])
     encoding.extend([
         r"\end{axis}\end{tikzpicture}",
-        r"\caption{Median per-instance runtime reduction with Totalizer relative to",
-        r"the sorting network. Error bars show 95\% bootstrap confidence intervals.",
-        rf"The comparison includes {runtime['weighted']['pairs']} jointly proved Weighted pairs",
-        rf"and {runtime['lex-cos']['pairs']} LEX-COS pairs;",
-        r"positive values indicate a reduction.}",
+        r"\caption{Median paired runtime reduction with Totalizer relative to SN",
+        r"(95\% bootstrap confidence intervals; positive values favor Totalizer).}",
         r"\label{fig:encoding-effect}",
         r"\Description{Horizontal bars show the median percentage runtime reduction",
         r"under each policy, with confidence intervals and a zero baseline.}",
