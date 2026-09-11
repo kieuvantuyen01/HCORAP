@@ -71,6 +71,7 @@ experiments/results/*
 
 # Local literature library (do not redistribute third-party PDFs)
 /docs/*.pdf
+/docs/literature/
 
 # Local manuscripts and editorial notes
 /doc/

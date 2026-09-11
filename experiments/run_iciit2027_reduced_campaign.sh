@@ -5,7 +5,7 @@ PROJECT_ROOT=$(cd "$(dirname "$0")/.." && pwd)
 cd "$PROJECT_ROOT"
 
 if [ "${CONFIRM_REDUCED_CAMPAIGN:-}" != "YES" ]; then
-    echo "Set CONFIRM_REDUCED_CAMPAIGN=YES after reading docs/GCP_EXPERIMENT_RUNBOOK.md." >&2
+    echo "Set CONFIRM_REDUCED_CAMPAIGN=YES after reading docs/COMPACT_RESULTS_RUNBOOK.md." >&2
     exit 2
 fi
 

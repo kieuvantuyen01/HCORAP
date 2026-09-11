@@ -50,7 +50,7 @@ if [ "$(uname -s)" != "Linux" ]; then
     exit 2
 fi
 if [ "${CONFIRM_PUBLICATION_CAMPAIGN:-}" != "YES" ]; then
-    echo "Set CONFIRM_PUBLICATION_CAMPAIGN=YES after reading docs/GCP_EXPERIMENT_RUNBOOK.md." >&2
+    echo "Set CONFIRM_PUBLICATION_CAMPAIGN=YES after reading docs/COMPACT_RESULTS_RUNBOOK.md." >&2
     exit 2
 fi
 

@@ -214,11 +214,8 @@ include_paths=(
     instances/paperInstances
     instances/corrected_v2_reduced_suite
     instances/uncertainty_screen
-    docs/EXPERIMENT_GAP_AUDIT_20260808.md
-    docs/COMPACT_EXPERIMENT_MATRIX_20260820.md
-    docs/EXPERIMENT_SUPPLEMENT_MATRIX_20260822.md
     docs/FAIR_EXPERIMENT_PROTOCOL.md
-    docs/GCP_EXPERIMENT_RUNBOOK.md
+    docs/COMPACT_RESULTS_RUNBOOK.md
     tests
 )
 
