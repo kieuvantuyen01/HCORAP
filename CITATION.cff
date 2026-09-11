@@ -15,7 +15,7 @@ version: 0.1.0
 date-released: 2026-09-11
 preferred-citation:
   type: conference-paper
-  title: "Continuity First in Home-Care Resource Allocation: An Ordered Objective and Its Trade-offs"
+  title: "Continuity First in Home-Care Resource Allocation: A Lexicographic Objective and Its Trade-offs"
   authors:
     - family-names: Kieu
       given-names: Tuyen Van

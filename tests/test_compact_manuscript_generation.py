@@ -193,7 +193,7 @@ def test_generator_emits_only_after_all_gates_pass(tmp_path: Path) -> None:
     assert "Continuity violations & Lower & 43 & 5 & 0" in policy_table
     assert "Weighted & SN & 40 / 6 / 2 & 120.0 & 15.0" in table
     assert r"LEX-COS & TOT & 40 / 6 / 2 & \textbf{100.0} & \textbf{10.0}" in table
-    assert "Medians cover proved runs; PAR-2 includes all 48 runs" in table
+    assert "Median runtime includes proved runs; PAR-2 includes all 48 runs" in table
     assert (output / "compact_result_provenance.json").is_file()
     stats = json.loads((output / "compact_figure_statistics.json").read_text())
     assert stats["runtime_reductions"]["weighted"]["median"] == pytest.approx(100 / 3)

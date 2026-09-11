@@ -1,7 +1,7 @@
 # Experimental supplement: exact multi-criteria HCORAP
 
 This supplement accompanies *Continuity First in Home-Care Resource Allocation:
-An Ordered Objective and Its Trade-offs*. It contains objective derivations,
+A Lexicographic Objective and Its Trade-offs*. It contains objective derivations,
 implementation details, supplementary results, and reproduction instructions.
 The manuscript presents the allocation model, the CONT → OT → SIM policy,
 the experimental design, and the main findings.

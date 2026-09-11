@@ -181,12 +181,12 @@ def _figure_fragments(
         if title != panels[-1][0]:
             policy.append(r"\hfill")
     policy.extend([
-        r"\caption{Paired changes from Weighted to LEX-COS on 48 HCORAP-LC instances.",
-        r"Dots show instances; boxes show the interquartile range, median, and range.",
-        r"Panels (a)--(b) show improvements and (c) shows compatibility loss; scales differ.}",
+        r"\caption{Paired changes from Weighted to LEX-COS are shown for 48 HCORAP-LC instances.",
+        r"Dots show instances, and box plots summarize their distributions.",
+        r"Panels (a) and (b) show improvements; panel (c) shows compatibility reduction. Scales differ.}",
         r"\label{fig:policy-effect}",
         r"\Description{Three distributions show fewer continuity violations, less overtime,",
-        r"and the percentage loss of compatibility under the continuity-first policy.}",
+        r"and the percentage reduction in compatibility under LEX-COS.}",
         r"\end{figure*}",
     ])
     lower = min(0, *(s["ci_low"] for s in runtime.values()))
@@ -226,8 +226,8 @@ def _figure_fragments(
         ])
     encoding.extend([
         r"\end{axis}\end{tikzpicture}",
-        r"\caption{Median paired runtime reduction with Totalizer relative to SN",
-        r"(95\% bootstrap confidence intervals; positive values favor Totalizer).}",
+        r"\caption{Bars show the median paired runtime reduction when Totalizer replaces SN,",
+        r"with 95\% bootstrap confidence intervals.}",
         r"\label{fig:encoding-effect}",
         r"\Description{Horizontal bars show the median percentage runtime reduction",
         r"under each policy, with confidence intervals and a zero baseline.}",
@@ -851,9 +851,9 @@ def generate(
     table_lines.extend((
         r"\bottomrule", r"\end{tabular*}",
         r"\par\smallskip\begin{minipage}{\linewidth}\footnotesize",
-        r"Opt / Inf / TO: optimal / infeasible / timed out. "
-        r"Medians cover proved runs; PAR-2 includes all 48 runs. "
-        r"Bold marks the lower runtime within each policy.",
+        r"Opt, Inf, and TO denote optimal, infeasible, and timed-out runs, respectively. "
+        r"Median runtime includes proved runs; PAR-2 includes all 48 runs. "
+        r"Bold values mark the lower runtime within each policy.",
         r"\end{minipage}", r"\end{table}",
     ))
     table_path = output / "compact_encoding_table.tex"
@@ -909,9 +909,9 @@ def generate(
     commercial_table_lines.extend((
         r"\bottomrule", r"\end{tabular*}",
         r"\par\smallskip\begin{minipage}{\linewidth}\footnotesize",
-        r"Opt / Inf / TO: optimal / infeasible / timed out. "
-        r"EvalMaxSAT uses Totalizer. Median runtime covers proved runs; "
-        r"PAR-2 includes all 48 runs. Bold marks the fastest runtime within each policy.",
+        r"Opt, Inf, and TO denote optimal, infeasible, and timed-out runs, respectively. "
+        r"EvalMaxSAT uses Totalizer. Median runtime includes proved runs; "
+        r"PAR-2 includes all 48 runs. Bold values mark the fastest runtime within each policy.",
         r"\end{minipage}", r"\end{table}",
     ))
     commercial_table_path = output / "compact_commercial_table.tex"
