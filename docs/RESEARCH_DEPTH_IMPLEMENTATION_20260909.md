@@ -1,5 +1,13 @@
 **Triển khai tăng chiều sâu nghiên cứu HCORAP — 09/09/2026**
 
+**Cập nhật full 11/09/2026.** Ba campaign full đã hoàn tất 2.208/2.208 run,
+tất cả OPTIMUM và qua kiểm định. Không cần chạy thêm solver cho phạm vi nghiên
+cứu hiện tại. Kết quả, quyết định claim và hướng tái tạo bảng LaTeX nằm tại
+[`RESEARCH_DEPTH_FULL_REVIEW_20260911.md`](RESEARCH_DEPTH_FULL_REVIEW_20260911.md).
+Các macro trong bản thảo được sinh bằng
+`experiments/generate_research_depth_manuscript_results.py`; không chép số thủ
+công từ CSV.
+
 **Cập nhật pilot 10/09/2026.** Đã rà soát đủ 960/960 tác vụ trong
 `results_research_depth_pilot`: 896 lần commercial đều OPTIMUM; MaxSAT có 60
 OPTIMUM và 4 UNSATISFIABLE thuộc cùng một instance bất khả thi, không có lỗi
