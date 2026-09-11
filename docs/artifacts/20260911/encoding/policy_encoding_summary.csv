@@ -1,0 +1,5 @@
+method,cardinality,implied,symmetry,runs,optimum_runs,unsat_runs,proved_runs,timeout_runs,par2_seconds,median_proved_seconds,median_peak_rss_mb,median_variables,median_hard_clauses,median_soft_clauses
+weighted,sorting-network,none,none,48,40,6,46,2,352.885666575625,30.05031894,88.048828125,32163.5,129733.5,2958.5
+weighted,totalizer,none,none,48,40,6,46,2,333.03332213158336,26.931330065,86.30078125,12042.5,143287.0,2958.5
+lex-cos,sorting-network,none,none,48,42,6,48,0,95.84189157295833,96.95445171,201.134765625,168407.5,531535.5,1776.0
+lex-cos,totalizer,none,none,48,42,6,48,0,97.32154756002085,93.942369115,738.685546875,31288.5,3344787.0,1776.0

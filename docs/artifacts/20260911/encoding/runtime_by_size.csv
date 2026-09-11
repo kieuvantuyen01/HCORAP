@@ -1,0 +1,17 @@
+method,factor,value,jointly_proved_pairs,median_runtime_reduction_percent
+weighted,users,30,24,12.937298221122166
+weighted,users,40,22,14.620181920226354
+weighted,agents,10,11,14.936652221760678
+weighted,agents,15,12,14.398400911418321
+weighted,agents,20,11,16.232105055401323
+weighted,agents,25,12,10.32695661857072
+weighted,visits,4,23,9.788431224078899
+weighted,visits,5,23,14.936652221760678
+lex-cos,users,30,24,-1.66861234972112
+lex-cos,users,40,24,-0.6021941288744624
+lex-cos,agents,10,12,2.715583846342917
+lex-cos,agents,15,12,-1.5404259352007243
+lex-cos,agents,20,12,-1.177317491372143
+lex-cos,agents,25,12,-2.445488021029804
+lex-cos,visits,4,24,-0.2523512703234287
+lex-cos,visits,5,24,-1.8133665654754592

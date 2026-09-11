@@ -1,0 +1,10 @@
+wc,wo,optimum_runs,unique_objective_vectors_across_instances,most_common_vector,most_common_vector_runs,median_effective_continuity_to_overtime_ratio
+1,1,48,48,160/611/4/12,1,1.0
+1,4,48,47,150/537/9/0,2,0.25
+1,8,48,46,150/537/9/0,2,0.125
+4,1,48,48,160/606/1/12,1,4.0
+4,4,48,46,120/415/0/0,2,1.0
+4,8,48,45,120/415/0/0,2,0.5
+8,1,48,48,160/601/0/12,1,8.0
+8,4,48,46,120/415/0/0,2,2.0
+8,8,48,46,120/415/0/0,2,1.0

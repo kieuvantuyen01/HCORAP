@@ -89,13 +89,13 @@ khác biệt chính không chỉ xuất hiện tại cấu hình tải gốc.
 
 COS và LEX-OT chỉ khác ở ba instance của ô gốc
 `rho=0.85, normal_fraction=0.85`; tám ô còn lại không có xung đột. Kết quả này
-giới hạn đúng phạm vi diễn giải: thứ tự giữa CONT và OT chỉ quyết định lịch tại
-một vùng năng lực hẹp, trong khi việc cấm SIM bù trừ hai tiêu chí trước tạo ra
-khác biệt bền vững với Weighted.
+giới hạn đúng phạm vi diễn giải: thứ tự giữa CONT và OT thay đổi vector mục
+tiêu tại một trong chín mức năng lực đã thử. Lưới này chưa xác định được độ
+rộng của vùng xung đột. Khác biệt với Weighted xuất hiện ở cả chín mức.
 
 Các biến thể nằm trong sáu họ patient-seed và chia sẻ dữ liệu cha. Số liệu load
-được dùng như so sánh matched có tính mô tả, không coi 1.296 cặp là các mẫu độc
-lập.
+được dùng như so sánh matched có tính mô tả. Có 432 biến thể với ba policy;
+các biến thể cùng họ không được coi là mẫu độc lập.
 
 ## Cách tái tạo số liệu trong bản thảo
 
@@ -118,8 +118,10 @@ SHA-256 của mọi bảng phân tích đầu vào.
 Bản thảo đã được cập nhật ở Abstract, RQ1, Contributions, Experimental
 Methodology, Results, Discussion và Conclusion. Một bảng mới tóm tắt
 optimal-face, continuity budget, weight sensitivity và capacity sensitivity.
-Bản PDF biên dịch thành công ở tám trang; bảng không tràn cột và tài liệu tham
-khảo được cân bằng qua hai cột.
+Bản PDF sau cập nhật kết quả có tám trang. Lần biên tập tiếp theo ngày
+11/09 chuyển chứng minh, chi tiết triển khai, kiểm định và bảng phụ sang
+[`EXPERIMENTAL_SUPPLEMENT.md`](EXPERIMENTAL_SUPPLEMENT.md), rút bản chính
+xuống sáu trang và giữ các kết quả khoa học chính.
 
 Các claim nên giữ ở mức sau:
 

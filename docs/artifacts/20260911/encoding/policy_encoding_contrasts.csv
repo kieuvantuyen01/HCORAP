@@ -1,0 +1,3 @@
+method,pairs,both_proved_pairs,both_optimum_pairs,totalizer_faster,ties,sorting_faster,median_speedup_sorting_over_totalizer,bootstrap_95_ci_low,bootstrap_95_ci_high,sorting_proved_runs,totalizer_proved_runs,sorting_par2_seconds,totalizer_par2_seconds,status_mismatches,objective_mismatches,totalizer_faster_claim_supported
+weighted,48,46,40,35,0,11,1.1625694642739681,1.0954401607413131,1.2590216097089235,46,46,352.885666575625,333.03332213158336,0,0,True
+lex-cos,48,48,42,20,0,28,0.9848294588913642,0.9772582350131631,1.0104365141546863,48,48,95.84189157295833,97.32154756002085,0,0,False

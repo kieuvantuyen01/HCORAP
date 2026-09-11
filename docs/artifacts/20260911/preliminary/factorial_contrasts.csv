@@ -1,0 +1,13 @@
+factor,condition,left_cardinality,left_implied,left_symmetry,right_cardinality,right_implied,right_symmetry,pairs,both_proved_pairs,both_optimum_pairs,right_faster,ties,left_faster,median_speedup_left_over_right,bootstrap_95_ci_low,bootstrap_95_ci_high,median_peak_rss_difference_mb,median_variables_difference,median_hard_clauses_difference,median_soft_clauses_difference,objective_mismatches
+encoding,IC=none;SB=none,sorting-network,none,none,totalizer,none,none,48,45,39,39,0,6,1.1556121954662513,1.0770796782212044,1.2252496842729539,-1.318359375,-19108.0,10157.0,0.0,0
+encoding,IC=none;SB=slot-service,sorting-network,none,slot-service,totalizer,none,slot-service,48,45,39,34,0,11,1.134551531593934,1.0722596306996084,1.2329465034850688,-1.70703125,-19108.0,10157.0,0.0,0
+encoding,IC=both;SB=none,sorting-network,both,none,totalizer,both,none,48,45,39,36,0,9,1.1789860951352975,1.0864446571093764,1.2657152707745758,-3.587890625,-23420.5,2936.0,0.0,0
+encoding,IC=both;SB=slot-service,sorting-network,both,slot-service,totalizer,both,slot-service,48,45,39,36,0,9,1.204616007455545,1.1528797767655323,1.2537053802079203,-5.75,-23420.5,2936.0,0.0,0
+implied,Enc=sorting-network;SB=none,sorting-network,none,none,sorting-network,both,none,48,45,39,10,0,35,0.9112786768696383,0.8547881806267447,0.9538523299368442,9.232421875,9656.5,30464.5,0.0,0
+implied,Enc=sorting-network;SB=slot-service,sorting-network,none,slot-service,sorting-network,both,slot-service,48,45,39,12,0,33,0.8442590940643232,0.8055672855410522,0.9313513445708419,8.986328125,9428.5,28015.0,0.0,0
+implied,Enc=totalizer;SB=none,totalizer,none,none,totalizer,both,none,48,45,39,14,0,31,0.9073971194971059,0.8111073580131793,0.9626333593942347,6.072265625,4488.0,23653.0,0.0,0
+implied,Enc=totalizer;SB=slot-service,totalizer,none,slot-service,totalizer,both,slot-service,48,45,39,14,0,31,0.9255271097184895,0.8282809779484109,0.9763527030662575,4.986328125,4040.5,21222.0,0.0,0
+symmetry,Enc=sorting-network;IC=none,sorting-network,none,none,sorting-network,none,slot-service,48,45,39,22,0,23,0.9965387039834988,0.93431301552406,1.0323747999222719,0.7265625,221.0,892.5,0.0,0
+symmetry,Enc=sorting-network;IC=both,sorting-network,both,none,sorting-network,both,slot-service,48,45,39,15,0,30,0.9845460205554944,0.9277270729697735,0.9950585303894985,0.037109375,0.0,1.5,0.0,0
+symmetry,Enc=totalizer;IC=none,totalizer,none,none,totalizer,none,slot-service,48,45,39,15,0,30,0.9821125206215153,0.9458676962475127,0.9955312340942039,0.716796875,221.0,892.5,0.0,0
+symmetry,Enc=totalizer;IC=both,totalizer,both,none,totalizer,both,slot-service,48,45,39,19,0,26,0.9842015057671172,0.9576891524164828,1.020309569488892,-0.021484375,0.0,1.5,0.0,0

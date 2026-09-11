@@ -1,5 +1,11 @@
 **Triển khai tăng chiều sâu nghiên cứu HCORAP — 09/09/2026**
 
+**Biên tập bản thảo 11/09/2026.** Chi tiết chứng minh, mã hóa, cấu hình,
+kiểm định và bảng phụ được tập hợp trong tài liệu tiếng Anh
+[`EXPERIMENTAL_SUPPLEMENT.md`](EXPERIMENTAL_SUPPLEMENT.md), kèm
+[các bảng dữ liệu để tra cứu](artifacts/20260911/). Bài chính giữ mô hình,
+lý do chọn thứ tự mục tiêu, thiết kế so sánh và bằng chứng về policy.
+
 **Cập nhật full 11/09/2026.** Ba campaign full đã hoàn tất 2.208/2.208 run,
 tất cả OPTIMUM và qua kiểm định. Không cần chạy thêm solver cho phạm vi nghiên
 cứu hiện tại. Kết quả, quyết định claim và hướng tái tạo bảng LaTeX nằm tại
@@ -29,7 +35,7 @@ branch của remote.
 **Đã chạy và tận dụng được gì**
 
 - Kiểm tra lại độc lập 144 lịch Gurobi của 48 instance HCORAP-LC bằng Python, đối chiếu coverage, CONT, OT và SIM với JSON gốc. Xuất thêm cấu trúc nhóm chăm sóc, tải của từng nhân viên và khác biệt giữa lịch.
-- Xác nhận 3/48 trường hợp COS khác OT → CONT → SIM. Ba trường hợp này đều có thêm một đơn vị CONT khi chuyển sang ưu tiên OT, đổi lại giảm một giờ OT. Thay đổi SIM lần lượt là 0, −3 và +8; không diễn giải thứ tự COS là tốt hơn trên mọi tiêu chí.
+- Xác nhận 3/48 trường hợp COS khác OT → CONT → SIM. Ba trường hợp này đều có thêm một đơn vị CONT khi chuyển sang ưu tiên OT, đổi lại giảm một đơn vị dịch vụ OT. Thay đổi SIM lần lượt là 0, −3 và +8; không diễn giải thứ tự COS là tốt hơn trên mọi tiêu chí.
 - Phân tích 192 lần chạy Original đã căn chỉnh cardinality: 164 OPTIMUM, 24 UNSATISFIABLE, 4 TIMEOUT_FEASIBLE. Có 40 instance với cả bốn tổ hợp policy × encoding được chứng minh tối ưu. Các tỷ số thời gian chính xác chỉ dùng nhóm này; timeout vẫn được giữ riêng và trong PAR2.
 - Tạo 432 biến thể năng lực từ 48 instance, với rho ∈ {0.55, 0.85, 0.98} và tỷ lệ giờ thường ∈ {0.70, 0.85, 1.00}. Mọi biến thể giữ nguyên dữ liệu ngoài HN/HE, giữ được lịch khả thi làm chứng. 48 điểm gốc (0.85, 0.85) tái tạo đúng SHA-256 của instance cha.
 - Chạy trọn vẹn hai campaign chức năng bằng reference-enumerator: 20 lần cho policy diagnostics và 18 lần cho trọng số, tất cả OPTIMUM. Đây là kiểm thử trên instance nhỏ, không phải bằng chứng thực nghiệm trên bộ đánh giá.

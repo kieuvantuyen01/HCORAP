@@ -1,0 +1,134 @@
+{
+  "date": "2026-09-11",
+  "description": "Derived analysis tables accompanying the manuscript; original run archives are separate.",
+  "transformations": "CSV cells beginning with an absolute path through /HCORAP/ are made repository-relative. All other cells and row order are preserved. CSV line endings are LF.",
+  "full_campaign_source_commit": "8b35c809daf37073c458307deab96ac2b55dc433",
+  "files": {
+    "policy/corrected_pairwise_pairs.csv": {
+      "source": "results_v2/gcp_corrected_exact_analysis/corrected_pairwise_pairs.csv",
+      "source_sha256": "b0f91cbd925a9a11f57f5235e9a7bdd61eb888f1ea90e4924bd8b8c4219e4270",
+      "sha256": "00c032a78ce72e562f5af6627e863a889e467d04b5f1411a4b14e1e726339a7f",
+      "rows": 96
+    },
+    "policy/corrected_pairwise_summary.csv": {
+      "source": "results_v2/gcp_corrected_exact_analysis/corrected_pairwise_summary.csv",
+      "source_sha256": "f7d903dfb8520b7da8c7b3aaa0da5c9cc96551086f869a80ed5f8368158fdcb1",
+      "sha256": "d5482c7fbb451ba9e9c2e4c9f537535ff7ac8545ecfe44864cd3e4564790c220",
+      "rows": 2
+    },
+    "policy/corrected_policy_summary.csv": {
+      "source": "results_v2/gcp_corrected_exact_analysis/corrected_policy_summary.csv",
+      "source_sha256": "700d65148c8577b165f3ba1c22927ff017b4588b7f9c0ced3b1e0b3f763b1aa5",
+      "sha256": "7c8a854a7dc67f11bc6ce8a8e2e3d3b4524bf8de8e0bd1c528ccda5fb393babd",
+      "rows": 3
+    },
+    "policy/corrected_solver_agreement.csv": {
+      "source": "results_v2/gcp_corrected_exact_analysis/corrected_solver_agreement.csv",
+      "source_sha256": "f728bc494bdf93d2770ba01dd80417c08e513721ef0346021e4d19342290de33",
+      "sha256": "9ef30ac511933907d86c083b9af4fd08da32adb5bda0773901c8e1ce430e8034",
+      "rows": 48
+    },
+    "diagnostics/weighted_face_intervals.csv": {
+      "source": "results_research_depth_full/research_depth_diagnostics_full/analysis/weighted_face_intervals.csv",
+      "source_sha256": "da6f46b1330673159ec5872a041aa9a610b20fa74044caa598f80e4969c900c6",
+      "sha256": "ce3fc04766b638f0e962ea097537ee514737450ec67168fd31f630f6fbe3b694",
+      "rows": 48
+    },
+    "diagnostics/continuity_budget_curves.csv": {
+      "source": "results_research_depth_full/research_depth_diagnostics_full/analysis/continuity_budget_curves.csv",
+      "source_sha256": "13b028f50ae45422a26a08eadbcfc34475f041c964de38a2a20cff5d7d7573db",
+      "sha256": "689676ecbad6cc350279cd0d3b7c00d6c0042eedf676bc4bf9f1c809bfd91aea",
+      "rows": 144
+    },
+    "diagnostics/continuity_budget_changes.csv": {
+      "source": "results_research_depth_full/research_depth_diagnostics_full/analysis/continuity_budget_changes.csv",
+      "source_sha256": "8b3ef835c5acd7c47f8d5bd6dce8336bd2acf01a5c9fd3489c24c916139366e2",
+      "sha256": "a1c6d9da53ca9d72e37aa84edd7faa2aa395ad5be8e6aab819be911268a5d76f",
+      "rows": 96
+    },
+    "weights/weight_instance_stability.csv": {
+      "source": "results_research_depth_full/research_depth_weights_full/analysis/weight_instance_stability.csv",
+      "source_sha256": "63395da2e1754ce7e82b806503ac60a07c9fef67e32e4b03889225241f209650",
+      "sha256": "7ebabf69c7f78f3558c74ae67eccb5cfa2f0a54b94e2d55a3f3a287a05716bf4",
+      "rows": 48
+    },
+    "weights/weight_optimum_runs.csv": {
+      "source": "results_research_depth_full/research_depth_weights_full/analysis/weight_optimum_runs.csv",
+      "source_sha256": "8aad4d673905c0ad80318f68bffa306db334ed569dbe67e408be5d1a2fdac163",
+      "sha256": "231b899e8f0b64c8f329e4b573f164f9d5be5a8b5e0d11047fe2387d9310de41",
+      "rows": 432
+    },
+    "weights/weight_summary.csv": {
+      "source": "results_research_depth_full/research_depth_weights_full/analysis/weight_summary.csv",
+      "source_sha256": "0695e8ef12d5bb42dcb248caa8174853902ae5fee19b452956cd57d5d1c9c074",
+      "sha256": "f4a214535a4942f4eb6e6263b86bdbe16f8acf4925b7b9239868883483e00403",
+      "rows": 9
+    },
+    "load/load_cell_summary.csv": {
+      "source": "results_research_depth_full/research_depth_load_full/analysis/load_cell_summary.csv",
+      "source_sha256": "d3c363fc791b08652ae744424ac8af287b3d70bb05fc3dd95f72bc5cedcccc1e",
+      "sha256": "4daac6060a304364841727483a9fdd3c33084cfeaaf159a6a047c841ac106fa2",
+      "rows": 27
+    },
+    "load/load_policy_pairs.csv": {
+      "source": "results_research_depth_full/research_depth_load_full/analysis/load_policy_pairs.csv",
+      "source_sha256": "d413b99193800201743e1f5ca61a2eb001013cfddc779af1b358fcc5134bf072",
+      "sha256": "a853e6c1fcc2df4b918cf53e5a0a73dceebc6e0d62c26cbdfcafd9189332f241",
+      "rows": 1296
+    },
+    "encoding/policy_encoding_summary.csv": {
+      "source": "results_cardinality_aligned_3600/gcp_original_policy_encoding_cardinality_aligned_3600_analysis/policy_encoding_summary.csv",
+      "source_sha256": "3944f2ac762dc383534567a4bfebbe6b1801258afe6146961660c082fa43324c",
+      "sha256": "0338de7c2646baf282642d687ee5b971bc0a36a4dbf89f16acdb55944e576e73",
+      "rows": 4
+    },
+    "encoding/policy_encoding_pairs.csv": {
+      "source": "results_cardinality_aligned_3600/gcp_original_policy_encoding_cardinality_aligned_3600_analysis/policy_encoding_pairs.csv",
+      "source_sha256": "3f5bf4ea3a1e36a66e8e0270c24fbac15238ecf819143347447f182cf1d78626",
+      "sha256": "8530ced89490e611d201e1109cad5c675dbcb08b5613536bf46c952651181200",
+      "rows": 96
+    },
+    "encoding/policy_encoding_contrasts.csv": {
+      "source": "results_cardinality_aligned_3600/gcp_original_policy_encoding_cardinality_aligned_3600_analysis/policy_encoding_contrasts.csv",
+      "source_sha256": "7760500d7e929c3e6d5bc2db18deaf81a686f0ce07f410cda48ce56f416e45ac",
+      "sha256": "6bbc074f3f6cdf72555678bef57fea1f643fc894ae1b80befa57ee73581b727c",
+      "rows": 2
+    },
+    "commercial/cross_solver_pairs.csv": {
+      "source": "results_cardinality_aligned_3600/gcp_original_commercial_baseline_cardinality_aligned_3600_analysis/cross_solver_pairs.csv",
+      "source_sha256": "de4f26c1cb30eee1666934ef8b094164ffdd24f87f483a793f1aec64b9d1185d",
+      "sha256": "2b4bc5ebf4925ccc0cbd9261984c073da1f02a4951b298f459262082c80f9328",
+      "rows": 96
+    },
+    "commercial/exact_method_summary.csv": {
+      "source": "results_cardinality_aligned_3600/gcp_original_commercial_baseline_cardinality_aligned_3600_analysis/exact_method_summary.csv",
+      "source_sha256": "4bf60b4f6eeaab9ed3d0a0d7b6f8a96a4ca0982187e0a8129122e64808e0c8f8",
+      "sha256": "b9de1872e133acc0cc79d7e19ce7a2cc6c0ca15419b681c5fc978321d5f80eaf",
+      "rows": 6
+    },
+    "preliminary/factorial_contrasts.csv": {
+      "source": "results_v2/gcp_primary_analysis/factorial_contrasts.csv",
+      "source_sha256": "4c5df93df2be93e510047b7dfa6b6e281190262645c948e33ef90b7105368659",
+      "sha256": "d77b9f0bb24334252331d80448014da4dedc3c6fc89d727187e18965da075d45",
+      "rows": 12
+    },
+    "preliminary/factorial_summary.csv": {
+      "source": "results_v2/gcp_primary_analysis/factorial_summary.csv",
+      "source_sha256": "7237e5a3ff4d360324b526f57e3de7fe5a8ed4f1dd860b4cb5dd7b258b485dc9",
+      "sha256": "1b46038513aa00d6de1b189a4cf5bcc60c1443e9b526be079cef4c9d6127fd41",
+      "rows": 8
+    },
+    "encoding/compact_figure_statistics.json": {
+      "source": "LaTeX-Templates/paper/generated_compact/compact_figure_statistics.json",
+      "source_sha256": "bc60ca97602fec7da5b143d10195f1825430f062da180ae7e5e4ef77faaa80c5",
+      "sha256": "bc60ca97602fec7da5b143d10195f1825430f062da180ae7e5e4ef77faaa80c5"
+    },
+    "encoding/runtime_by_size.csv": {
+      "source": "encoding/policy_encoding_pairs.csv (within this snapshot)",
+      "source_sha256": "8530ced89490e611d201e1109cad5c675dbcb08b5613536bf46c952651181200",
+      "sha256": "34ab8c696acb632ccd573d2e5796aab46ac40da881b67ec7cd1d8858ca3e3bcb",
+      "rows": 16,
+      "transformation": "For jointly proved pairs, group separately by policy and each size factor; take median of 100*(t_SN-t_TOT)/t_SN. Size factors parsed from Original instance filenames. Strata overlap across factors."
+    }
+  }
+}

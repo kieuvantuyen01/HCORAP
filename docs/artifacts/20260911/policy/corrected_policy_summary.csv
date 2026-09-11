@@ -1,0 +1,4 @@
+solver,method,runs,optimum_runs,infeasible_runs,timeout_runs,par2_seconds,median_peak_rss_mb,median_similarity,median_continuity,median_overtime
+Gurobi,weighted,48,48,0,0,0.213128815125,35.615234375,570.5,5.5,12.0
+Gurobi,lex-cos,48,48,0,0,1.0976549949375,41.546875,526.5,0.0,0.0
+Gurobi,lex-overtime,48,48,0,0,0.9116915237291666,40.078125,526.0,0.0,0.0
