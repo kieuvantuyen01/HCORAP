@@ -13,6 +13,7 @@ NEW_REFERENCE_RESULTS=experiments/results/gcp_original_policy_reference_cardinal
 REFERENCE_OVERRIDE=${HCORAP_GUROBI_RESULTS:-}
 REFERENCE_RESULTS=
 ANALYSIS_RESULTS=${HCORAP_ENCODING_ANALYSIS:-experiments/results/gcp_original_policy_encoding_cardinality_aligned_3600_analysis}
+COMMERCIAL_ANALYSIS=${HCORAP_COMMERCIAL_ANALYSIS:-experiments/results/gcp_original_commercial_baseline_cardinality_aligned_3600_analysis}
 POLICY_ANALYSIS=${HCORAP_POLICY_ANALYSIS:-results_v2/gcp_corrected_exact_analysis}
 MANUSCRIPT_RESULTS=${HCORAP_MANUSCRIPT_RESULTS:-LaTeX-Templates/paper/generated_compact}
 PINNED_EVALMAXSAT_SHA256=$(python3 -c \
@@ -30,7 +31,7 @@ Phases:
   reference  Reuse a validated Gurobi reference, or run/resume 96 rows
   maxsat     Run/resume 192 EvalMaxSAT Policy x Encoding rows
   analyze    Validate and analyze the two completed campaigns
-  manuscript Generate gated LaTeX result fragments from both validated studies
+  manuscript Generate gated LaTeX fragments from policy, encoding, and solver analyses
   all        Run preflight, reuse/run reference, run MaxSAT, and analyze
 
 Required:
@@ -50,6 +51,7 @@ Optional:
   HCORAP_GUROBI_RESULTS=<directory>       existing 96-row Gurobi campaign
   HCORAP_POLICY_ANALYSIS=<directory>      validated Corrected-v2 analysis
   HCORAP_ENCODING_ANALYSIS=<directory>    validated Policy x Encoding analysis
+  HCORAP_COMMERCIAL_ANALYSIS=<directory>  validated full solver comparison
   HCORAP_MANUSCRIPT_RESULTS=<directory>   generated LaTeX fragments
 
 The MaxSAT matrix is 48 Original instances x 2 policies x 2 encodings, with
@@ -289,6 +291,7 @@ generate_manuscript_results() {
     python3 experiments/generate_compact_manuscript_results.py \
         --policy-analysis "$POLICY_ANALYSIS" \
         --encoding-analysis "$ANALYSIS_RESULTS" \
+        --commercial-analysis "$COMMERCIAL_ANALYSIS" \
         --output "$MANUSCRIPT_RESULTS"
 }
 

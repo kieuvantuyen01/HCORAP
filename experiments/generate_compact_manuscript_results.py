@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Generate the result fragments for the locked two-study manuscript design.
 
-The generator accepts only the validated Corrected-v2 policy analysis and the
-validated Original-suite Policy x Encoding analysis.  It deliberately refuses
-partial or failed analyses, so draft numbers cannot silently enter the paper.
+The generator accepts only the validated HCORAP-LC policy analysis, the
+validated Original-suite Policy x Encoding analysis, and the validated full
+Gurobi/CPLEX comparison.  It deliberately refuses partial or failed analyses,
+so draft numbers cannot silently enter the paper.
 """
 
 from __future__ import annotations
@@ -13,6 +14,7 @@ import csv
 import hashlib
 import json
 import math
+import random
 import re
 import statistics
 from pathlib import Path
@@ -111,8 +113,135 @@ def _macro(name: str, value: Any) -> str:
     return rf"\newcommand{{\{name}}}{{{value}}}"
 
 
+def _runtime_reduction_summary(rows: list[dict[str, str]]) -> dict[str, Any]:
+    """Bootstrap the median of per-instance runtime reductions, excluding timeouts."""
+    values = []
+    for row in rows:
+        if not _truth(row.get("both_proved")):
+            continue
+        sn = float(row["sorting_elapsed_seconds"])
+        tot = float(row["totalizer_elapsed_seconds"])
+        if not all(math.isfinite(value) and value > 0 for value in (sn, tot)):
+            raise ValueError("paired runtimes must be finite and positive")
+        values.append(100 * (sn - tot) / sn)
+    if not values:
+        raise ValueError("runtime figure needs at least one jointly proved pair")
+    values.sort()
+    rng = random.Random(20260908)
+    medians = [statistics.median(rng.choices(values, k=len(values))) for _ in range(10000)]
+    return {
+        "pairs": len(values), "excluded_pairs": len(rows) - len(values),
+        "median": statistics.median(values),
+        "ci_low": _percentile(medians, 0.025),
+        "ci_high": _percentile(medians, 0.975),
+        "reductions_percent": values,
+    }
+
+
+def _figure_fragments(
+    policy_values: list[list[float]], runtime: dict[str, dict[str, Any]]
+) -> tuple[str, str]:
+    policy = [r"% Generated; each point represents one paired instance.",
+              r"\begin{figure*}[t]", r"\centering"]
+    panels = (
+        ("(a) Continuity", "Fewer continuity violations", "hcorapblue"),
+        ("(b) Overtime", "Less overtime (service units)", "hcorapblue"),
+        ("(c) Compatibility", r"Lower compatibility (\%)", "hcorapamber"),
+    )
+    for values, (title, ylabel, color) in zip(policy_values, panels):
+        ordered = sorted(values)
+        low, q1, median, q3, high = (
+            _percentile(values, q) for q in (0, 0.25, 0.5, 0.75, 1)
+        )
+        # Small horizontal offsets expose coincident values without altering measurements.
+        jitter = random.Random(48)
+        coords = " ".join(f"({jitter.uniform(0.34, 0.76):.6f},{v:.8f})"
+                          for v in ordered)
+        span = max(high - min(0, low), 1)
+        policy.extend([
+            r"\begin{minipage}[t]{0.32\textwidth}\centering",
+            r"\begin{tikzpicture}\begin{axis}[",
+            r"width=\linewidth,height=4.3cm,xmin=0,xmax=1.55,",
+            r"xtick={0.55,1.12},xticklabels={Instances,IQR \& Med.},",
+            f"ymin={min(0, low)-0.06*span:.8f},ymax={high+0.15*span:.8f},",
+            f"title={{{title}}},ylabel={{{ylabel}}},",
+            r"title style={font=\small\bfseries},label style={font=\footnotesize},",
+            r"tick label style={font=\scriptsize},ymajorgrids,grid style={black!8},",
+            r"axis line style={black!50}]",
+            r"\draw[dashed,black!40] (axis cs:0,0)--(axis cs:1.55,0);",
+            f"\\addplot[only marks,mark=*,mark size=1.4pt,{color},opacity=0.65] coordinates {{{coords}}};",
+            f"\\draw[{color},semithick] (axis cs:1.12,{low})--(axis cs:1.12,{high});",
+            f"\\draw[{color},semithick] (axis cs:1.04,{low})--(axis cs:1.20,{low});",
+            f"\\draw[{color},semithick] (axis cs:1.04,{high})--(axis cs:1.20,{high});",
+            f"\\filldraw[fill={color}!18,draw={color},thick] (axis cs:0.95,{q1}) rectangle (axis cs:1.29,{q3});",
+            f"\\draw[{color},very thick] (axis cs:0.95,{median})--(axis cs:1.29,{median});",
+            rf"\node[anchor=north,font=\scriptsize\bfseries,text={color}!80!black] at (rel axis cs:0.5,0.98) {{Median: {_number(median,1)}}};",
+            r"\end{axis}\end{tikzpicture}\end{minipage}",
+        ])
+        if title != panels[-1][0]:
+            policy.append(r"\hfill")
+    policy.extend([
+        r"\caption{Changes from Weighted to LEX-COS on 48 HCORAP-LC instances.",
+        r"Each dot represents one instance. Boxes show the middle 50\% of changes,",
+        r"central lines show medians, and whiskers show the full range.",
+        r"Panels (a) and (b) show improvements; panel (c) shows the compatibility",
+        r"loss relative to Weighted. The panels use different units and scales.}",
+        r"\label{fig:policy-effect}",
+        r"\Description{Three distributions show fewer continuity violations, less overtime,",
+        r"and the percentage loss of compatibility under the continuity-first policy.}",
+        r"\end{figure*}",
+    ])
+    lower = min(0, *(s["ci_low"] for s in runtime.values()))
+    upper = max(0, *(s["ci_high"] for s in runtime.values()))
+    x_min = math.floor(lower / 5.0) * 5
+    x_max = math.ceil((upper + 3.0) / 5.0) * 5
+    ticks = list(range(int(x_min), int(x_max) + 1, 5))
+    ticks_str = "{" + ",".join(str(t) for t in ticks) + "}"
+    encoding = [r"% Generated from paired runtimes, not rounded speedup ratios.",
+        r"\begin{figure}[tbp]\centering",
+        r"\begin{tikzpicture}\begin{axis}[",
+        r"width=0.98\linewidth,height=3.8cm,",
+        f"xmin={x_min},xmax={x_max},ymin=0.45,ymax=2.65,",
+        f"xtick={ticks_str},",
+        r"ytick={1,2},yticklabels={LEX-COS,Weighted},",
+        r"xlabel={Runtime reduction with Totalizer (\%)},",
+        r"label style={font=\footnotesize},tick label style={font=\small},",
+        r"xmajorgrids,grid style={black!8},axis line style={black!50}]",
+        r"\draw[dashed,black!40,thick] (axis cs:0,0.45)--(axis cs:0,2.65);",
+    ]
+    for method, y in (("weighted",2), ("lex-cos",1)):
+        s = runtime[method]
+        med_val = s['median']
+        fill_left = min(0.0, med_val)
+        fill_right = max(0.0, med_val)
+        encoding.extend([
+            f"\\fill[hcorapblue!25] (axis cs:{fill_left},{y-0.18}) rectangle (axis cs:{fill_right},{y+0.18});",
+            f"\\draw[hcorapblue,very thick] (axis cs:{s['ci_low']},{y})--(axis cs:{s['ci_high']},{y});",
+            f"\\draw[hcorapblue,thick] (axis cs:{s['ci_low']},{y-0.08})--(axis cs:{s['ci_low']},{y+0.08});",
+            f"\\draw[hcorapblue,thick] (axis cs:{s['ci_high']},{y-0.08})--(axis cs:{s['ci_high']},{y+0.08});",
+            f"\\addplot[mark=*,mark size=2.2pt,hcorapblue] coordinates {{({med_val},{y})}};",
+            rf"\node[anchor=south,font=\small\bfseries,hcorapblue] at (axis cs:{med_val},{y+0.19}) {{{_fixed(med_val)}\%}};",
+        ])
+    encoding.extend([
+        r"\end{axis}\end{tikzpicture}",
+        r"\caption{Median per-instance runtime reduction with Totalizer relative to",
+        r"the sorting network. Error bars show 95\% bootstrap confidence intervals.",
+        rf"The comparison includes {runtime['weighted']['pairs']} jointly proved Weighted pairs",
+        rf"and {runtime['lex-cos']['pairs']} LEX-COS pairs;",
+        r"positive values indicate a reduction.}",
+        r"\label{fig:encoding-effect}",
+        r"\Description{Horizontal bars show the median percentage runtime reduction",
+        r"under each policy, with confidence intervals and a zero baseline.}",
+        r"\end{figure}",
+    ])
+    return "\n".join(policy)+"\n", "\n".join(encoding)+"\n"
+
+
 def generate(
-    policy_analysis: Path, encoding_analysis: Path, output: Path
+    policy_analysis: Path,
+    encoding_analysis: Path,
+    commercial_analysis: Path,
+    output: Path,
 ) -> dict[str, Any]:
     policy_validation_path = policy_analysis / "corrected_exact_validation.json"
     policy_pairs_path = policy_analysis / "corrected_pairwise_summary.csv"
@@ -121,6 +250,9 @@ def generate(
     encoding_summary_path = encoding_analysis / "policy_encoding_summary.csv"
     encoding_pairs_path = encoding_analysis / "policy_encoding_pairs.csv"
     encoding_contrasts_path = encoding_analysis / "policy_encoding_contrasts.csv"
+    commercial_validation_path = commercial_analysis / "full_exact_baseline_validation.json"
+    commercial_summary_path = commercial_analysis / "exact_method_summary.csv"
+    cross_solver_pairs_path = commercial_analysis / "cross_solver_pairs.csv"
 
     inputs = (
         policy_validation_path,
@@ -130,6 +262,9 @@ def generate(
         encoding_summary_path,
         encoding_pairs_path,
         encoding_contrasts_path,
+        commercial_validation_path,
+        commercial_summary_path,
+        cross_solver_pairs_path,
     )
     missing = [str(path) for path in inputs if not path.is_file()]
     if missing:
@@ -141,6 +276,18 @@ def generate(
     encoding_validation = _read_json(encoding_validation_path)
     if encoding_validation.get("evidence_valid") is not True:
         raise ValueError("Policy x Encoding analysis did not pass its evidence gate")
+    commercial_validation = _read_json(commercial_validation_path)
+    if not all(
+        commercial_validation.get(field) is True
+        for field in ("evidence_valid", "runtime_comparison_valid")
+    ):
+        raise ValueError("Full commercial baseline did not pass its evidence gate")
+    if (
+        commercial_validation.get("maxsat_runs") != 192
+        or commercial_validation.get("gurobi_runs") != 96
+        or commercial_validation.get("cplex_runs") != 96
+    ):
+        raise ValueError("full comparison must contain 192 MaxSAT, 96 Gurobi, and 96 CPLEX runs")
 
     policy_pairs = _read_csv(policy_pairs_path)
     policy_row = _one(
@@ -247,6 +394,94 @@ def generate(
     encoding_pairs = _read_csv(encoding_pairs_path)
     if len(encoding_pairs) != 96:
         raise ValueError("encoding pair file must contain 96 policy-instance pairs")
+    runtime_reductions = {
+        method: _runtime_reduction_summary([
+            row for row in encoding_pairs if row.get("method") == method
+        ]) for method in POLICIES
+    }
+    commercial_summary_rows = _read_csv(commercial_summary_path)
+    expected_backends = ("evalmaxsat-totalizer", "gurobi-mip", "cplex-mip")
+    commercial_cells: dict[tuple[str, str], dict[str, str]] = {}
+    for backend in expected_backends:
+        for method in POLICIES:
+            row = _one(
+                commercial_summary_rows,
+                lambda item, backend=backend, method=method: (
+                    item.get("backend") == backend and item.get("method") == method
+                ),
+                f"{backend}/{method} commercial summary",
+            )
+            if _integer(row["runs"]) != 48:
+                raise ValueError(f"{backend}/{method} must contain 48 runs")
+            commercial_cells[(backend, method)] = row
+    if len(commercial_summary_rows) != 6:
+        raise ValueError("commercial summary must contain exactly six solver-policy rows")
+
+    cross_solver_pairs = _read_csv(cross_solver_pairs_path)
+    if len(cross_solver_pairs) != 96:
+        raise ValueError("full comparison must contain 96 cross-solver pairs")
+    if not all(
+        _truth(row.get("commercial_status_agreement"))
+        and row.get("commercial_objective_agreement_when_optimal", "").lower()
+        != "false"
+        and row.get("maxsat_status_agreement_when_decided", "").lower() != "false"
+        and row.get("maxsat_objective_agreement_when_optimal", "").lower() != "false"
+        for row in cross_solver_pairs
+    ):
+        raise ValueError("cross-solver pair file contains an agreement failure")
+    commercial_status_agreements = sum(
+        _truth(row["commercial_status_agreement"]) for row in cross_solver_pairs
+    )
+    commercial_objective_agreements = sum(
+        _truth(row.get("commercial_objective_agreement_when_optimal"))
+        for row in cross_solver_pairs
+    )
+    commercial_optimal_cases = sum(
+        row.get("gurobi_status") == "OPTIMUM" for row in cross_solver_pairs
+    )
+    commercial_infeasible_cases = sum(
+        row.get("gurobi_status") in {"INFEASIBLE", "UNSAT", "UNSATISFIABLE"}
+        for row in cross_solver_pairs
+    )
+    maxsat_decided_agreements = sum(
+        _truth(row.get("maxsat_status_agreement_when_decided"))
+        for row in cross_solver_pairs
+    )
+    maxsat_objective_agreements = sum(
+        _truth(row.get("maxsat_objective_agreement_when_optimal"))
+        for row in cross_solver_pairs
+    )
+
+    completed_medians: dict[tuple[str, str], float] = {}
+    pairwise_slowdowns: dict[tuple[str, str], float] = {}
+    for method in POLICIES:
+        method_rows = [row for row in cross_solver_pairs if row["method"] == method]
+        for backend, status_field, elapsed_field in (
+            ("evalmaxsat-totalizer", "maxsat_status", "maxsat_elapsed_seconds"),
+            ("gurobi-mip", "gurobi_status", "gurobi_elapsed_seconds"),
+            ("cplex-mip", "cplex_status", "cplex_elapsed_seconds"),
+        ):
+            completed = [
+                float(row[elapsed_field])
+                for row in method_rows
+                if row[status_field] in {"OPTIMUM", "UNSAT", "UNSATISFIABLE", "INFEASIBLE"}
+            ]
+            expected = _integer(commercial_cells[(backend, method)]["proved_runs"])
+            if len(completed) != expected:
+                raise ValueError(f"{backend}/{method} completed-runtime count disagrees")
+            completed_medians[(backend, method)] = statistics.median(completed)
+        proved_maxsat = [
+            row for row in method_rows
+            if row["maxsat_status"] in {"OPTIMUM", "UNSAT", "UNSATISFIABLE"}
+        ]
+        for backend, elapsed_field in (
+            ("gurobi-mip", "gurobi_elapsed_seconds"),
+            ("cplex-mip", "cplex_elapsed_seconds"),
+        ):
+            pairwise_slowdowns[(backend, method)] = statistics.median(
+                float(row["maxsat_elapsed_seconds"]) / float(row[elapsed_field])
+                for row in proved_maxsat
+            )
     size_fields = ("users", "agents", "visits")
     size_strata_support: dict[str, bool] = {}
     for method in POLICIES:
@@ -295,6 +530,25 @@ def generate(
             - float(cells[(method, "totalizer")]["median_variables"])
         )
         / float(cells[(method, "sorting-network")]["median_variables"])
+        for method in POLICIES
+    }
+    hard_clause_changes = {
+        method: 100
+        * (
+            float(cells[(method, "totalizer")]["median_hard_clauses"])
+            - float(cells[(method, "sorting-network")]["median_hard_clauses"])
+        )
+        / float(cells[(method, "sorting-network")]["median_hard_clauses"])
+        for method in POLICIES
+    }
+    memory_multipliers = {
+        method: float(cells[(method, "totalizer")]["median_peak_rss_mb"])
+        / float(cells[(method, "sorting-network")]["median_peak_rss_mb"])
+        for method in POLICIES
+    }
+    hard_clause_multipliers = {
+        method: float(cells[(method, "totalizer")]["median_hard_clauses"])
+        / float(cells[(method, "sorting-network")]["median_hard_clauses"])
         for method in POLICIES
     }
     par2_reductions = {
@@ -406,9 +660,36 @@ def generate(
                 for row in policy_pair_details
             ),
         ),
+        _macro("CommercialComparisonPairCount", len(cross_solver_pairs)),
+        _macro("CommercialStatusAgreementCount", commercial_status_agreements),
+        _macro("CommercialObjectiveAgreementCount", commercial_objective_agreements),
+        _macro("CommercialOptimalCaseCount", commercial_optimal_cases),
+        _macro("CommercialInfeasibleCaseCount", commercial_infeasible_cases),
+        _macro("MaxsatDecidedAgreementCount", maxsat_decided_agreements),
+        _macro("MaxsatObjectiveAgreementCount", maxsat_objective_agreements),
+        _macro(
+            "WeightedMaxsatOverGurobiMedian",
+            _number(pairwise_slowdowns[("gurobi-mip", "weighted")], 0),
+        ),
+        _macro(
+            "WeightedMaxsatOverCplexMedian",
+            _number(pairwise_slowdowns[("cplex-mip", "weighted")], 0),
+        ),
+        _macro(
+            "LexCosMaxsatOverGurobiMedian",
+            _number(pairwise_slowdowns[("gurobi-mip", "lex-cos")], 0),
+        ),
+        _macro(
+            "LexCosMaxsatOverCplexMedian",
+            _number(pairwise_slowdowns[("cplex-mip", "lex-cos")], 0),
+        ),
     ]
     for method in POLICIES:
         prefix = "Weighted" if method == "weighted" else "LexCos"
+        for suffix, field in (("RuntimeReductionPercent", "median"),
+                              ("RuntimeReductionLow", "ci_low"),
+                              ("RuntimeReductionHigh", "ci_high")):
+            macro_lines.append(_macro(prefix + suffix, _fixed(runtime_reductions[method][field])))
         contrast = contrast_by_policy[method]
         status_row = cells[(method, "totalizer")]
         macro_lines.extend(
@@ -441,8 +722,28 @@ def generate(
                     _number(variable_reductions[method], 0),
                 ),
                 _macro(
+                    f"{prefix}HardClauseChangePercent",
+                    _number(hard_clause_changes[method], 0),
+                ),
+                _macro(
+                    f"{prefix}HardClauseMultiplier",
+                    _number(hard_clause_multipliers[method], 1),
+                ),
+                _macro(
+                    f"{prefix}MemoryMultiplier",
+                    _number(memory_multipliers[method], 1),
+                ),
+                _macro(
                     f"{prefix}ParTwoReductionPercent",
                     _number(par2_reductions[method], 1),
+                ),
+                _macro(
+                    f"{prefix}RuntimeIncreasePercent",
+                    _number(max(0.0, -runtime_reductions[method]["median"]), 1),
+                ),
+                _macro(
+                    f"{prefix}ParTwoIncreasePercent",
+                    _number(max(0.0, -par2_reductions[method]), 1),
                 ),
             )
         )
@@ -458,40 +759,46 @@ def generate(
 
     policy_table_lines = [
         "% Generated by experiments/generate_compact_manuscript_results.py.",
-        r"\begin{table}[H]",
-        rf"\caption{{The table compares LEX-COS with Weighted on {len(policy_pair_details)} "
-        r"HCORAP-LC instances. The second column reports whether LEX-COS is better, "
-        r"the same, or worse. Both solutions in every pair are proved optimal.}",
+        r"\begin{table}[tbp]",
+        rf"\caption{{Care outcomes under LEX-COS compared with Weighted on {len(policy_pair_details)} "
+        r"HCORAP-LC instances.}",
         r"\label{tab:policy}",
         r"\centering",
         r"\small",
-        r"\setlength{\tabcolsep}{3.8pt}",
-        r"\renewcommand{\arraystretch}{1.08}",
-        r"\begin{tabular}{@{}llll@{}}",
+        r"\setlength{\tabcolsep}{7pt}",
+        r"\renewcommand{\arraystretch}{1.15}",
+        r"\begin{tabular}{lcccccc}",
         r"\toprule",
-        r"Measure & Better / same / worse & Median difference & Middle 50\%\\",
+        r" & & \multicolumn{3}{c}{Instances} & \multicolumn{2}{c}{Reduction from Weighted}\\",
+        r"\cmidrule(lr){3-5}\cmidrule(l){6-7}",
+        r"Care outcome & Preferred value & Better & Unchanged & Worse & Median & Middle 50\%\\",
         r"\midrule",
-        rf"Continuity ($\CONT\downarrow$) & {sum(value < 0 for value in continuity_changes)} / "
-        rf"{sum(value == 0 for value in continuity_changes)} / {sum(value > 0 for value in continuity_changes)} & "
-        rf"${_fixed(continuity_reduction)}$ fewer & "
-        rf"[${_fixed(_percentile((-value for value in continuity_changes), 0.25))}$, "
-        rf"${_fixed(_percentile((-value for value in continuity_changes), 0.75))}$] fewer\\",
-        rf"Overtime ($\OT\downarrow$) & {sum(value < 0 for value in overtime_changes)} / "
-        rf"{sum(value == 0 for value in overtime_changes)} / {sum(value > 0 for value in overtime_changes)} & "
-        rf"${_fixed(overtime_reduction)}$ fewer & "
-        rf"[${_fixed(_percentile((-value for value in overtime_changes), 0.25))}$, "
-        rf"${_fixed(_percentile((-value for value in overtime_changes), 0.75))}$] fewer\\",
-        rf"Compatibility ($\SIM\uparrow$) & {sum(value > 0 for value in similarity_changes)} / "
-        rf"{sum(value == 0 for value in similarity_changes)} / {sum(value < 0 for value in similarity_changes)} & "
-        rf"${_fixed(-compatibility_change)}$ lower (${_fixed(-compatibility_relative_change)}\%$) & "
-        rf"[${_fixed(_percentile((-value for value in similarity_changes), 0.25))}$, "
-        rf"${_fixed(_percentile((-value for value in similarity_changes), 0.75))}$] lower\\",
-        r"\midrule",
-        rf"\multicolumn{{4}}{{@{{}}l}}{{\textit{{Continuity and overtime both improve in {both_improved} of {len(policy_pair_details)} pairs.}}}}\\",
-        r"\bottomrule",
-        r"\end{tabular}",
-        r"\end{table}",
     ]
+    policy_table_rows = (
+        ("Continuity violations", "Lower", continuity_changes,
+         [-value for value in continuity_changes]),
+        ("Overtime (service units)", "Lower", overtime_changes,
+         [-value for value in overtime_changes]),
+        (r"Compatibility (\%)", "Higher", similarity_changes,
+         [-value for value in similarity_relative_changes]),
+    )
+    for label, preferred, changes, reductions in policy_table_rows:
+        better = sum(value < 0 if preferred == "Lower" else value > 0 for value in changes)
+        worse = sum(value > 0 if preferred == "Lower" else value < 0 for value in changes)
+        policy_table_lines.append(
+            f"{label} & {preferred} & {better} & {sum(value == 0 for value in changes)} & {worse} & "
+            f"{_fixed(statistics.median(reductions))} & "
+            f"[{_fixed(_percentile(reductions, 0.25))}, {_fixed(_percentile(reductions, 0.75))}]"
+            + r"\\"
+        )
+    policy_table_lines.extend((
+        r"\bottomrule", r"\end{tabular}",
+        r"\par\smallskip\begin{minipage}{0.92\linewidth}\footnotesize",
+        r"Compatibility reductions are relative to each instance's Weighted SIM score. "
+        r"The middle 50\% spans the 25th to 75th percentiles.",
+        r"\end{minipage}",
+        r"\end{table}",
+    ))
     policy_table_path = output / "compact_policy_table.tex"
     policy_table_path.write_text(
         "\n".join(policy_table_lines) + "\n", encoding="utf-8"
@@ -499,46 +806,146 @@ def generate(
 
     table_lines = [
         "% Generated by experiments/generate_compact_manuscript_results.py.",
-        r"\begin{table}[H]",
-        r"\caption{EvalMaxSAT results on 48 Original instances. Each policy is "
-        r"tested with a sorting network (SN) and a Totalizer (TOT) under a "
-        r"3600\,s limit. Median runtime is calculated over proved runs.}",
+        r"\begin{table}[tbp]",
+        r"\caption{EvalMaxSAT performance on 48 Original instances per configuration.}",
         r"\label{tab:policy-encoding}",
         r"\centering",
         r"\small",
-        r"\setlength{\tabcolsep}{3.4pt}",
-        r"\begin{tabular}{@{}llrrrrrr@{}}",
+        r"\setlength{\tabcolsep}{3pt}",
+        r"\renewcommand{\arraystretch}{1.15}",
+        r"\begin{tabular*}{\linewidth}{@{\extracolsep{\fill}}llccc@{}}",
         r"\toprule",
-        r"Policy & Enc. & Proved & PAR-2 & Median & Memory & Variables & Constraint clauses\\",
-        r" & & (/48) & (s) & (s) & (MB) & & \\",
+        r" & & Result counts & \multicolumn{2}{c}{Runtime (s)}\\",
+        r"\cmidrule(lr){3-3}\cmidrule(l){4-5}",
+        r"Policy & Encoding & Opt / Inf / TO & PAR-2 & Median\\",
         r"\midrule",
     ]
     for method in POLICIES:
-        for encoding in ENCODINGS:
-            row = cells[(method, encoding)]
-            table_lines.append(
-                "{} & {} & {} & {} & {} & {} & {} & {}\\\\".format(
-                    _policy_label(method),
-                    _encoding_label(encoding),
-                    _integer(row["proved_runs"]),
-                    _fixed(row["par2_seconds"]),
-                    _fixed(row["median_proved_seconds"]),
-                    _fixed(row["median_peak_rss_mb"]),
-                    _grouped(row["median_variables"]),
-                    _grouped(row["median_hard_clauses"]),
-                )
-            )
+        sn_row = cells[(method, "sorting-network")]
+        tot_row = cells[(method, "totalizer")]
+
+        def _pair(val_sn: float, val_tot: float, fmt_fn: Any, lower_is_better: bool = True) -> tuple[str, str]:
+            str_sn = fmt_fn(val_sn)
+            str_tot = fmt_fn(val_tot)
+            if math.isclose(float(val_sn), float(val_tot), rel_tol=1e-7, abs_tol=1e-7):
+                return str_sn, str_tot
+            sn_better = (val_sn < val_tot) if lower_is_better else (val_sn > val_tot)
+            if sn_better:
+                return rf"\textbf{{{str_sn}}}", str_tot
+            return str_sn, rf"\textbf{{{str_tot}}}"
+
+        opt_s, opt_t = _pair(_integer(sn_row["optimum_runs"]), _integer(tot_row["optimum_runs"]), str, False)
+        unsat_s, unsat_t = _pair(_integer(sn_row["unsat_runs"]), _integer(tot_row["unsat_runs"]), str, False)
+        to_s, to_t = _pair(_integer(sn_row["timeout_runs"]), _integer(tot_row["timeout_runs"]), str, True)
+        par2_s, par2_t = _pair(float(sn_row["par2_seconds"]), float(tot_row["par2_seconds"]), _fixed, True)
+        med_s, med_t = _pair(float(sn_row["median_proved_seconds"]), float(tot_row["median_proved_seconds"]), _fixed, True)
+        table_lines.append(
+            f"{_policy_label(method)} & SN & {opt_s} / {unsat_s} / {to_s} & "
+            f"{par2_s} & {med_s}\\\\"
+        )
+        table_lines.append(
+            f"{_policy_label(method)} & TOT & {opt_t} / {unsat_t} / {to_t} & "
+            f"{par2_t} & {med_t}\\\\"
+        )
         if method != POLICIES[-1]:
             table_lines.append(r"\addlinespace")
-    table_lines.extend((r"\bottomrule", r"\end{tabular}", r"\end{table}"))
+    table_lines.extend((
+        r"\bottomrule", r"\end{tabular*}",
+        r"\par\smallskip\begin{minipage}{\linewidth}\footnotesize",
+        r"Opt / Inf / TO: optimal / infeasible / timed out. "
+        r"Medians cover proved runs; PAR-2 includes all 48 runs. "
+        r"Bold marks the lower runtime within each policy.",
+        r"\end{minipage}", r"\end{table}",
+    ))
     table_path = output / "compact_encoding_table.tex"
     table_path.write_text("\n".join(table_lines) + "\n", encoding="utf-8")
 
+    backend_labels = {
+        "evalmaxsat-totalizer": "EvalMaxSAT",
+        "gurobi-mip": "Gurobi",
+        "cplex-mip": "CPLEX",
+    }
+    commercial_table_lines = [
+        "% Generated by experiments/generate_compact_manuscript_results.py.",
+        r"\begin{table}[tbp]",
+        r"\caption{Exact-solver performance on 48 Original instances per policy.}",
+        r"\label{tab:exact-solvers}",
+        r"\centering", r"\small", r"\setlength{\tabcolsep}{3pt}",
+        r"\renewcommand{\arraystretch}{1.12}",
+        r"\begin{tabular*}{\columnwidth}{@{\extracolsep{\fill}}llccc@{}}",
+        r"\toprule",
+        r" & & Result counts & \multicolumn{2}{c}{Runtime (s)}\\",
+        r"\cmidrule(lr){3-3}\cmidrule(l){4-5}",
+        r"Solver & Policy & Opt / Inf / TO & PAR-2 & Median\\",
+        r"\midrule",
+    ]
+    best_par2_by_policy = {
+        method: min(float(commercial_cells[(b, method)]["par2_seconds"]) for b in expected_backends)
+        for method in POLICIES
+    }
+    best_med_by_policy = {
+        method: min(float(completed_medians[(b, method)]) for b in expected_backends)
+        for method in POLICIES
+    }
+    for backend in expected_backends:
+        for method in POLICIES:
+            row = commercial_cells[(backend, method)]
+            par2_val = float(row["par2_seconds"])
+            med_val = completed_medians[(backend, method)]
+            par2_str = f"{par2_val:.1f}" if par2_val >= 10.0 else f"{par2_val:.2f}"
+            med_str = f"{med_val:.1f}" if med_val >= 10.0 else f"{med_val:.2f}"
+            if math.isclose(par2_val, best_par2_by_policy[method], rel_tol=1e-5, abs_tol=1e-5):
+                par2_str = rf"\textbf{{{par2_str}}}"
+            if math.isclose(med_val, best_med_by_policy[method], rel_tol=1e-5, abs_tol=1e-5):
+                med_str = rf"\textbf{{{med_str}}}"
+            commercial_table_lines.append(
+                "{} & {} & {} / {} / {} & {} & {}\\\\".format(
+                    backend_labels[backend], _policy_label(method),
+                    _integer(row["optimal_runs"]), _integer(row["infeasible_runs"]),
+                    _integer(row["timeout_runs"]), par2_str, med_str,
+                )
+            )
+        if backend != expected_backends[-1]:
+            commercial_table_lines.append(r"\addlinespace")
+    commercial_table_lines.extend((
+        r"\bottomrule", r"\end{tabular*}",
+        r"\par\smallskip\begin{minipage}{\linewidth}\footnotesize",
+        r"Opt / Inf / TO: optimal / infeasible / timed out. "
+        r"EvalMaxSAT uses Totalizer. Median runtime covers proved runs; "
+        r"PAR-2 includes all 48 runs. Bold marks the fastest runtime within each policy.",
+        r"\end{minipage}", r"\end{table}",
+    ))
+    commercial_table_path = output / "compact_commercial_table.tex"
+    commercial_table_path.write_text(
+        "\n".join(commercial_table_lines) + "\n", encoding="utf-8"
+    )
+
+    policy_figure, encoding_figure = _figure_fragments(
+        [[-v for v in continuity_changes], [-v for v in overtime_changes],
+         [-v for v in similarity_relative_changes]], runtime_reductions
+    )
+    figure_paths = []
+    for name, content in (("compact_policy_figure.tex", policy_figure),
+                          ("compact_encoding_figure.tex", encoding_figure)):
+        path = output / name
+        path.write_text(content, encoding="utf-8")
+        figure_paths.append(path)
+    figure_statistics = output / "compact_figure_statistics.json"
+    figure_statistics.write_text(json.dumps({
+        "runtime_reduction_formula": "100 * (sorting_elapsed_seconds - totalizer_elapsed_seconds) / sorting_elapsed_seconds",
+        "bootstrap_samples": 10000, "bootstrap_seed": 20260908,
+        "bootstrap_unit": "jointly proved instance pair within each policy",
+        "confidence_interval": "percentile 95% for median runtime reduction",
+        "runtime_reductions": runtime_reductions,
+        "policy_box_whiskers": "minimum and maximum; box is 25th to 75th percentile",
+    }, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    figure_paths.append(figure_statistics)
     provenance = {
         "schema_version": 1,
         "scope": "two-study-compact-manuscript-results",
         "policy_gate": True,
         "encoding_gate": True,
+        "commercial_gate": True,
         "totalizer_claim_supported": claim_support,
         "inputs": {
             _portable(path): _sha256(path)
@@ -548,6 +955,8 @@ def generate(
             macros_path.name: _sha256(macros_path),
             policy_table_path.name: _sha256(policy_table_path),
             table_path.name: _sha256(table_path),
+            commercial_table_path.name: _sha256(commercial_table_path),
+            **{path.name: _sha256(path) for path in figure_paths},
         },
     }
     provenance_path = output / "compact_result_provenance.json"
@@ -561,12 +970,14 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--policy-analysis", type=Path, required=True)
     parser.add_argument("--encoding-analysis", type=Path, required=True)
+    parser.add_argument("--commercial-analysis", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     arguments = parser.parse_args()
     try:
         report = generate(
             arguments.policy_analysis.resolve(),
             arguments.encoding_analysis.resolve(),
+            arguments.commercial_analysis.resolve(),
             arguments.output.resolve(),
         )
     except (OSError, ValueError, KeyError, json.JSONDecodeError) as error:

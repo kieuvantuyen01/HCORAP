@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from experiments.generate_compact_manuscript_results import generate
+from experiments.generate_compact_manuscript_results import generate, _runtime_reduction_summary
 
 
 def _write_csv(path: Path, rows: list[dict[str, object]]) -> None:
@@ -16,12 +16,14 @@ def _write_csv(path: Path, rows: list[dict[str, object]]) -> None:
         writer.writerows(rows)
 
 
-def _inputs(tmp_path: Path) -> tuple[Path, Path, Path]:
+def _inputs(tmp_path: Path) -> tuple[Path, Path, Path, Path]:
     policy = tmp_path / "policy"
     encoding = tmp_path / "encoding"
+    commercial = tmp_path / "commercial"
     output = tmp_path / "generated"
     policy.mkdir()
     encoding.mkdir()
+    commercial.mkdir()
 
     (policy / "corrected_exact_validation.json").write_text(
         json.dumps({"manuscript_eligible": True}), encoding="utf-8"
@@ -100,6 +102,8 @@ def _inputs(tmp_path: Path) -> tuple[Path, Path, Path]:
                     "method": method,
                     "both_proved": index < 46,
                     "speedup_sorting_over_totalizer": 1.5,
+                    "sorting_elapsed_seconds": 15,
+                    "totalizer_elapsed_seconds": 10,
                 }
             )
     _write_csv(encoding / "policy_encoding_pairs.csv", pair_rows)
@@ -119,16 +123,57 @@ def _inputs(tmp_path: Path) -> tuple[Path, Path, Path]:
             for method in ("weighted", "lex-cos")
         ],
     )
-    return policy, encoding, output
+    (commercial / "full_exact_baseline_validation.json").write_text(
+        json.dumps({
+            "evidence_valid": True,
+            "runtime_comparison_valid": True,
+            "maxsat_runs": 192,
+            "gurobi_runs": 96,
+            "cplex_runs": 96,
+        }), encoding="utf-8"
+    )
+    exact_summary = []
+    for backend in ("evalmaxsat-totalizer", "gurobi-mip", "cplex-mip"):
+        for method in ("weighted", "lex-cos"):
+            maxsat = backend == "evalmaxsat-totalizer"
+            exact_summary.append({
+                "backend": backend, "method": method, "runs": 48,
+                "optimal_runs": 40 if maxsat else 46,
+                "infeasible_runs": 6 if maxsat else 2,
+                "proved_runs": 46 if maxsat else 48,
+                "timeout_runs": 2 if maxsat else 0, "median_elapsed_seconds": 10,
+                "par2_seconds": 100, "median_peak_rss_mb": 80,
+            })
+    _write_csv(commercial / "exact_method_summary.csv", exact_summary)
+    cross_rows = []
+    for method in ("weighted", "lex-cos"):
+        for index in range(48):
+            proved = index < 46
+            cross_rows.append({
+                "method": method,
+                "maxsat_status": "OPTIMUM" if proved else "TIMEOUT",
+                "gurobi_status": "OPTIMUM" if proved else "INFEASIBLE",
+                "cplex_status": "OPTIMUM" if proved else "INFEASIBLE",
+                "commercial_status_agreement": True,
+                "commercial_objective_agreement_when_optimal": True if proved else "",
+                "maxsat_status_agreement_when_decided": True if proved else "",
+                "maxsat_objective_agreement_when_optimal": True if proved else "",
+                "maxsat_elapsed_seconds": 20,
+                "gurobi_elapsed_seconds": 1,
+                "cplex_elapsed_seconds": 2,
+            })
+    _write_csv(commercial / "cross_solver_pairs.csv", cross_rows)
+    return policy, encoding, commercial, output
 
 
-def test_generator_emits_only_after_both_gates_pass(tmp_path: Path) -> None:
-    policy, encoding, output = _inputs(tmp_path)
+def test_generator_emits_only_after_all_gates_pass(tmp_path: Path) -> None:
+    policy, encoding, commercial, output = _inputs(tmp_path)
 
-    report = generate(policy, encoding, output)
+    report = generate(policy, encoding, commercial, output)
 
     assert report["policy_gate"] is True
     assert report["encoding_gate"] is True
+    assert report["commercial_gate"] is True
     assert report["totalizer_claim_supported"] == {
         "weighted": True,
         "lex-cos": True,
@@ -139,23 +184,63 @@ def test_generator_emits_only_after_both_gates_pass(tmp_path: Path) -> None:
     assert r"\BothPriorityMeasuresImprovedCount}{42}" in macros
     assert r"\PolicyEffectCoordinates" in macros
     assert r"\LexCosVariableReductionPercent}{50}" in macros
+    assert r"\LexCosHardClauseChangePercent}{14}" in macros
+    assert r"\CommercialComparisonPairCount}{96}" in macros
     assert r"\EncodingSizeStrataConclusion" in macros
-    assert "Continuity and overtime both improve in 42 of 48 pairs" in policy_table
-    assert "whether LEX-COS is better" in policy_table
-    assert "Better / same / worse" in policy_table
-    assert "Weighted & SN & 46" in table
-    assert "Median runtime is calculated over proved runs" in table
-    assert "LEX-COS & TOT & 46" in table
+    assert "Weighted SIM score" in policy_table
+    assert "Better & Unchanged & Worse" in policy_table
+    assert r"Compatibility (\%) & Higher & 0 & 0 & 48 & 6.0 & [6.0, 6.0]" in policy_table
+    assert "Continuity violations & Lower & 43 & 5 & 0" in policy_table
+    assert "Weighted & SN & 40 / 6 / 2 & 120.0 & 15.0" in table
+    assert r"LEX-COS & TOT & 40 / 6 / 2 & \textbf{100.0} & \textbf{10.0}" in table
+    assert "Medians cover proved runs; PAR-2 includes all 48 runs" in table
     assert (output / "compact_result_provenance.json").is_file()
+    stats = json.loads((output / "compact_figure_statistics.json").read_text())
+    assert stats["runtime_reductions"]["weighted"]["median"] == pytest.approx(100 / 3)
+    assert stats["runtime_reductions"]["weighted"]["excluded_pairs"] == 2
+    assert "compact_policy_figure.tex" in report["outputs"]
+    assert "compact_encoding_figure.tex" in report["outputs"]
+    assert "compact_commercial_table.tex" in report["outputs"]
+    commercial_table = (output / "compact_commercial_table.tex").read_text(
+        encoding="utf-8"
+    )
+    assert "EvalMaxSAT" in commercial_table
+    assert "Gurobi" in commercial_table
+    assert "CPLEX" in commercial_table
+    assert "Opt / Inf / TO" in commercial_table
+
+
+def test_runtime_reduction_uses_paired_percentages_and_excludes_timeouts() -> None:
+    rows = [
+        {"both_proved": "True", "sorting_elapsed_seconds": "100", "totalizer_elapsed_seconds": "50"},
+        {"both_proved": "True", "sorting_elapsed_seconds": "100", "totalizer_elapsed_seconds": "200"},
+        {"both_proved": "False", "sorting_elapsed_seconds": "3600", "totalizer_elapsed_seconds": "1"},
+    ]
+    stats = _runtime_reduction_summary(rows)
+    assert stats["median"] == -25  # Median of 50% and -100%, not transformed median ratio.
+    assert stats["reductions_percent"] == [-100, 50]
+    assert stats["ci_low"] == -100
+    assert stats["ci_high"] == 50
+    assert stats["excluded_pairs"] == 1
+    assert stats == _runtime_reduction_summary(rows[::-1])
+
+
+@pytest.mark.parametrize("runtime", ["0", "-1", "nan", "inf"])
+def test_runtime_reduction_rejects_invalid_times(runtime: str) -> None:
+    with pytest.raises(ValueError, match="finite and positive"):
+        _runtime_reduction_summary([{
+            "both_proved": "True", "sorting_elapsed_seconds": runtime,
+            "totalizer_elapsed_seconds": "1",
+        }])
 
 
 def test_generator_rejects_failed_encoding_gate(tmp_path: Path) -> None:
-    policy, encoding, output = _inputs(tmp_path)
+    policy, encoding, commercial, output = _inputs(tmp_path)
     (encoding / "policy_encoding_validation.json").write_text(
         json.dumps({"evidence_valid": False}), encoding="utf-8"
     )
 
     with pytest.raises(ValueError, match="evidence gate"):
-        generate(policy, encoding, output)
+        generate(policy, encoding, commercial, output)
 
     assert not output.exists()
