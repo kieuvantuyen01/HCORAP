@@ -2,6 +2,7 @@
 """Generate paired capacity variants from the archived 48-instance HCORAP-LC suite."""
 from __future__ import annotations
 import argparse
+import csv
 import json
 import sys
 from dataclasses import replace
@@ -13,6 +14,24 @@ sys.path.insert(0, str(ROOT / 'src/proposed'))
 from hcorap.io import read_instance
 from hcorap.generator import calibrate_capacity, generation_witness, write_generated_instance
 from hcorap.metrics import verify_assignments
+
+
+PUBLIC_POLICY_TABLE = ROOT / 'artifact/results/policy/corrected_pairwise_pairs.csv'
+
+
+def public_parents(table: Path = PUBLIC_POLICY_TABLE) -> list[tuple[Path, str]]:
+    """Load the 48 parent instances from the versioned artifact table."""
+    parents: dict[Path, str] = {}
+    with table.open(newline='', encoding='utf-8') as handle:
+        for row in csv.DictReader(handle):
+            path = ROOT / row['instance']
+            digest = row['instance_sha256']
+            previous = parents.setdefault(path, digest)
+            if previous != digest:
+                raise ValueError(f'inconsistent hashes for {path}')
+    if len(parents) != 48:
+        raise ValueError(f'expected 48 public parents, found {len(parents)}')
+    return sorted(parents.items())
 
 
 def generate(parents: list[tuple[Path,str]], output: Path, rhos=(.55,.85,.98), normal_fractions=(.70,.85,1.0)):
@@ -56,9 +75,17 @@ def generate(parents: list[tuple[Path,str]], output: Path, rhos=(.55,.85,.98), n
 
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser(description=__doc__);p.add_argument('--source',type=Path,default=ROOT/'results_v2/gcp_commercial_corrected_primary')
+    p=argparse.ArgumentParser(description=__doc__)
+    p.add_argument('--source',type=Path,help='optional archived corrected campaign')
     p.add_argument('--output',type=Path,default=ROOT/'instances/research_depth_load_sweep')
-    a=p.parse_args();parents={}
-    for record,payload in campaign_records(a.source):
-        path=resolve_instance(record['instance'],record['instance_sha256']);parents[path]=record['instance_sha256']
-    result=generate(list(parents.items()),a.output);print(f"Verified {result['variants']} variants from {result['parents']} parents; manifest: {a.output/'load_sweep_manifest.json'}")
+    a=p.parse_args()
+    if a.source is None:
+        parent_rows = public_parents()
+    else:
+        parents = {}
+        for record, payload in campaign_records(a.source):
+            path = resolve_instance(record['instance'], record['instance_sha256'])
+            parents[path] = record['instance_sha256']
+        parent_rows = list(parents.items())
+    result=generate(parent_rows,a.output)
+    print(f"Verified {result['variants']} variants from {result['parents']} parents; manifest: {a.output/'load_sweep_manifest.json'}")

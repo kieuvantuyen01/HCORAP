@@ -64,26 +64,32 @@ experiments/results/*
 /experiments/archive/
 /results_reduced/
 /results_v2/
+/results/
+/results_addition/
+/results_cardinality_aligned_3600/
 /hcorap_compact_policy_encoding_*/
 
 # Local literature library (do not redistribute third-party PDFs)
 /docs/*.pdf
 
-# Legacy LaTeX build products; keep the manuscript source only
-/doc/main.aux
-/doc/main.fdb_latexmk
-/doc/main.fls
-/doc/main.log
-/doc/main.pdf
-/doc/main.synctex.gz
-/doc/main.toc
+# Local manuscripts and editorial notes
+/doc/
+/Optimizing resource allocation in home care services using MaxSAT.*
+/contribution.md
+/critical_review_submission_plan.md
+/guide.md
+/literature_review.md
+/manuscript_content_review.md
+/manuscript_review*.md
+/phan_hoi_review_ke_hoach.md
+/review_ke_hoach.md
+/submission_plan.md
 
 # Scratch output, not research data
 /results/temp.csv
 
 # Generated files for the research-plan document
 /Ke_hoach_nghien_cuu_HCORAP.*
-!/Ke_hoach_nghien_cuu_HCORAP.tex
 
 # Manuscript folder (keep local only, do not track in repository)
 /LaTeX-Templates/
@@ -91,3 +97,18 @@ experiments/results/*
 # Reproducible capacity variants (generator and manifest checks are tracked)
 /instances/research_depth_load_sweep/
 /results_research_depth_*/
+
+# Internal review and superseded experiment-planning notes
+/docs/*AUDIT*.md
+/docs/*EXPERIMENT_MATRIX*.md
+/docs/*EXPERIMENT_GAP*.md
+/docs/*EXPERIMENT_SUPPLEMENT*.md
+/docs/*PILOT_REVIEW*.md
+/docs/*FULL_REVIEW*.md
+/docs/SCREENING_RESULTS_*.md
+/docs/SOICT_*.md
+/docs/ICIIT_*_SUBMISSION_CHECKLIST.md
+/docs/manuscript_peer_review_*.md
+
+# Unused historical solver copy retained only in local/history checkouts
+/src/smtapi/src/solvers/glucose còpia/

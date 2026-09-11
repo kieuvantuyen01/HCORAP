@@ -9,7 +9,6 @@ BUILD_JOBS=${HCORAP_BUILD_JOBS:-8}
 CPU_CORE=${HCORAP_CPU_CORE:-}
 EXPECTED_VCPUS=${HCORAP_EXPECTED_VCPUS:-8}
 PROVENANCE_REMOTE=${HCORAP_PROVENANCE_REMOTE:-origin}
-CORRECTED_SOURCE_RESULTS=${HCORAP_CORRECTED_SOURCE_RESULTS:-results_v2/gcp_commercial_corrected_primary}
 LOAD_MANIFEST=instances/research_depth_load_sweep/load_sweep_manifest.json
 BACKUP_ROOT=${HCORAP_BACKUP_DIR:-}
 RUNNER_PREFIX=()
@@ -59,10 +58,6 @@ Required for measured phases:
   HCORAP_EXPECTED_COMMIT=<full frozen commit or tag>
   CONFIRM_RESEARCH_DEPTH_PILOT=YES  for pilot and pilot-* phases
   CONFIRM_RESEARCH_DEPTH_FULL=YES   for full and all
-
-Required once when the generated load sweep is absent:
-  HCORAP_CORRECTED_SOURCE_RESULTS=<archived 144-run corrected campaign>
-  Default: results_v2/gcp_commercial_corrected_primary
 
 Optional:
   HCORAP_CPU_CORE=<allowed logical CPU>   default: first allowed CPU
@@ -233,11 +228,8 @@ prepare_inputs() {
     [ -d instances/paperInstances ] || die "Missing Original suite: instances/paperInstances"
 
     if [ ! -f "$LOAD_MANIFEST" ]; then
-        [ -d "$CORRECTED_SOURCE_RESULTS" ] || \
-            die "Load sweep is absent and source campaign is missing: $CORRECTED_SOURCE_RESULTS"
         log "Generating the paired 432-instance load sweep"
         python3 experiments/generate_load_sweep.py \
-            --source "$CORRECTED_SOURCE_RESULTS" \
             --output instances/research_depth_load_sweep
     fi
     validate_load_sweep

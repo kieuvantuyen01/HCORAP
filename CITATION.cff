@@ -1,0 +1,25 @@
+cff-version: 1.2.0
+message: "If you use this software or artifact, please cite the accompanying paper."
+title: "HCORAP Exact Multi-Criteria Optimization"
+type: software
+authors:
+  - family-names: Kieu
+    given-names: Tuyen Van
+  - family-names: Do
+    given-names: Khanh Ngoc
+  - family-names: To
+    given-names: Khanh Van
+repository-code: "https://github.com/kieuvantuyen01/HCORAP"
+license: MIT
+version: 0.1.0
+date-released: 2026-09-11
+preferred-citation:
+  type: conference-paper
+  title: "Exact Multi-Criteria Optimization for Home-Care Resource Allocation with MaxSAT"
+  authors:
+    - family-names: Kieu
+      given-names: Tuyen Van
+    - family-names: Do
+      given-names: Khanh Ngoc
+    - family-names: To
+      given-names: Khanh Van

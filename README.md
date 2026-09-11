@@ -1,411 +1,117 @@
-# HCORAP: thực nghiệm MaxSAT đồng nhất bằng C++
+# HCORAP exact multi-criteria optimization
 
-Repository gồm mã C++/instances đi kèm bài báo **Optimizing Resource
-Allocation in Home Care Services using MaxSAT** và phần mở rộng nghiên cứu đa
-mục tiêu. Đường chạy dùng cho bảng thực nghiệm chính hiện được triển khai hoàn
-toàn bằng C++ để tránh so runtime Python với baseline C++.
+This repository accompanies **Exact Multi-Criteria Optimization for Home-Care
+Resource Allocation with MaxSAT**. It contains the exact MaxSAT and commercial
+solver implementations, the benchmark instances used in the paper, the fixed
+experiment configurations, and a compact snapshot of the reported results.
 
-Các thành phần chính:
+The main policy, **LEX-COS**, optimizes continuity of care first, overtime
+second, and caregiver-service compatibility third. The experiments compare it
+with the published weighted objective and evaluate sorting-network and
+Totalizer cardinality encodings. Gurobi and CPLEX provide independent exact
+comparisons through the same model and result checker.
 
-- `bin/release/hcorap2sat`: encoder C++ của tác giả, dùng cho audit/tái lập;
-- `bin/release/hcorap_multi`: weighted, các policy lexicographic tuần tự hoặc
-  một lần gọi, và epsilon-constraint bằng C++;
-- `bin/release/hcorap_commercial`: cùng policy/verifier cho Gurobi MIP,
-  CPLEX MIP và hai formulation CP Optimizer;
-- `src/proposed/cpp/encodings`: hard model C++ và các strategy encoding dùng
-  cho ablation;
-- `experiments/run_cpp_experiments.sh`: điều phối campaign không có Python trên
-  đường đo thời gian;
-- `src/proposed/hcorap`: oracle/verifier/generator Python dùng để kiểm thử chéo,
-  không dùng làm implementation trong bảng runtime chính.
+## Repository map
 
-Kế hoạch nghiên cứu nằm trong `Ke_hoach_nghien_cuu_HCORAP.tex`; quy tắc benchmark
-chi tiết nằm trong `docs/FAIR_EXPERIMENT_PROTOCOL.md`.
+| Path | Contents |
+|---|---|
+| [`src/`](src/) | C++ solver code and the Python `hcorap` package |
+| [`instances/`](instances/) | Original benchmark and the 48-instance HCORAP-LC evaluation suite |
+| [`experiments/`](experiments/) | Fixed configurations, runners, analyzers, and validation tools |
+| [`artifact/`](artifact/) | Paper supplement, derived result tables, and checksums |
+| [`docs/`](docs/) | Model, solver, protocol, and GCP reproduction notes |
+| [`tests/`](tests/) | Unit and integration tests |
 
-## Publication campaign ICIIT 2027
+Raw solver logs and superseded experiment campaigns are intentionally excluded
+from the current tree. The derived tables needed to inspect every claim in the
+paper are versioned under `artifact/results/`.
 
-Pipeline đang được khóa cho bản thảo nằm trong
-[`experiments/README.md`](experiments/README.md). Không dùng các legacy 8-config
-scripts bên dưới để bổ sung vào publication dataset.
+## Inspect the published artifact
 
-Thiết kế main-paper hiện tại chỉ còn hai studies. Phần cần chạy mới là ma trận
-`48 Original × 2 policies × 2 encodings`, IC và SB đều tắt, timeout 3.600 giây.
-Hướng dẫn và evidence gates nằm trong
-[`docs/COMPACT_RESULTS_RUNBOOK.md`](docs/COMPACT_RESULTS_RUNBOOK.md). Entry point
-trên GCP là:
+No solver license is needed to validate the result snapshot and its benchmark
+inputs:
 
-```sh
-./experiments/run_compact_policy_encoding.sh preflight
-export CONFIRM_COMPACT_POLICY_ENCODING=YES
-./experiments/run_compact_policy_encoding.sh all
+```bash
+python3 experiments/verify_public_artifact.py
 ```
 
-Sau khi hai study đều qua evidence gate, sinh bảng bốn cells và macro LaTeX
-từ các CSV đã kiểm định bằng:
+The command checks every published table against
+[`artifact/results/manifest.json`](artifact/results/manifest.json), verifies
+the declared row counts, and matches all 48 HCORAP-LC instance hashes to the
+paired policy table. The full interpretation of these tables is in the
+[`experimental supplement`](artifact/SUPPLEMENT.md).
 
-```sh
-./experiments/run_compact_policy_encoding.sh manuscript
+## Install the Python tools
+
+Python 3.9 or newer is required.
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python3 -m pip install -e '.[test]'
 ```
 
-Phase này yêu cầu analysis Corrected-v2 và analysis mới cùng có trên máy; xem
-biến `HCORAP_POLICY_ANALYSIS` và `HCORAP_MANUSCRIPT_RESULTS` trong runbook.
+The Python package provides instance parsing, independent solution checks,
+reference methods for small cases, and experiment utilities. The measured
+MaxSAT and commercial-solver runs use the C++ executables.
 
-Manifest 924 runs bên dưới được giữ để kiểm toán thiết kế rộng trước đây, không
-phải campaign mặc định cho outline compact mới.
+## Build the C++ solvers
 
-Kiểm tra contract của campaign lịch sử bằng:
+The open build does not require a commercial solver SDK:
 
-```sh
-python3 experiments/validate_publication_campaign.py
-```
-
-Để chỉ chạy phần corrected-v2 exact-policy còn thiếu trên GCP, dùng
-`experiments/run_remaining_corrected_evidence.sh`; hướng dẫn môi trường,
-checkpoint và resume nằm trong
-[`docs/GCP_EXPERIMENT_RUNBOOK.md`](docs/GCP_EXPERIMENT_RUNBOOK.md).
-
-Chiến dịch bổ sung đánh giá EvalMaxSAT LEX-COS với timeout 3.600 giây dùng
-`experiments/run_maxsat_lex_3600.sh`. Ma trận pilot, quy tắc chọn đúng một
-candidate và hướng dẫn GCP nằm trong
-[`docs/MAXSAT_LEX_3600_RUNBOOK.md`](docs/MAXSAT_LEX_3600_RUNBOOK.md).
-
-## Build C++
-
-```sh
+```bash
 make -j4 YICES=0
 ```
 
-Lệnh này tạo `hcorap2sat`, `hcorap_multi` và bản
-`hcorap_commercial` không phụ thuộc SDK thương mại, với cùng compiler flags.
-Phần mở rộng MaxSAT dùng một backend C++ chung. Open-WBO 2.1 tại commit
-`80f3073e41028b219b0b0ad7c61fba28351f88e6` vẫn là backend phát triển mở;
-publication campaign trên GCP dùng EvalMaxSAT Linux x86-64, khóa bằng SHA-256
-`97614c996e1173ca0672ec46da153656046db1d84b9362a8561161ee750779f7` để nhất
-quán với solver family của nghiên cứu gốc.
+This creates the MaxSAT encoders and drivers under `bin/release/`. The measured
+campaign used EvalMaxSAT as the external MaxSAT solver. See
+[`docs/FAIR_EXPERIMENT_PROTOCOL.md`](docs/FAIR_EXPERIMENT_PROTOCOL.md) for the
+locked execution settings.
 
-```sh
-git clone https://github.com/sat-group/open-wbo.git /path/to/open-wbo
-git -C /path/to/open-wbo checkout 80f3073e41028b219b0b0ad7c61fba28351f88e6
-git -C /path/to/open-wbo submodule update --init --recursive
-make -C /path/to/open-wbo -j4
+Run the complete test suite after building:
+
+```bash
+python3 -m pytest -q
 ```
 
-Open-WBO cần GMP. Xem hướng dẫn macOS và protocol khóa solver/compiler trong
-`docs/FAIR_EXPERIMENT_PROTOCOL.md`.
+To include the Gurobi and CPLEX backends:
 
-## Gurobi MIP, CPLEX MIP và CP Optimizer
-
-MIP-E được dựng một lần rồi dịch sang Gurobi và CPLEX. CP Optimizer có hai
-formulation: `cp-t` dùng integer/table/global constraints và `cp-i` dùng
-optional intervals/`alternative`/`noOverlap`. Cả bốn cấu hình dùng chung
-parser, cumulative timeout, objective-policy driver, JSON schema và verifier
-độc lập.
-
-Kiểm tra backend đã được compile:
-
-```sh
-./bin/release/hcorap_commercial --list-backends
-```
-
-Build với SDK tương ứng:
-
-```sh
+```bash
 GUROBI_HOME=/path/to/gurobi \
-make -j4 YICES=0 GUROBI=1 hcorap_commercial
-
 CPLEX_STUDIO_DIR=/path/to/CPLEX_Studio \
-make -j4 YICES=0 CPLEX=1 hcorap_commercial
+make -j4 YICES=0 GUROBI=1 CPLEX=1 hcorap_commercial
+
+bin/release/hcorap_commercial --list-backends
 ```
 
-Hướng dẫn đầy đủ về build/link, license, tham số fairness, bốn preset và
-campaign runner nằm trong
-[`docs/COMMERCIAL_SOLVERS.md`](docs/COMMERCIAL_SOLVERS.md). Mô hình toán và
-ánh xạ implementation nằm trong
-[`docs/MIP_CP_FORMULATIONS.md`](docs/MIP_CP_FORMULATIONS.md).
+Both products require their own installations and valid licenses. Build and
+link details are in
+[`docs/COMMERCIAL_SOLVERS.md`](docs/COMMERCIAL_SOLVERS.md).
 
-## Chạy các phương pháp C++
+## Reproduce the experiments on GCP
 
-Weighted baseline tương đương objective gốc:
+Two entry points cover the experiments reported in the manuscript:
 
-```sh
-./bin/release/hcorap_multi INSTANCE.txt \
-  --solver /path/to/open-wbo/open-wbo \
-  --method weighted --wc 1 --wo 1 --timeout 300
+```bash
+# HCORAP-LC policy diagnostics, weights, and capacity sensitivity
+cp experiments/research_depth_gcp.env.example /path/outside/repo/research_depth_gcp.env
+set -a
+source /path/outside/repo/research_depth_gcp.env
+set +a
+experiments/run_research_depth_gcp.sh preflight
+
+# Original-suite policy/encoding study and complete CPLEX comparison
+experiments/run_cardinality_aligned_full_campaign.sh preflight
 ```
 
-Hai chính sách lexicographic:
-
-```sh
-./bin/release/hcorap_multi INSTANCE.txt \
-  --solver /path/to/open-wbo/open-wbo \
-  --method lex-continuity --timeout 300
-
-./bin/release/hcorap_multi INSTANCE.txt \
-  --solver /path/to/open-wbo/open-wbo \
-  --method lex-overtime --timeout 300
-```
-
-Một điểm epsilon-constraint:
-
-```sh
-./bin/release/hcorap_multi INSTANCE.txt \
-  --solver /path/to/open-wbo/open-wbo \
-  --method epsilon --delta 0.05 --timeout 300
-```
-
-Encoding cardinality mặc định vẫn là sorting network. Biến thể Totalizer mới
-được chọn độc lập với phương pháp tối ưu:
-
-```sh
-./bin/release/hcorap_multi INSTANCE.txt \
-  --solver /path/to/open-wbo/open-wbo \
-  --method weighted --cardinality-encoding totalizer --timeout 300
-```
-
-Hai biến thể có cùng ngữ nghĩa threshold; Totalizer được mã hóa hai chiều để
-verifier và các tầng lexicographic không phụ thuộc vào giá trị tùy ý của biến
-phụ. Trường `cardinality_encoding` trong JSON phân biệt từng run.
-
-Implied constraints được chọn bằng một option độc lập:
-
-```sh
-./bin/release/hcorap_multi INSTANCE.txt \
-  --solver /path/to/open-wbo/open-wbo \
-  --method weighted \
-  --cardinality-encoding totalizer \
-  --implied-constraints both-plus \
-  --timeout 300
-```
-
-Các giá trị hợp lệ là `none` (mặc định), `user-slots`, `slot-capacity`, `both`
-và `both-plus`. Xem định nghĩa, điều kiện đúng và ablation protocol trong
-`docs/IMPLIED_CONSTRAINTS.md`.
-
-Symmetry breaking là trục độc lập thứ ba:
-
-```sh
-./bin/release/hcorap_multi INSTANCE.txt \
-  --solver /path/to/open-wbo/open-wbo \
-  --cardinality-encoding totalizer \
-  --implied-constraints both-plus \
-  --symmetry-breaking slot-service \
-  --method weighted --timeout 300
-```
-
-Các giá trị là `none` (mặc định), `slots`, `services`, `slot-service`, `all`.
-Xem `docs/SYMMETRY_BREAKING.md`.
-
-Thêm `--soft-coverage` cho overload stress test. Coverage được tối đa hóa và
-cố định trước các objective còn lại. `--print-assignments` đưa assignment vào
-JSON; `--output result.json` ghi kết quả ra file.
-
-Weighted, Lexicographic và similarity-budget epsilon-constraint là ba chế độ
-độc lập. Nếu không truyền `--method`, executable vẫn chạy B0 `weighted` để bảo
-toàn baseline. JSON ghi rõ
-`objective_mode`, `objective_policy`, optimum từng tầng trong `stages` và
-`weighted_reference_score`. Với B1, trường cuối chỉ dùng để tham chiếu; kết quả
-được xếp hạng bằng vector `stages` theo đúng thứ tự ưu tiên, không bằng tổng có
-trọng số.
-
-Với B2, JSON ghi thêm `similarity_reference_optimum`,
-`similarity_lower_bound`, `similarity_realized_loss_absolute` và
-`similarity_realized_loss_fraction`. `delta` được phân tích dưới dạng phân số
-thập phân chính xác và lower bound dùng ceiling, không dùng số thực dấu phẩy
-động.
-
-Timeout là ngân sách tích lũy cho toàn bộ policy. `elapsed_seconds` đo:
-
-```text
-parse + encode + serialize WCNF + solve + C++ verification
-```
-
-Mỗi stage còn báo số biến/clauses, thời gian dựng công thức, thời gian solver và
-optimum. Mọi nghiệm `OPTIMUM` đều phải qua verifier C++ độc lập trước khi được
-ghi nhận.
-
-## Ma trận chính 8 cấu hình: tách B0, B1 và B2
-
-Campaign B0 giữ nguyên hàm mục tiêu weighted gốc:
-
-```sh
-bash experiments/run_main_8cfg.sh
-# tiếp tục sau khi bị ngắt:
-bash experiments/run_main_8cfg.sh --resume
-```
-
-Campaign B1 chạy tuần tự cả hai chính sách Lexicographic trên cùng 8 cấu hình:
-
-```sh
-bash experiments/run_lex_8cfg.sh
-# tiếp tục sau khi bị ngắt:
-bash experiments/run_lex_8cfg.sh --resume
-```
-
-Kết quả không trộn lẫn: B0 mặc định ở
-`experiments/results/main_8cfg`, còn B1 nằm trong hai thư mục
-`experiments/results/lex_8cfg/lex-continuity` và
-`experiments/results/lex_8cfg/lex-overtime`. Mỗi thư mục có CSV và summary
-riêng. Có thể đổi thư mục gốc của B1 bằng `RESULT_ROOT`.
-
-Campaign B2 chạy năm similarity budget chính trên cùng 8 cấu hình:
-
-```sh
-bash experiments/run_epsilon_8cfg.sh
-# tiếp tục sau khi bị ngắt:
-bash experiments/run_epsilon_8cfg.sh --resume
-```
-
-Mỗi delta được ghi riêng dưới
-`experiments/results/epsilon_8cfg/delta_*`. Sau campaign, runner tạo thêm:
-
-- `epsilon_results_all_deltas.csv`: toàn bộ B2 runs;
-- `epsilon_summary_by_delta_config.csv`: tổng hợp theo delta/cấu hình;
-- `epsilon_unique_points.csv`: gộp các delta dẫn đến cùng
-  `(coverage, similarity, continuity, overtime)`.
-
-Có thể pilot một grid nhỏ bằng `DELTAS="0 0.05"`. Full-coverage B2 dùng bốn
-solver calls cho mỗi delta; soft-coverage dùng thêm một tầng coverage.
-
-## Campaign C++ tái lập
-
-```sh
-SOLVER_ID=evalmaxsat-97614c996e11 TIMEOUT=300 \
-experiments/run_cpp_experiments.sh \
-  /opt/evalmaxsat/EvalMaxSAT_bin \
-  experiments/results/cpp_pilot \
-  tests/instances/tradeoff.txt \
-  instances/paperInstances/TXT_10-25_4-5_U30/instance_30_15_4_47.txt
-```
-
-Để chạy riêng Totalizer hoặc chạy ablation paired, source cấu hình tương ứng
-trước lệnh trên:
-
-```sh
-. experiments/configs/cpp/totalizer.env
-# hoặc:
-. experiments/configs/cpp/cardinality_ablation.env
-```
-
-Ablation implied constraints hoặc toàn bộ ma trận $2\times5$:
-
-```sh
-. experiments/configs/cpp/implied_ablation.env
-# hoặc:
-. experiments/configs/cpp/full_encoding_ablation.env
-```
-
-Ablation symmetry hoặc toàn bộ ma trận $2\times5\times5$:
-
-```sh
-. experiments/configs/cpp/symmetry_ablation.env
-# hoặc:
-. experiments/configs/cpp/full_configuration_matrix.env
-```
-
-Runner sinh một JSON cho mỗi run và `manifest.tsv` chứa SHA-256, instance,
-ba trục encoding, method, delta, output và exit code. Nó còn sinh
-`configuration_matrix.tsv`, `runs.csv` và `configuration_summary.csv`; hai file
-CSV dùng UTF-8 BOM và mở trực tiếp bằng Excel. Dùng result directory
-mới khi đổi schema/campaign. Shell chỉ điều phối; phần được đo vẫn là C++
-end-to-end.
-
-Screening chỉ chạy weighted baseline (không chạy lexicographic hoặc epsilon):
-
-```sh
-METHODS=weighted RUN_EPSILON=0 TIMEOUT=60 \
-experiments/run_cpp_experiments.sh \
-  /opt/evalmaxsat/EvalMaxSAT_bin \
-  experiments/results/weighted_screening \
-  INSTANCE.txt
-```
-
-`METHODS` nhận danh sách gồm `weighted`, `lex-continuity` và
-`lex-overtime`; `RUN_EPSILON=0` tắt toàn bộ các mức `DELTAS`. Mặc định runner
-vẫn chạy ba method cùng năm mức epsilon như trước. Đặt `METHODS=''` và
-`RUN_EPSILON=1` để chạy epsilon-only.
-
-## Kiểm thử
-
-Kiểm thử C++ end-to-end với đúng EvalMaxSAT publication binary:
-
-```sh
-EVALMAXSAT_BIN=/opt/evalmaxsat/EvalMaxSAT_bin \
-PYTHONPATH=src/proposed python3 -m pytest -q
-```
-
-Python ở đây chỉ là test harness/oracle. Bộ test kiểm tra:
-
-- WCNF legacy hợp lệ và optimum bằng RC2 trên instance nhỏ;
-- sorting network và Totalizer có cùng optimum trên regression instance;
-- năm cấu hình implied constraints giữ nguyên optimum và qua verifier;
-- năm cấu hình symmetry-breaking giữ nguyên optimum và qua verifier;
-- toàn bộ ma trận $2\times5\times5$ giữ nguyên optimum trên instance đối xứng;
-- user-slot cardinality đúng trong cả full và partial coverage;
-- weighted score và đối chiếu với encoder C++ gốc;
-- hai policy lexicographic cho đúng hai nghiệm trade-off;
-- năm delta B2 chính dùng exact ceiling, cùng regression delta 0.2 tạo trade-off;
-- B2 giữ nguyên kết quả trên 8 cấu hình, kiểm tra đủ bốn tầng và metadata budget;
-- soft coverage chạy coverage trước B1/B2 và mọi nghiệm qua verifier;
-- bảng B2 gộp đúng các delta dẫn đến cùng objective point;
-- parser, generator, metrics và timeout semantics.
-
-`tests/instances/tradeoff.txt` có các kết quả mong đợi:
-
-| Phương pháp | SIM | CONT | OT |
-|---|---:|---:|---:|
-| weighted `(1,1)` | 9 | 1 | 0 |
-| lex-continuity | 8 | 0 | 1 |
-| lex-overtime | 9 | 1 | 0 |
-| epsilon, delta 0 | 9 | 1 | 0 |
-| epsilon, delta 0.2 | 8 | 0 | 1 |
-
-Weighted có hai nghiệm đồng tối ưu điểm 8; bảng ghi một nghiệm hợp lệ do backend
-trả về.
-
-## Vai trò của Python
-
-Cài package kiểm thử khi cần:
-
-```sh
-python3 -m pip install --user -e ".[test,cpsat]"
-```
-
-Các lệnh `python3 -m hcorap` vẫn hữu ích để inspect, sinh benchmark paired/nested,
-brute-force/RC2 cross-check và kiểm tra nghiệm. Chúng không được dùng để tạo số
-runtime so sánh trực tiếp với C++. CP-SAT Python chỉ là prototype xác minh mô
-hình; nếu đưa CP-SAT vào bảng hiệu năng chính, phải chuyển sang OR-Tools C++ và
-áp cùng timing scope/timeout.
-
-## Định nghĩa metric
-
-- `coverage = COV`, chuẩn hóa bởi `S`;
-- `similarity = SIM`, chuẩn hóa bởi `r_max*S`, kèm upper bound theo candidate;
-- `continuity = sum_q max(0,D_q-1)`; giá trị nhỏ hơn tốt hơn;
-- `overtime = sum_a max(0,workload_a-HN(a))`;
-- `overtime_cost = |P|*overtime`.
-
-Trong overload, continuity chỉ được so sánh giữa các nghiệm có cùng coverage.
-
-## Mã C++ gốc của bài báo
-
-Sinh công thức MaxSAT từ một instance:
-
-```sh
-./bin/release/hcorap2sat -e=1 -f=dimacs -S=0 INSTANCE.txt
-```
-
-`hcorap2sat` được giữ làm mốc audit. Bảng so sánh phương pháp chính dùng
-`hcorap_multi --method weighted --wc 1 --wo 1` làm B0 C++ tương đương, vì nhờ
-đó B0/lex/epsilon có cùng parser, hard model, writer và backend. Optimum B0 được
-cross-check với mã gốc trên instance nhỏ và instance chính thức trước campaign.
-
-Với full coverage, quan hệ được kiểm tra là:
-
-```text
-objective_gốc - sum_q(|SEQ(q)| - 1)
-  = SIM - CONT - |P|*OT
-```
-
-Tái lập runtime của binary gốc phải được báo ở bảng audit riêng nếu encoding,
-WCNF format hoặc backend chưa hoàn toàn đồng nhất; không trộn số đó vào bảng
-chính rồi diễn giải như khác biệt thuật toán.
+The runners print and validate the complete task matrices before execution,
+resume completed tasks, use one solver thread, and record code, configuration,
+binary, and instance provenance. Exact commands, environment variables, and
+expected task counts are documented in
+[`docs/RESEARCH_DEPTH_IMPLEMENTATION_20260909.md`](docs/RESEARCH_DEPTH_IMPLEMENTATION_20260909.md)
+and [`docs/COMPACT_RESULTS_RUNBOOK.md`](docs/COMPACT_RESULTS_RUNBOOK.md).
+
+## License and citation
+
+The repository is distributed under the [`MIT License`](LICENSE). Citation
+metadata is provided in [`CITATION.cff`](CITATION.cff).

@@ -1,14 +1,21 @@
-# HCORAP instance generation
+# Benchmark instances
 
-The HCORAP instances are randomly generated with the python script `create_instances.py`, that is run as follows:
+Two instance collections support the manuscript experiments:
 
-```python
-python3 create_instances.py N_USERS N_AGENTS N_SERVICES_PER_USER
-```
+- `paperInstances/` is the Original benchmark used for the MaxSAT encoding and
+  cross-solver study. The fixed experiment configurations select the reported
+  48-instance subset.
+- `corrected_v2_reduced_suite/evaluation_critical/evaluation/critical/` contains
+  the 48 HCORAP-LC evaluation instances used for the policy study. Each `.txt`
+  file has a `.txt.json` sidecar with generation metadata and a feasible
+  witness used by the capacity-sweep generator.
 
-In the paper, N_USERS takes values 30 and 40, N_AGENTS takes values 10, 15, 20 and 25, and N_SERVICES_PER_USER takes values 4 and 5.
-The script `genTXT.sh` generates a random set of instances with the same parameters than in the experimental section of the paper.
+The filenames encode the patient, caregiver, service-count, and seed factors.
+SHA-256 identifiers in
+[`../artifact/results/policy/corrected_pairwise_pairs.csv`](../artifact/results/policy/corrected_pairwise_pairs.csv)
+bind each HCORAP-LC result to its exact input file.
 
-These instances are specified in an ad-hoc plain-text format for the HCORAP. They can be encoded into MaxSAT formulas using the `hcorap2sat` binary file (see README in the root folder).
-
-The directory `paperInstances` contains the 400 instances used in the paper.
+The 432 capacity variants are deterministic generated data. Run
+`python3 experiments/generate_load_sweep.py` to create them under
+`instances/research_depth_load_sweep/`; the generated directory is ignored by
+Git.
